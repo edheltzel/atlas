@@ -20,7 +20,7 @@ const AGENT_DISPLAY_NAMES: Record<string, string> = {
   'engineer': 'Tesla',
   'architect': 'Keystone',
   'researcher': 'Einstein',
-  'designer': 'Designer',
+  'designer': 'Apollo',
   'artist': 'Picasso',
   'pentester': 'Sphinx',
   'writer': 'Graphite',
