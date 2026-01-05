@@ -166,7 +166,8 @@ function validateInput(input: any): { valid: boolean; error?: string; sanitized?
 // TTS Providers
 // =============================================================================
 
-// ElevenLabs TTS Generation
+// ElevenLabs TTS Generation (Streaming)
+// Uses /stream endpoint for lower time-to-first-byte
 async function generateSpeechElevenLabs(
   text: string,
   voiceId: string,
@@ -176,9 +177,12 @@ async function generateSpeechElevenLabs(
     throw new Error('ElevenLabs API key not configured');
   }
 
-  // Add optimize_streaming_latency=3 for ~max latency optimization (75%+ improvement)
-  const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?optimize_streaming_latency=3`;
+  // Use streaming endpoint with latency optimization and smaller format
+  // mp3_22050_32 = 22.05kHz, 32kbps - good quality, faster transfer
+  const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream?optimize_streaming_latency=3&output_format=mp3_22050_32`;
   const settings = voiceSettings || { stability: 0.5, similarity_boost: 0.5 };
+
+  const startTime = performance.now();
 
   const response = await fetch(url, {
     method: 'POST',
@@ -199,7 +203,36 @@ async function generateSpeechElevenLabs(
     throw new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
   }
 
-  return await response.arrayBuffer();
+  const ttfb = performance.now() - startTime;
+  console.log(`⚡ TTFB: ${ttfb.toFixed(0)}ms`);
+
+  // Collect streaming response
+  const chunks: Uint8Array[] = [];
+  const reader = response.body?.getReader();
+
+  if (!reader) {
+    throw new Error('No response body');
+  }
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+  }
+
+  // Combine chunks into single buffer
+  const totalLength = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+  const audioBuffer = new Uint8Array(totalLength);
+  let offset = 0;
+  for (const chunk of chunks) {
+    audioBuffer.set(chunk, offset);
+    offset += chunk.length;
+  }
+
+  const totalTime = performance.now() - startTime;
+  console.log(`📦 Total: ${totalTime.toFixed(0)}ms (${(totalLength / 1024).toFixed(1)}KB)`);
+
+  return audioBuffer.buffer;
 }
 
 // Google Cloud TTS Generation
@@ -284,9 +317,16 @@ function getVolumeSetting(): number {
 // Cross-Platform Audio Playback
 // =============================================================================
 
+// Generate unique temp file name to prevent collisions
+function getTempFileName(): string {
+  const uuid = crypto.randomUUID();
+  return `/tmp/voice-${uuid}.mp3`;
+}
+
 // Play audio - supports macOS (afplay) and Linux (mpg123, mpv)
 async function playAudio(audioBuffer: ArrayBuffer): Promise<void> {
-  const tempFile = `/tmp/voice-${Date.now()}.mp3`;
+  const tempFile = getTempFileName();
+  const playbackStart = performance.now();
   await Bun.write(tempFile, audioBuffer);
   const volume = getVolumeSetting();
 
@@ -319,14 +359,29 @@ async function playAudio(audioBuffer: ArrayBuffer): Promise<void> {
 
     const proc = spawn(player, args);
 
+    // Cleanup function using Bun's native unlink
+    const cleanup = () => {
+      try {
+        Bun.file(tempFile).exists().then(exists => {
+          if (exists) {
+            require('fs').unlinkSync(tempFile);
+          }
+        });
+      } catch {
+        // Ignore cleanup errors
+      }
+    };
+
     proc.on('error', (error) => {
       console.error('Error playing audio:', error);
-      spawn('/bin/rm', [tempFile]);
+      cleanup();
       reject(error);
     });
 
     proc.on('exit', (code) => {
-      spawn('/bin/rm', [tempFile]); // Clean up temp file
+      const playbackTime = performance.now() - playbackStart;
+      console.log(`🔊 Playback: ${playbackTime.toFixed(0)}ms`);
+      cleanup();
       if (code === 0 || code === null) {
         resolve();
       } else {

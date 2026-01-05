@@ -1,0 +1,7 @@
+{
+  "name": "opencode-config",
+  "type": "module",
+  "dependencies": {
+    "@opencode-ai/plugin": "latest"
+  }
+}
