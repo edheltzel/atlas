@@ -69,7 +69,7 @@ function extractCompletion(text: string, agentType: string = 'pai'): string {
     }
   }
 
-  return 'Completed task';
+  return 'Completed task, Ed';
 }
 
 /**
@@ -157,7 +157,7 @@ async function main() {
   }
 
   // Extract completion from transcript
-  let completion = 'Completed task';
+  let completion = 'Completed task, Ed';
   const agentType = 'pai'; // Main agent is your PAI
 
   if (hookInput?.transcript_path) {

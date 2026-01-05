@@ -214,7 +214,7 @@ async function main() {
   }
 
   // Find task result
-  const { result: taskOutput, agentType } = await findTaskResult(transcriptPath);
+  const { result: taskOutput, agentType, description } = await findTaskResult(transcriptPath);
 
   if (!taskOutput) {
     process.exit(0);
@@ -223,12 +223,22 @@ async function main() {
   // Extract completion message
   const { message: completionMessage, agentType: extractedAgentType } = extractCompletionMessage(taskOutput);
 
-  if (!completionMessage) {
-    process.exit(0);
-  }
-
   // Determine agent type
   const finalAgentType = extractedAgentType || agentType || 'default';
+
+  // Use extracted message or generate fallback
+  let finalMessage: string;
+  if (completionMessage) {
+    finalMessage = completionMessage;
+  } else {
+    // Fallback: use task description or generic message
+    const agentName = finalAgentType.charAt(0).toUpperCase() + finalAgentType.slice(1);
+    if (description) {
+      finalMessage = `${agentName} finished ${description}`;
+    } else {
+      finalMessage = `${agentName} agent finished, Ed`;
+    }
+  }
 
   // Get voice ID for this agent type
   const voiceId = getVoiceId(finalAgentType);
@@ -238,7 +248,7 @@ async function main() {
 
   await sendNotification({
     title: agentName,
-    message: completionMessage,
+    message: finalMessage,
     voice_enabled: true,
     voice_id: voiceId
   });

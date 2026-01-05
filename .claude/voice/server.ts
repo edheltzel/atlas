@@ -454,7 +454,7 @@ const server = serve({
       try {
         const data = await req.json();
         const title = data.title || "PAI Notification";
-        const message = data.message || "Task completed";
+        const message = data.message || "Task completed, Ed";
         const voiceEnabled = data.voice_enabled !== false;
         const voiceId = data.voice_id || data.voice_name || null;
 
