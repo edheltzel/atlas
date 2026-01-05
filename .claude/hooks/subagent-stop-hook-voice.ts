@@ -94,26 +94,22 @@ async function main() {
   // Determine agent type
   const finalAgentType = extractedAgentType || agentType || 'default';
 
+  // Only speak when there's an explicit COMPLETED pattern
+  // Silent otherwise to avoid noisy announcements on every agent completion
+  if (!completionMessage) {
+    process.exit(0);
+  }
+
   // Build the final message
   const agentDisplayName = getAgentDisplayName(finalAgentType);
   let finalMessage: string;
-
-  if (completionMessage) {
-    // Check if message already starts with agent display name (from [AGENT:x] pattern)
-    const startsWithDisplayName = completionMessage.toLowerCase().startsWith(agentDisplayName.toLowerCase());
-    if (startsWithDisplayName) {
-      finalMessage = completionMessage;
-    } else {
-      // Prepend agent name for messages from generic COMPLETED: pattern
-      finalMessage = `${agentDisplayName} completed ${completionMessage}`;
-    }
+  // Check if message already starts with agent display name (from [AGENT:x] pattern)
+  const startsWithDisplayName = completionMessage.toLowerCase().startsWith(agentDisplayName.toLowerCase());
+  if (startsWithDisplayName) {
+    finalMessage = completionMessage;
   } else {
-    // Fallback: use task description or generic message
-    if (description) {
-      finalMessage = `${agentDisplayName} finished ${description}`;
-    } else {
-      finalMessage = `${agentDisplayName} agent finished, Ed`;
-    }
+    // Prepend agent name for messages from generic COMPLETED: pattern
+    finalMessage = `${agentDisplayName} completed ${completionMessage}`;
   }
 
   // Get voice ID for this agent type
