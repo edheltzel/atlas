@@ -7,6 +7,36 @@ import { join, dirname } from 'path';
 import { readdirSync, statSync } from 'fs';
 import { enhanceProsody, cleanForSpeech, getVoiceId } from './lib/prosody-enhancer';
 
+// Map technical agent types to friendly spoken names
+const AGENT_DISPLAY_NAMES: Record<string, string> = {
+  'explore': 'Scout',
+  'plan': 'Strategist',
+  'general-purpose': 'Atlas',
+  'claude-code-guide': 'Mentor',
+  'default': 'Agent Zero',
+  // Custom agents (already have good names, just capitalize)
+  'intern': 'Intern',
+  'engineer': 'Engineer',
+  'architect': 'Architect',
+  'researcher': 'Researcher',
+  'designer': 'Designer',
+  'artist': 'Artist',
+  'pentester': 'Pentester',
+  'writer': 'Writer',
+};
+
+/**
+ * Get friendly display name for an agent type
+ */
+function getAgentDisplayName(agentType: string): string {
+  const normalized = agentType.toLowerCase();
+  if (AGENT_DISPLAY_NAMES[normalized]) {
+    return AGENT_DISPLAY_NAMES[normalized];
+  }
+  // Fallback: capitalize first letter
+  return agentType.charAt(0).toUpperCase() + agentType.slice(1);
+}
+
 interface NotificationPayload {
   title: string;
   message: string;
@@ -120,8 +150,8 @@ function extractCompletionMessage(taskOutput: string): { message: string | null;
       // Enhance with prosody
       message = enhanceProsody(message, agentType);
 
-      // Format: "AgentName completed [message]"
-      const agentName = agentType.charAt(0).toUpperCase() + agentType.slice(1);
+      // Format: "FriendlyName completed [message]"
+      const friendlyName = getAgentDisplayName(agentType);
 
       // Don't prepend "completed" for greetings or questions
       const isGreeting = /^(hey|hello|hi|greetings)/i.test(message);
@@ -129,7 +159,7 @@ function extractCompletionMessage(taskOutput: string): { message: string | null;
 
       const fullMessage = (isGreeting || isQuestion)
         ? message
-        : `${agentName} completed ${message}`;
+        : `${friendlyName} completed ${message}`;
 
       return { message: fullMessage, agentType };
     }
@@ -227,7 +257,7 @@ async function main() {
   const finalAgentType = extractedAgentType || agentType || 'default';
 
   // Build the final message
-  const agentDisplayName = finalAgentType.charAt(0).toUpperCase() + finalAgentType.slice(1);
+  const agentDisplayName = getAgentDisplayName(finalAgentType);
   let finalMessage: string;
 
   if (completionMessage) {
