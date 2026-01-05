@@ -176,7 +176,8 @@ async function generateSpeechElevenLabs(
     throw new Error('ElevenLabs API key not configured');
   }
 
-  const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
+  // Add optimize_streaming_latency=3 for ~max latency optimization (75%+ improvement)
+  const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?optimize_streaming_latency=3`;
   const settings = voiceSettings || { stability: 0.5, similarity_boost: 0.5 };
 
   const response = await fetch(url, {
@@ -510,6 +511,33 @@ const server = serve({
   },
 });
 
+// Connection warmup - pre-establish connection to reduce first-request latency
+async function warmupConnection(): Promise<void> {
+  if (TTS_PROVIDER === 'elevenlabs' && ELEVENLABS_API_KEY) {
+    try {
+      const response = await fetch('https://api.elevenlabs.io/v1/voices', {
+        method: 'GET',
+        headers: { 'xi-api-key': ELEVENLABS_API_KEY },
+      });
+      if (response.ok) {
+        console.log('🔥 ElevenLabs connection warmed up');
+      }
+    } catch (error) {
+      console.warn('⚠️  Connection warmup failed (will retry on first request)');
+    }
+  } else if (TTS_PROVIDER === 'google' && GOOGLE_API_KEY) {
+    try {
+      // Simple request to warm up Google TTS connection
+      const response = await fetch(`https://texttospeech.googleapis.com/v1/voices?key=${GOOGLE_API_KEY}`);
+      if (response.ok) {
+        console.log('🔥 Google TTS connection warmed up');
+      }
+    } catch (error) {
+      console.warn('⚠️  Connection warmup failed (will retry on first request)');
+    }
+  }
+}
+
 // Startup logs
 console.log(`🚀 Voice Server running on port ${PORT}`);
 console.log(`🖥️  Platform: ${process.platform}`);
@@ -522,5 +550,9 @@ if (TTS_PROVIDER === 'google') {
   console.log(`💰 Free tier: 4M chars/month (Standard), 1M chars/month (Neural2)`);
 } else {
   console.log(`🔑 ElevenLabs API Key: ${ELEVENLABS_API_KEY ? '✅ Configured' : '❌ Missing'}`);
+  console.log(`⚡ Latency optimization: optimize_streaming_latency=3 enabled`);
 }
 console.log(`💡 Switch providers: TTS_PROVIDER=google or TTS_PROVIDER=elevenlabs in .env`);
+
+// Warm up connection on startup (non-blocking)
+warmupConnection();

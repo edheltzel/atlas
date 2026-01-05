@@ -190,18 +190,29 @@ function extractCompletionMessage(taskOutput: string): { message: string | null;
 async function sendNotification(payload: NotificationPayload): Promise<void> {
   const serverUrl = process.env.PAI_VOICE_SERVER || 'http://localhost:8888/notify';
 
+  // Add timeout to prevent hanging if server is unresponsive
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
+
   try {
     const response = await fetch(serverUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       console.error('Voice server error:', response.statusText);
     }
-  } catch (error) {
-    // Fail silently
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      console.error('Voice notification timed out after 5000ms');
+    }
+    // Fail silently otherwise
   }
 }
 
@@ -212,7 +223,7 @@ async function main() {
     const reader = Bun.stdin.stream().getReader();
 
     const timeoutPromise = new Promise<void>((resolve) => {
-      setTimeout(() => resolve(), 500);
+      setTimeout(() => resolve(), 100); // Reduced from 500ms for faster hook execution
     });
 
     const readPromise = (async () => {
