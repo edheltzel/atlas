@@ -69,7 +69,7 @@ function extractCompletion(text: string, agentType: string = 'pai'): string {
     }
   }
 
-  return 'Completed task, Ed';
+  return null; // No COMPLETED pattern found - stay silent
 }
 
 /**
@@ -157,14 +157,19 @@ async function main() {
   }
 
   // Extract completion from transcript
-  let completion = 'Completed task, Ed';
   const agentType = 'pai'; // Main agent is your PAI
+  let completion: string | null = null;
 
   if (hookInput?.transcript_path) {
     const lastMessage = getLastAssistantMessage(hookInput.transcript_path);
     if (lastMessage) {
       completion = extractCompletion(lastMessage, agentType);
     }
+  }
+
+  // Only speak if there's an explicit COMPLETED pattern
+  if (!completion) {
+    process.exit(0);
   }
 
   // Get voice ID for this agent
