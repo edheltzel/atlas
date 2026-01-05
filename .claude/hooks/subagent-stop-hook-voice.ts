@@ -1,136 +1,21 @@
 #!/usr/bin/env bun
 // $PAI_DIR/hooks/subagent-stop-hook-voice.ts
 // Subagent voice notification with personality-specific delivery
+// Phase 3: Refactored to use shared-voice module
 
-import { readFileSync, existsSync } from 'fs';
-import { join, dirname } from 'path';
-import { readdirSync, statSync } from 'fs';
 import { enhanceProsody, cleanForSpeech, getVoiceId } from './lib/prosody-enhancer';
-
-// Map technical agent types to friendly spoken names
-const AGENT_DISPLAY_NAMES: Record<string, string> = {
-  // Claude Code built-in agents
-  'explore': 'Scout',
-  'plan': 'Strategist',
-  'general-purpose': 'Atlas',
-  'claude-code-guide': 'Mentor',
-  'default': 'Agent Zero',
-  // Custom agents with codenames
-  'intern': 'Rookie',
-  'engineer': 'Tesla',
-  'architect': 'Keystone',
-  'researcher': 'Einstein',
-  'designer': 'Apollo',
-  'artist': 'Picasso',
-  'pentester': 'Sphinx',
-  'writer': 'Graphite',
-};
+import {
+  NotificationPayload,
+  readStdinWithTimeout,
+  parseHookInput,
+  sendNotification,
+  findTaskResult,
+  getAgentDisplayName,
+} from './lib/shared-voice';
 
 /**
- * Get friendly display name for an agent type
+ * Extract completion message from task output
  */
-function getAgentDisplayName(agentType: string): string {
-  const normalized = agentType.toLowerCase();
-  if (AGENT_DISPLAY_NAMES[normalized]) {
-    return AGENT_DISPLAY_NAMES[normalized];
-  }
-  // Fallback: capitalize first letter
-  return agentType.charAt(0).toUpperCase() + agentType.slice(1);
-}
-
-interface NotificationPayload {
-  title: string;
-  message: string;
-  voice_enabled: boolean;
-  voice_id: string;
-}
-
-async function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-async function findTaskResult(transcriptPath: string, maxAttempts: number = 2): Promise<{
-  result: string | null;
-  agentType: string | null;
-  description: string | null;
-}> {
-  let actualTranscriptPath = transcriptPath;
-
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    if (attempt > 0) {
-      await delay(200);
-    }
-
-    if (!existsSync(actualTranscriptPath)) {
-      const dir = dirname(transcriptPath);
-      if (existsSync(dir)) {
-        const files = readdirSync(dir)
-          .filter(f => f.startsWith('agent-') && f.endsWith('.jsonl'))
-          .map(f => ({ name: f, mtime: statSync(join(dir, f)).mtime }))
-          .sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
-
-        if (files.length > 0) {
-          actualTranscriptPath = join(dir, files[0].name);
-        }
-      }
-
-      if (!existsSync(actualTranscriptPath)) {
-        continue;
-      }
-    }
-
-    try {
-      const transcript = readFileSync(actualTranscriptPath, 'utf-8');
-      const lines = transcript.trim().split('\n');
-
-      for (let i = lines.length - 1; i >= 0; i--) {
-        try {
-          const entry = JSON.parse(lines[i]);
-
-          if (entry.type === 'assistant' && entry.message?.content) {
-            for (const content of entry.message.content) {
-              if (content.type === 'tool_use' && content.name === 'Task') {
-                const toolInput = content.input;
-                const description = toolInput?.description || null;
-
-                for (let j = i + 1; j < lines.length; j++) {
-                  const resultEntry = JSON.parse(lines[j]);
-                  if (resultEntry.type === 'user' && resultEntry.message?.content) {
-                    for (const resultContent of resultEntry.message.content) {
-                      if (resultContent.type === 'tool_result' && resultContent.tool_use_id === content.id) {
-                        let taskOutput: string;
-                        if (typeof resultContent.content === 'string') {
-                          taskOutput = resultContent.content;
-                        } else if (Array.isArray(resultContent.content)) {
-                          taskOutput = resultContent.content
-                            .filter((item: any) => item.type === 'text')
-                            .map((item: any) => item.text)
-                            .join('\n');
-                        } else {
-                          continue;
-                        }
-
-                        const agentType = toolInput?.subagent_type || 'default';
-                        return { result: taskOutput, agentType, description };
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        } catch (e) {
-          // Skip invalid lines
-        }
-      }
-    } catch (e) {
-      // Will retry
-    }
-  }
-
-  return { result: null, agentType: null, description: null };
-}
-
 function extractCompletionMessage(taskOutput: string): { message: string | null; agentType: string | null } {
   // Look for COMPLETED section with agent tag
   const agentPatterns = [
@@ -187,76 +72,17 @@ function extractCompletionMessage(taskOutput: string): { message: string | null;
   return { message: null, agentType: null };
 }
 
-async function sendNotification(payload: NotificationPayload): Promise<void> {
-  const serverUrl = process.env.PAI_VOICE_SERVER || 'http://localhost:8888/notify';
-
-  // Add timeout to prevent hanging if server is unresponsive
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-  try {
-    const response = await fetch(serverUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      console.error('Voice server error:', response.statusText);
-    }
-  } catch (error: any) {
-    clearTimeout(timeoutId);
-    if (error.name === 'AbortError') {
-      console.error('Voice notification timed out after 5000ms');
-    }
-    // Fail silently otherwise
-  }
-}
-
 async function main() {
-  let input = '';
-  try {
-    const decoder = new TextDecoder();
-    const reader = Bun.stdin.stream().getReader();
+  // Read and parse hook input using shared utilities
+  const input = await readStdinWithTimeout(100);
+  const hookInput = parseHookInput(input);
 
-    const timeoutPromise = new Promise<void>((resolve) => {
-      setTimeout(() => resolve(), 100); // Reduced from 500ms for faster hook execution
-    });
-
-    const readPromise = (async () => {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        input += decoder.decode(value, { stream: true });
-      }
-    })();
-
-    await Promise.race([readPromise, timeoutPromise]);
-  } catch (e) {
+  if (!hookInput?.transcript_path) {
     process.exit(0);
   }
 
-  if (!input) {
-    process.exit(0);
-  }
-
-  let transcriptPath: string;
-  try {
-    const parsed = JSON.parse(input);
-    transcriptPath = parsed.transcript_path;
-  } catch (e) {
-    process.exit(0);
-  }
-
-  if (!transcriptPath) {
-    process.exit(0);
-  }
-
-  // Find task result
-  const { result: taskOutput, agentType, description } = await findTaskResult(transcriptPath);
+  // Find task result using shared utility
+  const { result: taskOutput, agentType, description } = await findTaskResult(hookInput.transcript_path);
 
   if (!taskOutput) {
     process.exit(0);
@@ -293,7 +119,7 @@ async function main() {
   // Get voice ID for this agent type
   const voiceId = getVoiceId(finalAgentType);
 
-  // Send voice notification
+  // Send voice notification using shared utility
   await sendNotification({
     title: agentDisplayName,
     message: finalMessage,

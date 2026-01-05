@@ -1,49 +1,25 @@
 #!/usr/bin/env bun
 // $PAI_DIR/hooks/stop-hook-voice.ts
 // Main agent voice notification with prosody enhancement
+// Phase 3: Refactored to use shared-voice module
 
-import { readFileSync } from 'fs';
 import { enhanceProsody, cleanForSpeech, getVoiceId } from './lib/prosody-enhancer';
-
-interface NotificationPayload {
-  title: string;
-  message: string;
-  voice_enabled: boolean;
-  priority?: 'low' | 'normal' | 'high';
-  voice_id: string;
-}
-
-interface HookInput {
-  session_id: string;
-  transcript_path: string;
-  hook_event_name: string;
-}
-
-/**
- * Convert Claude content to plain text
- */
-function contentToText(content: unknown): string {
-  if (typeof content === 'string') return content;
-  if (Array.isArray(content)) {
-    return content
-      .map(c => {
-        if (typeof c === 'string') return c;
-        if (c?.text) return c.text;
-        if (c?.content) return contentToText(c.content);
-        return '';
-      })
-      .join(' ')
-      .trim();
-  }
-  return '';
-}
+import {
+  NotificationPayload,
+  HookInput,
+  readStdinWithTimeout,
+  parseHookInput,
+  sendNotification,
+  getLastAssistantMessage,
+  stripSystemReminders,
+} from './lib/shared-voice';
 
 /**
  * Extract completion message with prosody enhancement
  */
-function extractCompletion(text: string, agentType: string = 'pai'): string {
-  // Remove system-reminder tags
-  text = text.replace(/<system-reminder>[\s\S]*?<\/system-reminder>/g, '');
+function extractCompletion(text: string, agentType: string = 'pai'): string | null {
+  // Remove system-reminder tags using shared utility
+  text = stripSystemReminders(text);
 
   // Look for COMPLETED section
   const patterns = [
@@ -72,101 +48,10 @@ function extractCompletion(text: string, agentType: string = 'pai'): string {
   return null; // No COMPLETED pattern found - stay silent
 }
 
-/**
- * Read last assistant message from transcript
- */
-function getLastAssistantMessage(transcriptPath: string): string {
-  try {
-    const content = readFileSync(transcriptPath, 'utf-8');
-    const lines = content.trim().split('\n');
-
-    let lastAssistantMessage = '';
-
-    for (const line of lines) {
-      if (line.trim()) {
-        try {
-          const entry = JSON.parse(line);
-          if (entry.type === 'assistant' && entry.message?.content) {
-            const text = contentToText(entry.message.content);
-            if (text) {
-              lastAssistantMessage = text;
-            }
-          }
-        } catch {
-          // Skip invalid JSON lines
-        }
-      }
-    }
-
-    return lastAssistantMessage;
-  } catch (error) {
-    console.error('Error reading transcript:', error);
-    return '';
-  }
-}
-
-/**
- * Send notification to voice server
- */
-async function sendNotification(payload: NotificationPayload): Promise<void> {
-  const serverUrl = process.env.PAI_VOICE_SERVER || 'http://localhost:8888/notify';
-
-  // Add timeout to prevent hanging if server is unresponsive
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-  try {
-    const response = await fetch(serverUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      console.error('Voice server error:', response.statusText);
-    }
-  } catch (error: any) {
-    clearTimeout(timeoutId);
-    if (error.name === 'AbortError') {
-      console.error('Voice notification timed out after 5000ms');
-    } else {
-      // Fail silently - voice server may not be running
-      console.error('Voice notification failed (server may be offline):', error);
-    }
-  }
-}
-
 async function main() {
-  let hookInput: HookInput | null = null;
-
-  try {
-    const decoder = new TextDecoder();
-    const reader = Bun.stdin.stream().getReader();
-    let input = '';
-
-    const timeoutPromise = new Promise<void>((resolve) => {
-      setTimeout(() => resolve(), 100); // Reduced from 500ms for faster hook execution
-    });
-
-    const readPromise = (async () => {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        input += decoder.decode(value, { stream: true });
-      }
-    })();
-
-    await Promise.race([readPromise, timeoutPromise]);
-
-    if (input.trim()) {
-      hookInput = JSON.parse(input);
-    }
-  } catch (error) {
-    console.error('Error reading hook input:', error);
-  }
+  // Read and parse hook input using shared utilities
+  const input = await readStdinWithTimeout(100);
+  const hookInput = parseHookInput(input);
 
   // Extract completion from transcript
   const agentType = 'pai'; // Main agent is your PAI
@@ -191,7 +76,7 @@ async function main() {
   // Get voice ID for this agent
   const voiceId = getVoiceId(agentType);
 
-  // Send voice notification
+  // Send voice notification using shared utility
   const payload: NotificationPayload = {
     title: 'PAI',
     message: spokenMessage,

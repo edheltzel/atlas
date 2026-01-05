@@ -1,6 +1,7 @@
 /**
  * Phase 1 Tests: Quick Wins Optimization
  * Tests for stdin timeout, fetch timeout, and connection warmup
+ * Updated for Phase 3: Tests now check shared-voice.ts for implementation
  */
 
 import { describe, test, expect, beforeAll, afterAll, mock } from 'bun:test';
@@ -10,8 +11,25 @@ import { describe, test, expect, beforeAll, afterAll, mock } from 'bun:test';
 // =============================================================================
 
 describe('Stdin Timeout', () => {
-  test('stdin timeout is set to 100ms', async () => {
-    // Read the hook file and verify timeout value
+  test('stdin timeout default is 100ms in shared module', async () => {
+    // After Phase 3 consolidation, check the shared module
+    const sharedVoice = await Bun.file(
+      `${process.env.HOME}/.dotfiles/atlas/.claude/hooks/lib/shared-voice.ts`
+    ).text();
+
+    // Check for 100ms default timeout
+    expect(sharedVoice).toContain('timeoutMs: number = 100');
+  });
+
+  test('timeout comment documents the optimization', async () => {
+    const sharedVoice = await Bun.file(
+      `${process.env.HOME}/.dotfiles/atlas/.claude/hooks/lib/shared-voice.ts`
+    ).text();
+
+    expect(sharedVoice).toContain('reduced from 500ms');
+  });
+
+  test('hooks call readStdinWithTimeout with 100ms', async () => {
     const stopHook = await Bun.file(
       `${process.env.HOME}/.dotfiles/atlas/.claude/hooks/stop-hook-voice.ts`
     ).text();
@@ -20,17 +38,9 @@ describe('Stdin Timeout', () => {
       `${process.env.HOME}/.dotfiles/atlas/.claude/hooks/subagent-stop-hook-voice.ts`
     ).text();
 
-    // Check for 100ms timeout in both files
-    expect(stopHook).toContain('setTimeout(() => resolve(), 100)');
-    expect(subagentHook).toContain('setTimeout(() => resolve(), 100)');
-  });
-
-  test('timeout comment documents the change', async () => {
-    const stopHook = await Bun.file(
-      `${process.env.HOME}/.dotfiles/atlas/.claude/hooks/stop-hook-voice.ts`
-    ).text();
-
-    expect(stopHook).toContain('Reduced from 500ms');
+    // Hooks call the shared function with 100ms
+    expect(stopHook).toContain('readStdinWithTimeout(100)');
+    expect(subagentHook).toContain('readStdinWithTimeout(100)');
   });
 });
 
@@ -39,43 +49,32 @@ describe('Stdin Timeout', () => {
 // =============================================================================
 
 describe('Fetch Timeout', () => {
-  test('AbortController is used in stop-hook-voice.ts', async () => {
-    const stopHook = await Bun.file(
-      `${process.env.HOME}/.dotfiles/atlas/.claude/hooks/stop-hook-voice.ts`
+  test('AbortController is used in shared sendNotification', async () => {
+    const sharedVoice = await Bun.file(
+      `${process.env.HOME}/.dotfiles/atlas/.claude/hooks/lib/shared-voice.ts`
     ).text();
 
-    expect(stopHook).toContain('new AbortController()');
-    expect(stopHook).toContain('controller.abort()');
-    expect(stopHook).toContain('signal: controller.signal');
-    expect(stopHook).toContain('5000'); // 5000ms timeout
-  });
-
-  test('AbortController is used in subagent-stop-hook-voice.ts', async () => {
-    const subagentHook = await Bun.file(
-      `${process.env.HOME}/.dotfiles/atlas/.claude/hooks/subagent-stop-hook-voice.ts`
-    ).text();
-
-    expect(subagentHook).toContain('new AbortController()');
-    expect(subagentHook).toContain('controller.abort()');
-    expect(subagentHook).toContain('signal: controller.signal');
-    expect(subagentHook).toContain('5000'); // 5000ms timeout
+    expect(sharedVoice).toContain('new AbortController()');
+    expect(sharedVoice).toContain('controller.abort()');
+    expect(sharedVoice).toContain('signal: controller.signal');
+    expect(sharedVoice).toContain('5000'); // 5000ms timeout
   });
 
   test('AbortError is handled gracefully', async () => {
-    const stopHook = await Bun.file(
-      `${process.env.HOME}/.dotfiles/atlas/.claude/hooks/stop-hook-voice.ts`
+    const sharedVoice = await Bun.file(
+      `${process.env.HOME}/.dotfiles/atlas/.claude/hooks/lib/shared-voice.ts`
     ).text();
 
-    expect(stopHook).toContain("error.name === 'AbortError'");
-    expect(stopHook).toContain('timed out after 5000ms');
+    expect(sharedVoice).toContain("error.name === 'AbortError'");
+    expect(sharedVoice).toContain('timed out after 5000ms');
   });
 
   test('timeout clears on successful response', async () => {
-    const stopHook = await Bun.file(
-      `${process.env.HOME}/.dotfiles/atlas/.claude/hooks/stop-hook-voice.ts`
+    const sharedVoice = await Bun.file(
+      `${process.env.HOME}/.dotfiles/atlas/.claude/hooks/lib/shared-voice.ts`
     ).text();
 
-    expect(stopHook).toContain('clearTimeout(timeoutId)');
+    expect(sharedVoice).toContain('clearTimeout(timeoutId)');
   });
 });
 
