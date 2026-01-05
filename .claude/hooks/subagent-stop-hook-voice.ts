@@ -226,17 +226,25 @@ async function main() {
   // Determine agent type
   const finalAgentType = extractedAgentType || agentType || 'default';
 
-  // Use extracted message or generate fallback
+  // Build the final message
+  const agentDisplayName = finalAgentType.charAt(0).toUpperCase() + finalAgentType.slice(1);
   let finalMessage: string;
+
   if (completionMessage) {
-    finalMessage = completionMessage;
+    // Check if message already starts with agent name (from [AGENT:x] pattern)
+    const startsWithAgent = completionMessage.toLowerCase().startsWith(finalAgentType.toLowerCase());
+    if (startsWithAgent) {
+      finalMessage = completionMessage;
+    } else {
+      // Prepend agent name for messages from generic COMPLETED: pattern
+      finalMessage = `${agentDisplayName} completed ${completionMessage}`;
+    }
   } else {
     // Fallback: use task description or generic message
-    const agentName = finalAgentType.charAt(0).toUpperCase() + finalAgentType.slice(1);
     if (description) {
-      finalMessage = `${agentName} finished ${description}`;
+      finalMessage = `${agentDisplayName} finished ${description}`;
     } else {
-      finalMessage = `${agentName} agent finished, Ed`;
+      finalMessage = `${agentDisplayName} agent finished, Ed`;
     }
   }
 
@@ -244,10 +252,8 @@ async function main() {
   const voiceId = getVoiceId(finalAgentType);
 
   // Send voice notification
-  const agentName = finalAgentType.charAt(0).toUpperCase() + finalAgentType.slice(1);
-
   await sendNotification({
-    title: agentName,
+    title: agentDisplayName,
     message: finalMessage,
     voice_enabled: true,
     voice_id: voiceId
