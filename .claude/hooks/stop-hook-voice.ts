@@ -172,13 +172,16 @@ async function main() {
     process.exit(0);
   }
 
+  // Format: "The task is completed, Ed. {completion message}"
+  const spokenMessage = `The task is completed, Ed. ${completion}`;
+
   // Get voice ID for this agent
   const voiceId = getVoiceId(agentType);
 
   // Send voice notification
   const payload: NotificationPayload = {
     title: 'PAI',
-    message: completion,
+    message: spokenMessage,
     voice_enabled: true,
     priority: 'normal',
     voice_id: voiceId
