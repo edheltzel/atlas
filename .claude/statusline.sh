@@ -98,4 +98,4 @@ OUTPUT+="${CWD_BG}${PREV_SEP_FG}${PL_SEP}${CWD_FG} ${ICON_FOLDER} ${CWD_DISPLAY}
 # Final transition to terminal background
 OUTPUT+="${COLOR_RESET}${CWD_SEP_FG}${PL_SEP}${COLOR_RESET}"
 
-echo -e "$OUTPUT"
+echo "$OUTPUT"

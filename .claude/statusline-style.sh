@@ -2,30 +2,30 @@
 # Status Line Style Configuration - Powerline Theme
 
 # Reset
-COLOR_RESET='\e[0m'
+COLOR_RESET=$'\e[0m'
 
 # Foreground colors
-FG_WHITE='\e[97m'
-FG_BLACK='\e[30m'
-FG_CYAN='\e[96m'
+FG_WHITE=$'\e[97m'
+FG_BLACK=$'\e[30m'
+FG_CYAN=$'\e[96m'
 
 # Background colors (256-color)
-BG_DARK='\e[48;5;236m'
-BG_BLUE='\e[48;5;69m'
-BG_GREEN='\e[48;5;114m'
-BG_ORANGE='\e[48;5;215m'
-BG_RED='\e[48;5;203m'
-BG_CYAN='\e[48;5;80m'
-BG_MAGENTA='\e[48;5;176m'
+BG_DARK=$'\e[48;5;236m'
+BG_BLUE=$'\e[48;5;69m'
+BG_GREEN=$'\e[48;5;114m'
+BG_ORANGE=$'\e[48;5;215m'
+BG_RED=$'\e[48;5;203m'
+BG_CYAN=$'\e[48;5;80m'
+BG_MAGENTA=$'\e[48;5;176m'
 
 # Foreground for transitions
-FG_DARK='\e[38;5;236m'
-FG_BLUE_BG='\e[38;5;69m'
-FG_GREEN_BG='\e[38;5;114m'
-FG_ORANGE_BG='\e[38;5;215m'
-FG_RED_BG='\e[38;5;203m'
-FG_CYAN_BG='\e[38;5;80m'
-FG_MAGENTA_BG='\e[38;5;176m'
+FG_DARK=$'\e[38;5;236m'
+FG_BLUE_BG=$'\e[38;5;69m'
+FG_GREEN_BG=$'\e[38;5;114m'
+FG_ORANGE_BG=$'\e[38;5;215m'
+FG_RED_BG=$'\e[38;5;203m'
+FG_CYAN_BG=$'\e[38;5;80m'
+FG_MAGENTA_BG=$'\e[38;5;176m'
 
 # Powerline separator (U+E0B0)
 PL_SEP=""
