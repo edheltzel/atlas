@@ -167,13 +167,16 @@ async function main() {
     }
   }
 
-  // Only speak if there's an explicit COMPLETED pattern
-  if (!completion) {
-    process.exit(0);
-  }
+  // Determine what to say
+  let spokenMessage: string;
 
-  // Format: "The task is completed, Ed. {completion message}"
-  const spokenMessage = `The task is completed, Ed. ${completion}`;
+  if (completion) {
+    // Task completed - announce it
+    spokenMessage = `The task is completed, Ed. ${completion}`;
+  } else {
+    // Waiting for input - standing by
+    spokenMessage = 'Ed, Atlas standing by.';
+  }
 
   // Get voice ID for this agent
   const voiceId = getVoiceId(agentType);
