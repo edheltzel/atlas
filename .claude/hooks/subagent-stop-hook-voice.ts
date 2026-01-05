@@ -262,9 +262,9 @@ async function main() {
   let finalMessage: string;
 
   if (completionMessage) {
-    // Check if message already starts with agent name (from [AGENT:x] pattern)
-    const startsWithAgent = completionMessage.toLowerCase().startsWith(finalAgentType.toLowerCase());
-    if (startsWithAgent) {
+    // Check if message already starts with agent display name (from [AGENT:x] pattern)
+    const startsWithDisplayName = completionMessage.toLowerCase().startsWith(agentDisplayName.toLowerCase());
+    if (startsWithDisplayName) {
       finalMessage = completionMessage;
     } else {
       // Prepend agent name for messages from generic COMPLETED: pattern

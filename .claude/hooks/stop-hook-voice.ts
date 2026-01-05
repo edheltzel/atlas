@@ -167,16 +167,14 @@ async function main() {
     }
   }
 
-  // Determine what to say
-  let spokenMessage: string;
-
-  if (completion) {
-    // Task completed - announce it
-    spokenMessage = `The task is completed, Ed. ${completion}`;
-  } else {
-    // Waiting for input - standing by
-    spokenMessage = 'Ed, Atlas standing by.';
+  // Only speak when there's an explicit COMPLETED pattern
+  // Silent otherwise to avoid overlap with subagent announcements
+  if (!completion) {
+    process.exit(0);
   }
+
+  // Task completed - announce it
+  const spokenMessage = `The task is completed, Ed. ${completion}`;
 
   // Get voice ID for this agent
   const voiceId = getVoiceId(agentType);
