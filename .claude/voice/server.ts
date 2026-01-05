@@ -9,6 +9,15 @@ import { spawn } from "child_process";
 import { homedir } from "os";
 import { join } from "path";
 import { existsSync, readFileSync } from "fs";
+import {
+  getCacheEntry,
+  addToCache,
+  getCacheStats,
+  clearExpired,
+  prewarmCache,
+  generateCacheKey,
+  CACHE_DIR,
+} from "./lib/cache";
 
 // Load .env from PAI directory (single source of truth for all API keys)
 const paiDir = process.env.PAI_DIR || join(homedir(), '.config', 'pai');
@@ -436,10 +445,26 @@ async function sendNotification(
         console.log(`👤 Personality: ${voiceConfig.description}`);
       }
 
-      console.log(`🎙️  Generating speech (voice: ${voice}, stability: ${voiceSettings.stability})`);
+      // Check cache first (Phase 4 optimization)
+      const cacheStart = performance.now();
+      const cacheResult = getCacheEntry(safeMessage, voice);
 
-      const audioBuffer = await generateSpeech(safeMessage, voice, voiceSettings);
-      await playAudio(audioBuffer);
+      if (cacheResult.hit && cacheResult.buffer) {
+        const cacheTime = performance.now() - cacheStart;
+        console.log(`⚡ Cache HIT: ${cacheTime.toFixed(0)}ms (${(cacheResult.buffer.byteLength / 1024).toFixed(1)}KB)`);
+        await playAudio(cacheResult.buffer);
+      } else {
+        // Cache miss - generate speech
+        console.log(`🎙️  Generating speech (voice: ${voice}, stability: ${voiceSettings.stability})`);
+
+        const audioBuffer = await generateSpeech(safeMessage, voice, voiceSettings);
+
+        // Add to cache for future use
+        addToCache(safeMessage, voice, audioBuffer);
+        console.log(`💾 Cached: ${generateCacheKey(safeMessage, voice).substring(0, 8)}...`);
+
+        await playAudio(audioBuffer);
+      }
     } catch (error) {
       console.error("Failed to generate/play speech:", error);
     }
@@ -541,6 +566,8 @@ const server = serve({
         ? { name: 'Google Cloud TTS', configured: !!GOOGLE_API_KEY, voice: GOOGLE_TTS_VOICE }
         : { name: 'ElevenLabs', configured: !!ELEVENLABS_API_KEY, voice: DEFAULT_ELEVENLABS_VOICE };
 
+      const cacheStats = getCacheStats();
+
       return new Response(
         JSON.stringify({
           status: "healthy",
@@ -553,6 +580,13 @@ const server = serve({
             active: TTS_PROVIDER,
             google: { configured: !!GOOGLE_API_KEY, voice: GOOGLE_TTS_VOICE },
             elevenlabs: { configured: !!ELEVENLABS_API_KEY, voice: DEFAULT_ELEVENLABS_VOICE }
+          },
+          cache: {
+            entries: cacheStats.entryCount,
+            size_mb: cacheStats.totalSizeMB,
+            max_size_mb: cacheStats.maxSizeMB,
+            hit_rate: (cacheStats.hitRate * 100).toFixed(1) + '%',
+            directory: CACHE_DIR,
           }
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
@@ -608,6 +642,14 @@ if (TTS_PROVIDER === 'google') {
   console.log(`⚡ Latency optimization: optimize_streaming_latency=3 enabled`);
 }
 console.log(`💡 Switch providers: TTS_PROVIDER=google or TTS_PROVIDER=elevenlabs in .env`);
+
+// Cache maintenance on startup
+const cacheStats = getCacheStats();
+console.log(`💾 Cache: ${cacheStats.entryCount} entries (${cacheStats.totalSizeMB}MB) in ${CACHE_DIR}`);
+const expiredCleared = clearExpired();
+if (expiredCleared > 0) {
+  console.log(`🧹 Cleared ${expiredCleared} expired cache entries`);
+}
 
 // Warm up connection on startup (non-blocking)
 warmupConnection();
