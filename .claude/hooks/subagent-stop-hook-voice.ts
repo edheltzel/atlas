@@ -9,20 +9,21 @@ import { enhanceProsody, cleanForSpeech, getVoiceId } from './lib/prosody-enhanc
 
 // Map technical agent types to friendly spoken names
 const AGENT_DISPLAY_NAMES: Record<string, string> = {
+  // Claude Code built-in agents
   'explore': 'Scout',
   'plan': 'Strategist',
   'general-purpose': 'Atlas',
   'claude-code-guide': 'Mentor',
   'default': 'Agent Zero',
-  // Custom agents (already have good names, just capitalize)
-  'intern': 'Intern',
-  'engineer': 'Engineer',
-  'architect': 'Architect',
-  'researcher': 'Researcher',
+  // Custom agents with codenames
+  'intern': 'Rookie',
+  'engineer': 'Tesla',
+  'architect': 'Keystone',
+  'researcher': 'Einstein',
   'designer': 'Designer',
-  'artist': 'Artist',
-  'pentester': 'Pentester',
-  'writer': 'Writer',
+  'artist': 'Picasso',
+  'pentester': 'Sphinx',
+  'writer': 'Graphite',
 };
 
 /**
