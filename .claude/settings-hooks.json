@@ -5,6 +5,12 @@
     "The hooks array should be added/merged under the 'hooks' key",
     "Adjust paths based on your $PAI_DIR location"
   ],
+  "_performance_notes": [
+    "Phase 5 finding: Bun's interpreted execution is already ~25ms",
+    "Compiled binaries provide no significant improvement",
+    "Recommend: Keep using interpreted TypeScript for easier development",
+    "Build script available at $PAI_DIR/hooks/build.sh if binaries needed"
+  ],
   "hooks": [
     {
       "event": "Stop",
@@ -17,6 +23,19 @@
       "description": "Subagent voice notification with personality-specific delivery"
     }
   ],
+  "_compiled_hooks_alternative": {
+    "_note": "Optional: Use compiled binaries (run ./hooks/build.sh first)",
+    "hooks": [
+      {
+        "event": "Stop",
+        "command": "$PAI_DIR/hooks/bin/stop-hook-voice"
+      },
+      {
+        "event": "SubagentStop",
+        "command": "$PAI_DIR/hooks/bin/subagent-stop-hook-voice"
+      }
+    ]
+  },
   "_example_settings_json": {
     "hooks": [
       {
