@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+bun.lockb
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+
+# Build artifacts
+dist/
