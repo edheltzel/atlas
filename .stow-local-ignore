@@ -5,10 +5,15 @@
 
 # Comments and blank lines are allowed
 
-.DS_Store
-.claude/README.md
-.claude/.env.example
-.config/opencode/README.md
-.config/opencode/node_modules
-.config/opencode/bun.lock
-.config/opencode/package.json
+README\.md
+install\.sh
+\.DS_Store
+\.git
+\.gitignore
+\.claude/README\.md
+\.claude/\.env\.example
+\.config/opencode/README\.md
+\.config/opencode/node_modules
+\.config/opencode/bun\.lock
+\.config/opencode/package\.json
+
