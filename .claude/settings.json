@@ -5,6 +5,10 @@
     "PAI_SOURCE_APP": "Atlas",
     "TIME_ZONE": "America/New_York"
   },
+  "statusLine": {
+    "type": "command",
+    "command": "/Users/ed/.dotfiles/atlas/.claude/statusline.sh"
+  },
   "hooks": {
     "PostToolUse": [
       {
