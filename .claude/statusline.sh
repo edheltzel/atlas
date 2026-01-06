@@ -48,8 +48,19 @@ if [ "$CURRENT_USAGE" != "null" ] && [ "$CONTEXT_SIZE" -gt 0 ]; then
     CTX_FG="$CONTEXT_OK_FG"
   fi
 
+  # Mini progress bar (10 chars)
+  BAR_WIDTH=10
+  FILLED=$((PERCENT_USED * BAR_WIDTH / 100))
+  [ "$FILLED" -lt 1 ] && FILLED=1
+  EMPTY=$((BAR_WIDTH - FILLED))
+
+  BAR_FILLED=""
+  BAR_EMPTY=""
+  for ((j=0; j<FILLED; j++)); do BAR_FILLED+="━"; done
+  for ((j=0; j<EMPTY; j++)); do BAR_EMPTY+="╌"; done
+
   OUTPUT+=" ${SEP_FG}${SEP}${COLOR_RESET} "
-  OUTPUT+="${CTX_FG}${ICON_CONTEXT} ${PERCENT_USED}%${COLOR_RESET}"
+  OUTPUT+="${CTX_FG}${ICON_CONTEXT} ${BAR_FILLED}${SEP_FG}${BAR_EMPTY}${CTX_FG} ${PERCENT_USED}%${COLOR_RESET}"
 
   # --- Cache ---
   CACHE_TOTAL=$((CACHE_READ + CACHE_CREATE))
