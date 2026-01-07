@@ -6,6 +6,8 @@
 # Comments and blank lines are allowed
 
 README\.md
+CLAUDE\.md
+AGENTS\.md
 install\.sh
 \.DS_Store
 \.git

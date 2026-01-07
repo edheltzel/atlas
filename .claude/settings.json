@@ -5,9 +5,8 @@
     "PAI_SOURCE_APP": "Atlas",
     "TIME_ZONE": "America/New_York"
   },
-  "statusLine": {
-    "type": "command",
-    "command": "/Users/ed/.dotfiles/atlas/.claude/statusline.sh"
+  "permissions": {
+    "defaultMode": "plan"
   },
   "hooks": {
     "PostToolUse": [
@@ -129,6 +128,10 @@
         ]
       }
     ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "/Users/ed/.dotfiles/atlas/.claude/statusline.sh"
   },
   "enabledPlugins": {
     "commit-commands@claude-code-plugins": true,
