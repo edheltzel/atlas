@@ -48,30 +48,64 @@ function extractCompletion(text: string, agentType: string = 'pai'): string | nu
   return null; // No COMPLETED pattern found - stay silent
 }
 
+/**
+ * Extract awaiting message for when direction is needed
+ */
+function extractAwaiting(text: string): string | null {
+  // Remove system-reminder tags using shared utility
+  text = stripSystemReminders(text);
+
+  const patterns = [
+    /🔔\s*\*{0,2}AWAITING:?\*{0,2}\s*(.+?)(?:\n|$)/i,
+    /\*{0,2}AWAITING:?\*{0,2}\s*(.+?)(?:\n|$)/i
+  ];
+
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match && match[1]) {
+      let awaiting = match[1].trim();
+      awaiting = cleanForSpeech(awaiting);
+      return awaiting;
+    }
+  }
+
+  return null; // No AWAITING pattern found - stay silent
+}
+
 async function main() {
   // Read and parse hook input using shared utilities
   const input = await readStdinWithTimeout(100);
   const hookInput = parseHookInput(input);
 
-  // Extract completion from transcript
+  // Extract completion or awaiting from transcript
   const agentType = 'pai'; // Main agent is your PAI
   let completion: string | null = null;
+  let awaiting: string | null = null;
 
   if (hookInput?.transcript_path) {
     const lastMessage = getLastAssistantMessage(hookInput.transcript_path);
     if (lastMessage) {
+      // Check for COMPLETED first, then AWAITING
       completion = extractCompletion(lastMessage, agentType);
+      if (!completion) {
+        awaiting = extractAwaiting(lastMessage);
+      }
     }
   }
 
-  // Only speak when there's an explicit COMPLETED pattern
+  // Only speak when there's an explicit pattern
   // Silent otherwise to avoid overlap with subagent announcements
-  if (!completion) {
+  if (!completion && !awaiting) {
     process.exit(0);
   }
 
-  // Task completed - announce it
-  const spokenMessage = `The task is completed, Ed. ${completion}`;
+  // Build spoken message based on pattern type
+  let spokenMessage: string;
+  if (completion) {
+    spokenMessage = `The task is completed, Ed. ${completion}`;
+  } else {
+    spokenMessage = `${awaiting}, need your direction, Ed`;
+  }
 
   // Get voice ID for this agent
   const voiceId = getVoiceId(agentType);

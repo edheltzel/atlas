@@ -61,6 +61,31 @@ Customize this format in SKILL.md to match your preferences.
 
 ---
 
+## Voice Feedback Patterns
+
+Include these patterns at the END of responses to trigger voice feedback:
+
+### COMPLETED (Task finished)
+```
+🎯 COMPLETED: {brief summary}
+```
+Voice says: "The task is completed, Ed. {summary}"
+
+**Use for:** Command succeeded, file edit done, build/test passed, any actionable task finished.
+
+### AWAITING (Need direction)
+```
+🔔 AWAITING: {what you need}
+```
+Voice says: "{what you need}, need your direction, Ed"
+
+**Use for:** Multiple options to choose from, need approval, clarification needed, ready but want confirmation.
+
+### No Pattern (Silent)
+Don't include patterns for informational responses, exploration, or when continuing work.
+
+---
+
 ## Quick Reference
 
 **Full documentation available in context files:**

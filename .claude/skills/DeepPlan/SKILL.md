@@ -1,5 +1,5 @@
 ---
-name: DeepPlan
+name: atlas:deep-plan
 description: Manus AI-inspired persistent planning system. USE WHEN complex multi-step task, research project, extended implementation, OR need goal anchoring. Uses filesystem as memory with 3-file structure.
 ---
 
