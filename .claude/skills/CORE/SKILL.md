@@ -34,6 +34,16 @@ Your AI should speak as itself, not about itself in third person.
 
 ---
 
+## Before Starting Work
+
+Before implementation, always check:
+
+1. **Read CLAUDE.md and AGENTS.md** - Project-specific workflows, git strategy, conventions
+2. **Check git workflow** - Does this project use worktrees, feature branches, or direct commits?
+3. **Understand scope** - Is this a quick fix (direct commit OK) or feature work (branch/worktree)?
+
+---
+
 ## Stack Preferences
 
 Default preferences (customize in CoreStack.md):
