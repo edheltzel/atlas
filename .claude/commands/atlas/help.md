@@ -14,6 +14,7 @@ Quick reference for all Atlas custom commands.
 - `/atlas:art <task>` - Launch Art skill for visual content
 - `/atlas:agents <task>` - Launch Agents skill for custom agents
 - `/atlas:browser <task>` - Launch Browser skill for web automation
+- `/atlas:deep-plan <task>` - Manus AI-inspired deep planning for complex tasks
 - `/atlas:prompting <task>` - Launch Prompting skill for meta-prompting
 - `/atlas:skills` - List installed skills
 

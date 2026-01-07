@@ -21,12 +21,13 @@ Commands will be symlinked to `~/.claude/commands/atlas/` and available as `/atl
 | `/atlas:voice <name>` | Switch voice personality |
 | `/atlas:voices` | List all available voice personalities |
 
-### Skills (5)
+### Skills (6)
 | Command | Description |
 |---------|-------------|
 | `/atlas:art <task>` | Launch Art skill for visual content generation |
 | `/atlas:agents <task>` | Launch Agents skill for custom agent composition |
 | `/atlas:browser <task>` | Launch Browser skill for web automation |
+| `/atlas:deep-plan <task>` | Manus AI-inspired deep planning for complex tasks |
 | `/atlas:prompting <task>` | Launch Prompting skill for meta-prompting |
 | `/atlas:skills` | List all installed skills |
 
@@ -70,6 +71,7 @@ commands/
     ├── agents.md        → /atlas:agents
     ├── art.md           → /atlas:art
     ├── browser.md       → /atlas:browser
+    ├── deep-plan.md     → /atlas:deep-plan
     ├── ...
     └── voices.md        → /atlas:voices
 ```

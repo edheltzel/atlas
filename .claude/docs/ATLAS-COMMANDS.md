@@ -15,7 +15,7 @@
 - Pack-based modularity
 - Stack preference enforcement
 
-The command system exposes 17 slash commands under the `atlas:` namespace.
+The command system exposes 18 slash commands under the `atlas:` namespace.
 
 ## Architecture
 
@@ -112,6 +112,47 @@ Skills are specialized capabilities that can be invoked via the Skill tool or sl
 ```
 /atlas:browser Take a screenshot of https://example.com
 /atlas:browser Verify the login form exists on https://myapp.com
+```
+
+#### `/atlas:deep-plan <task>`
+**Purpose:** Manus AI-inspired persistent planning for complex multi-step tasks
+**Domain:** Complex implementations, research projects, extended work requiring goal anchoring
+**Delegation:** Uses `Skill` tool to invoke "DeepPlan" skill
+
+**Core Features:**
+1. **3-File System:** Creates `task_plan.md`, `notes.md`, and deliverable files
+2. **Existing Plan Discovery:** Scans `~/.claude/plans/` for related project plans
+3. **TodoWrite Integration:** Files persist, todos provide session visibility
+4. **Goal Anchoring:** Re-reads plan before major decisions to prevent drift
+
+**Workflow:**
+1. Discover existing plans for current project
+2. Create structured planning files in current directory
+3. Sync phases with TodoWrite for visibility
+4. Update progress as work proceeds
+5. Review goals before major decisions
+
+**Example:**
+```
+/atlas:deep-plan Build authentication system with OAuth
+/atlas:deep-plan Continue the auth implementation
+```
+
+**Plan File Structure:**
+```markdown
+---
+project: project-name
+directory: /path/to/project
+created: 2026-01-07
+status: in_progress
+---
+
+# Task: [Description]
+
+## Phases
+### Phase 1: Research & Discovery
+- [ ] Step 1
+- [ ] Step 2
 ```
 
 #### `/atlas:skills`
@@ -405,6 +446,7 @@ Most commands output structured text with:
 Commands can invoke skills via the `Skill` tool:
 - `/atlas:art` → Skill("Art")
 - `/atlas:agents` → Skill("Agents")
+- `/atlas:deep-plan` → Skill("DeepPlan")
 - `/atlas:prompting` → Skill("Prompting")
 
 ### With Hooks System
@@ -524,8 +566,8 @@ tail ~/.claude/observability/apps/server/logs/*.log
 
 ## Version Information
 
-- **Command System Version:** 1.0.1
-- **Total Commands:** 17
+- **Command System Version:** 1.0.2
+- **Total Commands:** 18
 - **Namespace:** `atlas:`
 - **Runtime:** bun
 - **Platform:** Claude Code
@@ -592,6 +634,6 @@ bash -x <(sed -n '/^!/p' ~/.claude/commands/atlas:<name>.md | sed 's/^!//')
 
 ---
 
-**Last Updated:** 2026-01-03
+**Last Updated:** 2026-01-07
 **Maintained By:** Ed (Atlas user)
 **For AI Agents:** This document is authoritative for Atlas command system integration
