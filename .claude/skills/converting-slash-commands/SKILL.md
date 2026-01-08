@@ -1,6 +1,6 @@
 ---
-name: atlas:port-slash-cmds
-description: Convert Claude Code slash commands to OpenCode commands format. Use when migrating from Claude Code to OpenCode or when you have existing slash command definitions to port.
+name: convertCommands
+description: Atlas skill for converting Claude Code slash commands to OpenCode commands format. USE WHEN migrating from Claude Code to OpenCode or when you have existing slash command definitions to port.
 ---
 
 # Converting Claude Code Slash Commands to OpenCode Commands

@@ -1,6 +1,6 @@
 ---
-name: atlas:port-subagents
-description: Convert Claude Code Subagents to OpenCode Agents format. Use when migrating from Claude Code to OpenCode or when you have existing subagent definitions to port.
+name: convertSubagents
+description: Atlas skill for converting Claude Code Subagents to OpenCode Agents format. USE WHEN migrating from Claude Code to OpenCode or when you have existing subagent definitions to port.
 ---
 
 # Converting Claude Code Subagents to OpenCode Agents

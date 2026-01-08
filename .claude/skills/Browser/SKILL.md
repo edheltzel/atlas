@@ -1,6 +1,6 @@
 ---
-name: Browser
-description: Code-first browser automation and web verification. USE WHEN browser, screenshot, navigate, web testing, verify UI, VERIFY phase. Replaces Playwright MCP with 99% token savings.
+name: browser
+description: Atlas skill for code-first browser automation and web verification. USE WHEN browser, screenshot, navigate, web testing, verify UI, VERIFY phase. Replaces Playwright MCP with 99% token savings.
 ---
 
 # Browser - Code-First Browser Automation

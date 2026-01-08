@@ -1,6 +1,6 @@
 ---
-name: Art
-description: Visual content generation with Excalidraw hand-drawn aesthetic. USE WHEN user wants diagrams, visualizations, comics, or editorial illustrations.
+name: art
+description: Atlas skill for visual content generation with Excalidraw hand-drawn aesthetic. USE WHEN user wants diagrams, visualizations, comics, or editorial illustrations.
 ---
 
 # Art Skill

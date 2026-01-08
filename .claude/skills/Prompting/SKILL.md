@@ -1,6 +1,6 @@
 ---
-name: Prompting
-description: Meta-prompting system for dynamic prompt generation using templates, standards, and patterns. USE WHEN meta-prompting, template generation, prompt optimization, or programmatic prompt composition.
+name: prompting
+description: Atlas skill for meta-prompting and dynamic prompt generation using templates, standards, and patterns. USE WHEN meta-prompting, template generation, prompt optimization, or programmatic prompt composition.
 ---
 
 # Prompting - Meta-Prompting & Template System

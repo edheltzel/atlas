@@ -1,6 +1,6 @@
 ---
 name: CORE
-description: Personal AI Infrastructure core. AUTO-LOADS at session start. USE WHEN any session begins OR user asks about identity, response format, contacts, stack preferences.
+description: Atlas skill for Personal AI Infrastructure core. AUTO-LOADS at session start. USE WHEN any session begins OR user asks about identity, response format, contacts, stack preferences.
 ---
 
 # CORE - Personal AI Infrastructure

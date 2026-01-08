@@ -1,6 +1,6 @@
 ---
-name: creating-claude-skills
-description: Design and create Claude Skills for this Rails event-sourced codebase. Use when you need to capture repeatable workflows, complex multi-step processes, or domain-specific patterns that Claude should handle consistently.
+name: createProjectSkills
+description: Atlas skill for designing and creating Claude Skills for project-specific codebases. USE WHEN you need to capture repeatable workflows, complex multi-step processes, or domain-specific patterns that Claude should handle consistently.
 ---
 
 # Creating Claude Skills
@@ -10,14 +10,17 @@ This skill helps you design and create effective Claude Skills for the Kompass R
 ## Quick Reference
 
 **Skill locations:**
+
 - **Personal:** `~/.claude/skills/<skill-name>/SKILL.md` (private to you)
 - **Project:** `.claude/skills/<skill-name>/SKILL.md` (shared with team)
 
 **When to use each:**
+
 - Use **Personal** for your own workflow, cross-project utilities
 - Use **Project** for team-shared skills, project-specific patterns
 
 **Frontmatter format:**
+
 ```yaml
 ---
 name: skill-name-in-kebab-case
@@ -26,6 +29,7 @@ description: What it does and when to use it (max 1024 chars)
 ```
 
 **Requirements:**
+
 - Name: Gerund form (verb + -ing), lowercase, letters/numbers/hyphens only, max 64 chars
 - Description: Third person, specific about WHAT and WHEN, no XML tags
 - SKILL.md: Keep under 500 lines (use reference files for additional content)
@@ -33,6 +37,7 @@ description: What it does and when to use it (max 1024 chars)
 ## When to Create a Skill vs. Improving CLAUDE.md
 
 **Create a skill when:**
+
 - ✅ Pattern requires 3+ coordinated steps that must happen in specific order
 - ✅ Complex workflow with multiple decision points
 - ✅ Task has validation loops (do → check → fix → repeat)
@@ -41,6 +46,7 @@ description: What it does and when to use it (max 1024 chars)
 - ✅ Risk of missing critical steps in a workflow
 
 **Update CLAUDE.md when:**
+
 - ❌ Simple convention or preference (Ruby keyword shorthand, bin/rails usage)
 - ❌ General architectural knowledge (event sourcing overview)
 - ❌ Single-step operation
@@ -61,6 +67,7 @@ cat TEMPLATES.md  # See common patterns worth capturing
 ```
 
 **Strong candidates in this codebase:**
+
 - Event-sourced feature generation (Command → Decider → Event → Reactor → ReadModel)
 - Temporal query implementation (valid_at, created_at, as_of patterns)
 - Read model reactor creation
@@ -70,6 +77,7 @@ cat TEMPLATES.md  # See common patterns worth capturing
 ### 2. Validate the Need
 
 Ask:
+
 - Does this require multiple steps in specific order? (If no, probably not a skill)
 - Would missing a step cause problems? (If no, probably not a skill)
 - Does Claude get this wrong when you just explain it? (If no, probably not a skill)
@@ -84,6 +92,7 @@ If you answered "yes" to most questions, proceed to create the skill.
 **Use the creation script with location flags:**
 
 For personal skills:
+
 ```bash
 ~/.claude/skills/creating-claude-skills/scripts/create_skill.sh \
   skill-name \
@@ -92,6 +101,7 @@ For personal skills:
 ```
 
 For project skills:
+
 ```bash
 ./.claude/skills/creating-claude-skills/scripts/create_skill.sh \
   skill-name \
@@ -100,19 +110,23 @@ For project skills:
 ```
 
 **Auto-detection:** If you omit the flag, the script auto-detects:
+
 - In git repository → creates project skill
 - Outside git repository → creates personal skill
 
 **Choose based on:**
+
 - Use `--personal` for your own workflow, cross-project utilities
 - Use `--project` for team-shared skills, project-specific patterns
 
 **Plan freedom level:**
+
 - **High freedom (text guidance):** Flexible tasks where approaches vary (designing features)
 - **Medium freedom (pseudocode):** Preferred patterns but some flexibility (creating controllers)
 - **Low freedom (scripts):** Fragile operations requiring consistency (database operations)
 
 **Plan content distribution:**
+
 - SKILL.md: Core workflow, essential examples (< 500 lines)
 - Reference files: Deep dives, extensive examples, optional details
 - Scripts: Deterministic operations, validation tools
@@ -127,10 +141,12 @@ description: Verb phrase stating what it does. Second sentence explaining when t
 ```
 
 **Good examples:**
+
 - `generating-event-sourced-features: Create complete event-sourced features with Commands, Deciders, Events, Reactors, and ReadModels. Use when building new domain functionality.`
 - `writing-focused-specs: Write behavior-focused RSpec tests that validate business logic without testing implementation details. Use when creating tests for Deciders, Reactors, or integration flows.`
 
 **Bad examples:**
+
 - `helper: Helps with things` (too vague)
 - `eventing: For events` (not descriptive)
 - `rails-patterns: Rails conventions` (too broad, belongs in CLAUDE.md)
@@ -173,6 +189,7 @@ Brief overview (1-2 sentences).
 ## References
 
 For detailed information, see:
+
 - `cat REFERENCE_FILE.md` - Description of what's in it
 ```
 
@@ -198,22 +215,28 @@ end
 Keep SKILL.md focused. Move to reference files:
 
 **SKILL.md (< 500 lines):**
+
 - Core workflow steps
 - Essential examples
 - Quick reference
 
 **Reference files (load on demand):**
-```markdown
+
+````markdown
 For detailed architecture patterns:
+
 ```bash
 cat ARCHITECTURE.md
 ```
+````
 
 For complete examples:
+
 ```bash
 cat EXAMPLES.md
 ```
-```
+
+````
 
 ### Step 6: Create Utility Scripts
 
@@ -222,9 +245,10 @@ cat EXAMPLES.md
 #!/bin/bash
 # scripts/validate_skill.sh
 # Check SKILL.md format, length, frontmatter
-```
+````
 
 **Helper scripts:**
+
 ```bash
 #!/bin/bash
 # scripts/create_structure.sh
@@ -232,6 +256,7 @@ cat EXAMPLES.md
 ```
 
 **Key principles:**
+
 - Scripts solve problems, don't punt to Claude
 - Document why constants have specific values
 - Handle error conditions explicitly
@@ -242,16 +267,19 @@ cat EXAMPLES.md
 Run validation (path depends on where skill is located):
 
 **For personal skills:**
+
 ```bash
 ~/.claude/skills/creating-claude-skills/scripts/validate_skill.sh <skill-dir>
 ```
 
 **For project skills:**
+
 ```bash
 ./.claude/skills/creating-claude-skills/scripts/validate_skill.sh <skill-dir>
 ```
 
 Check:
+
 - [ ] Frontmatter valid (name, description present and correct format)
 - [ ] SKILL.md under 500 lines
 - [ ] Description explains WHAT and WHEN
@@ -266,6 +294,7 @@ Check:
 ### Event Sourcing Patterns
 
 Skills dealing with event sourcing should reference the flow:
+
 1. Command (user intention)
 2. Decider (validation, event production)
 3. Event (immutable fact)
@@ -275,6 +304,7 @@ Skills dealing with event sourcing should reference the flow:
 ### Ruby Conventions
 
 Always demonstrate:
+
 - Keyword shorthand: `create_event(duty_id:, name:)`
 - `bin/rails` commands: `bin/rails generate migration`
 - Dry-rb patterns: `Success(event)`, `Failure(errors)`
@@ -282,6 +312,7 @@ Always demonstrate:
 ### Testing Philosophy
 
 Skills about testing should emphasize:
+
 - Test BEHAVIOR not IMPLEMENTATION
 - Focus on events created and data correctness
 - Test validation failures with proper errors
@@ -291,6 +322,7 @@ Skills about testing should emphasize:
 ### Technology Stack
 
 Reference when relevant:
+
 - Tailwind CSS for styling
 - Stimulus for JavaScript interactivity
 - Turbo for SPA-like navigation
@@ -300,6 +332,7 @@ Reference when relevant:
 ## Templates
 
 See common skill templates:
+
 ```bash
 cat TEMPLATES.md
 ```
@@ -307,6 +340,7 @@ cat TEMPLATES.md
 ## Examples
 
 See working examples of skills for this codebase:
+
 ```bash
 cat EXAMPLES.md
 ```
@@ -333,6 +367,7 @@ Before finalizing any skill:
 ## Anti-Patterns
 
 **Avoid:**
+
 - ❌ Skills that just restate CLAUDE.md content
 - ❌ Skills for single-step operations
 - ❌ Vague or overly generic descriptions

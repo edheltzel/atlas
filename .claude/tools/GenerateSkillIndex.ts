@@ -7,7 +7,7 @@
  * Usage: bun run $PAI_DIR/Tools/GenerateSkillIndex.ts
  */
 
-import { readdir, readFile, writeFile } from 'fs/promises';
+import { readdir, readFile, writeFile, stat } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 
@@ -22,8 +22,23 @@ async function findSkillFiles(dir: string): Promise<string[]> {
   const entries = await readdir(dir, { withFileTypes: true });
 
   for (const entry of entries) {
-    if (entry.isDirectory() && !entry.name.startsWith('.')) {
-      const skillMdPath = join(dir, entry.name, 'SKILL.md');
+    if (entry.name.startsWith('.')) continue;
+
+    // Check if entry is a directory or symlink to a directory
+    const entryPath = join(dir, entry.name);
+    let isDir = entry.isDirectory();
+
+    if (entry.isSymbolicLink()) {
+      try {
+        const stats = await stat(entryPath); // follows symlinks
+        isDir = stats.isDirectory();
+      } catch {
+        continue; // broken symlink
+      }
+    }
+
+    if (isDir) {
+      const skillMdPath = join(entryPath, 'SKILL.md');
       if (existsSync(skillMdPath)) skillFiles.push(skillMdPath);
     }
   }

@@ -1,6 +1,6 @@
 ---
-name: Agents
-description: Dynamic agent composition and management system. USE WHEN user says create custom agents, spin up custom agents, specialized agents, OR asks for agent personalities, available traits, agent voices. Handles custom agent creation, personality assignment, voice mapping, and parallel agent orchestration.
+name: agents
+description: Atlas skill for dynamic agent composition and management. USE WHEN user says create custom agents, spin up custom agents, specialized agents, OR asks for agent personalities, available traits, agent voices. Handles custom agent creation, personality assignment, voice mapping, and parallel agent orchestration.
 ---
 
 # Agents - Custom Agent Composition System
