@@ -55,14 +55,14 @@ cd atlas
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `/atlas:help` | Show all commands |
-| `/atlas:status` | System health check |
-| `/atlas:voice <name>` | Switch voice personality |
-| `/atlas:art <task>` | Visual content generation |
-| `/atlas:agents <task>` | Custom agent composition |
-| `/atlas:browser <task>` | Web automation |
+| Command                 | Description               |
+| ----------------------- | ------------------------- |
+| `/atlas:help`           | Show all commands         |
+| `/atlas:status`         | System health check       |
+| `/atlas:voice <name>`   | Switch voice personality  |
+| `/atlas:art <task>`     | Visual content generation |
+| `/atlas:agents <task>`  | Custom agent composition  |
+| `/atlas:browser <task>` | Web automation            |
 
 See `/.claude/docs/ATLAS-COMMANDS.md` for full reference.
 
@@ -73,6 +73,9 @@ See `/.claude/docs/ATLAS-COMMANDS.md` for full reference.
 - bun (NEVER npm/yarn/pnpm)
 - Markdown over HTML
 
-## License
+## References, Credits and Inspiration
 
-Private - not yet open source.
+This project is heavily inspired by:
+
+- [PAI](https://github.com/danielmiessler/Personal_AI_Infrastructure)
+- [Always On AI Assistant](https://github.com/disler/always-on-ai-assistant)
