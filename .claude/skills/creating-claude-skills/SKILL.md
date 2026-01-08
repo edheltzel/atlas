@@ -1,6 +1,8 @@
 ---
 name: createProjectSkills
 description: Atlas skill for designing and creating Claude Skills for project-specific codebases. USE WHEN you need to capture repeatable workflows, complex multi-step processes, or domain-specific patterns that Claude should handle consistently.
+context: fork
+user-invocable: false
 ---
 
 # Creating Claude Skills
