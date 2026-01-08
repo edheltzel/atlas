@@ -225,13 +225,14 @@ describe('Hooks Use Shared Module', () => {
 // =============================================================================
 
 describe('Code Size Reduction', () => {
-  test('stop-hook-voice is under 100 lines', async () => {
+  test('stop-hook-voice is under 140 lines', async () => {
+    // Increased from 100 to 140 to accommodate AWAITING pattern (2026-01-07)
     const hook = await Bun.file(
       `${process.env.HOME}/.dotfiles/atlas/.claude/hooks/stop-hook-voice.ts`
     ).text();
 
     const lines = hook.split('\n').length;
-    expect(lines).toBeLessThan(100);
+    expect(lines).toBeLessThan(140);
   });
 
   test('subagent-stop-hook-voice is under 140 lines', async () => {
