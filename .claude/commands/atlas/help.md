@@ -36,6 +36,10 @@ Quick reference for all Atlas custom commands.
 - `/atlas:pack install <name>` - Install a PAI pack
 - `/atlas:docs [doc]` - Access PAI documentation
 
+## Documentation
+- `/atlas:sync-docs [scope]` - Sync project documentation (CLAUDE.md, AGENTS.md, README.md)
+  - Scopes: `all` (default), `claude`, `agents`, `readme`, `memory`
+
 ## Quick Actions
 - `/atlas:help` - Show this help (you are here!)
 
