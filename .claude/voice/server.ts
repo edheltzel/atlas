@@ -18,47 +18,67 @@ import {
   generateCacheKey,
   CACHE_DIR,
 } from "./lib/cache";
+import {
+  loadRuntimeConfig,
+  loadVoicePersonalities,
+  getPaiDir,
+  getConfigPath,
+  type AtlasRuntimeConfig,
+} from "../lib/config-loader";
 
-// Load .env from PAI directory (single source of truth for all API keys)
-const paiDir = process.env.PAI_DIR || join(homedir(), '.config', 'pai');
-const envPath = join(paiDir, '.env');
-if (existsSync(envPath)) {
-  const envContent = await Bun.file(envPath).text();
-  envContent.split('\n').forEach(line => {
-    const [key, value] = line.split('=');
-    if (key && value && !key.startsWith('#')) {
-      process.env[key.trim()] = value.trim();
-    }
-  });
+// =============================================================================
+// Configuration Loading
+// =============================================================================
+
+// Load configuration from atlas.yaml and secrets from .env
+let runtimeConfig: AtlasRuntimeConfig;
+try {
+  runtimeConfig = await loadRuntimeConfig();
+  console.log(`✅ Config loaded from ${getConfigPath()}`);
+} catch (error) {
+  console.error('❌ Failed to load config, using defaults');
+  runtimeConfig = {
+    config: {
+      identity: { name: 'Atlas', timezone: 'America/Los_Angeles' },
+      voice: {
+        provider: 'elevenlabs',
+        default_personality: 'pai',
+        port: 8888,
+        default_volume: 0.8,
+        voices: { default: 's3TPKV1kjDlVtZbl4Ksh' },
+      },
+      observability: { enabled: true, port: 3000 },
+      features: { voice_enabled: true, observability_enabled: true },
+    },
+    secrets: {},
+  };
 }
 
-const PORT = parseInt(process.env.PAI_VOICE_PORT || "8888");
+const { config, secrets } = runtimeConfig;
 
-// =============================================================================
-// TTS Provider Configuration
-// =============================================================================
-// Options: "google" | "elevenlabs" (default: elevenlabs for backward compatibility)
-const TTS_PROVIDER = (process.env.TTS_PROVIDER || 'elevenlabs').toLowerCase();
+// Extract configuration values
+const PORT = config.voice.port;
+const TTS_PROVIDER = config.voice.provider;
+const DEFAULT_VOLUME = config.voice.default_volume;
 
-// ElevenLabs Configuration
-const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
-const DEFAULT_ELEVENLABS_VOICE = process.env.ELEVENLABS_VOICE_DEFAULT || "s3TPKV1kjDlVtZbl4Ksh";
+// API Keys from secrets (.env)
+const ELEVENLABS_API_KEY = secrets.ELEVENLABS_API_KEY;
+const GOOGLE_API_KEY = secrets.GOOGLE_API_KEY;
 
-// Google Cloud TTS Configuration
-// Free tier: 4M chars/month (Standard), 1M chars/month (WaveNet/Neural2)
-// This is ~800x more than ElevenLabs' free tier
-const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
-const GOOGLE_TTS_VOICE = process.env.GOOGLE_TTS_VOICE || "en-US-Neural2-J";
+// Voice IDs from config (atlas.yaml)
+const DEFAULT_ELEVENLABS_VOICE = config.voice.voices.default || "s3TPKV1kjDlVtZbl4Ksh";
+const GOOGLE_TTS_VOICE = config.voice.google?.voice || "en-US-Neural2-J";
 
 // Validate provider configuration
+const paiDir = getPaiDir();
 if (TTS_PROVIDER === 'elevenlabs' && !ELEVENLABS_API_KEY) {
-  console.error(`⚠️  ELEVENLABS_API_KEY not found in ${envPath}`);
+  console.error(`⚠️  ELEVENLABS_API_KEY not found in ${paiDir}/.env`);
   console.error('Add: ELEVENLABS_API_KEY=your_key_here to $PAI_DIR/.env');
-  console.error('Or switch to Google TTS: TTS_PROVIDER=google');
+  console.error('Or switch to Google TTS: voice.provider: google in atlas.yaml');
 }
 
 if (TTS_PROVIDER === 'google' && !GOOGLE_API_KEY) {
-  console.error(`⚠️  GOOGLE_API_KEY not found in ${envPath}`);
+  console.error(`⚠️  GOOGLE_API_KEY not found in ${paiDir}/.env`);
   console.error('Add: GOOGLE_API_KEY=your_key_here to $PAI_DIR/.env');
   console.error('Note: Enable Cloud Text-to-Speech API in Google Cloud Console');
 }
@@ -97,15 +117,27 @@ const EMOTIONAL_PRESETS: Record<string, { stability: number; similarity_boost: n
   'urgent': { stability: 0.3, similarity_boost: 0.9 },
 };
 
-// Load voice configuration
+// Load voice personalities (settings like stability, similarity_boost)
 let voicesConfig: VoicesConfig | null = null;
 try {
-  const voicesPath = join(paiDir, 'config', 'voice-personalities.json');
-  if (existsSync(voicesPath)) {
-    const voicesContent = readFileSync(voicesPath, 'utf-8');
-    voicesConfig = JSON.parse(voicesContent);
-    console.log('✅ Loaded voice personalities from config');
-  }
+  const personalities = await loadVoicePersonalities();
+  voicesConfig = {
+    default_volume: personalities.default_volume,
+    voices: Object.fromEntries(
+      Object.entries(personalities.voices).map(([key, p]) => [
+        key,
+        {
+          // Get voice_id from config.voice.voices, not from personalities file
+          voice_id: config.voice.voices[key] || config.voice.voices.default || DEFAULT_VOICE_ID,
+          voice_name: p.voice_name,
+          stability: p.stability,
+          similarity_boost: p.similarity_boost,
+          description: p.description,
+        },
+      ])
+    ),
+  };
+  console.log(`✅ Loaded ${Object.keys(voicesConfig.voices).length} voice personalities`);
 } catch (error) {
   console.warn('⚠️  Failed to load voice personalities, using defaults');
 }
@@ -315,11 +347,8 @@ async function generateSpeech(
 
 // Get volume setting from config (defaults to 0.8 = 80%)
 function getVolumeSetting(): number {
-  if (voicesConfig && typeof voicesConfig.default_volume === 'number') {
-    const vol = voicesConfig.default_volume;
-    if (vol >= 0 && vol <= 1) return vol;
-  }
-  return 0.8;
+  // Use config.voice.default_volume (from atlas.yaml)
+  return DEFAULT_VOLUME;
 }
 
 // =============================================================================
@@ -573,14 +602,17 @@ const server = serve({
           status: "healthy",
           port: PORT,
           platform: process.platform,
+          config_source: getConfigPath(),
           tts_provider: providerInfo.name,
           default_voice: providerInfo.voice,
+          default_volume: DEFAULT_VOLUME,
           api_key_configured: providerInfo.configured,
           providers: {
             active: TTS_PROVIDER,
             google: { configured: !!GOOGLE_API_KEY, voice: GOOGLE_TTS_VOICE },
             elevenlabs: { configured: !!ELEVENLABS_API_KEY, voice: DEFAULT_ELEVENLABS_VOICE }
           },
+          voices_configured: Object.keys(config.voice.voices).length,
           cache: {
             entries: cacheStats.entryCount,
             size_mb: cacheStats.totalSizeMB,
@@ -630,18 +662,20 @@ async function warmupConnection(): Promise<void> {
 // Startup logs
 console.log(`🚀 Voice Server running on port ${PORT}`);
 console.log(`🖥️  Platform: ${process.platform}`);
+console.log(`📁 Config: ${getConfigPath()}`);
 console.log(`🎙️  TTS Provider: ${TTS_PROVIDER === 'google' ? 'Google Cloud TTS' : 'ElevenLabs'}`);
 console.log(`🗣️  Default voice: ${DEFAULT_VOICE_ID}`);
+console.log(`🔊 Volume: ${(DEFAULT_VOLUME * 100).toFixed(0)}%`);
 console.log(`📡 POST to http://localhost:${PORT}/notify`);
 console.log(`🔒 Security: CORS restricted to localhost, rate limiting enabled`);
 if (TTS_PROVIDER === 'google') {
-  console.log(`🔑 Google API Key: ${GOOGLE_API_KEY ? '✅ Configured' : '❌ Missing'}`);
+  console.log(`🔑 Google API Key: ${GOOGLE_API_KEY ? '✅ Configured' : '❌ Missing (add to .env)'}`);
   console.log(`💰 Free tier: 4M chars/month (Standard), 1M chars/month (Neural2)`);
 } else {
-  console.log(`🔑 ElevenLabs API Key: ${ELEVENLABS_API_KEY ? '✅ Configured' : '❌ Missing'}`);
+  console.log(`🔑 ElevenLabs API Key: ${ELEVENLABS_API_KEY ? '✅ Configured' : '❌ Missing (add to .env)'}`);
   console.log(`⚡ Latency optimization: optimize_streaming_latency=3 enabled`);
 }
-console.log(`💡 Switch providers: TTS_PROVIDER=google or TTS_PROVIDER=elevenlabs in .env`);
+console.log(`💡 Config: voice.provider in atlas.yaml | Secrets: .env`);
 
 // Cache maintenance on startup
 const cacheStats = getCacheStats();
