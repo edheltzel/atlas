@@ -49,8 +49,8 @@ export interface ProsodyConfig {
  * Agent personality configurations
  */
 const AGENT_PERSONALITIES: Record<string, AgentPersonality> = {
-  'pai': {
-    name: 'PAI',
+  'default': {
+    name: 'Default',
     rate_wpm: 235,
     stability: 0.38,
     archetype: 'professional',
@@ -278,7 +278,7 @@ export function enhanceProsody(
   let enhanced = message;
 
   const personality = AGENT_PERSONALITIES[agentType.toLowerCase()] ||
-                     AGENT_PERSONALITIES['pai'];
+                     AGENT_PERSONALITIES['default'];
 
   // 1. Context Analysis - Detect emotional context
   if (config.contextAnalysis && config.emotionalMarkers) {
@@ -368,7 +368,7 @@ function getCurrentPersonality(): string {
   try {
     if (existsSync(personalityFile)) {
       const personality = readFileSync(personalityFile, 'utf-8').trim().toLowerCase();
-      const validPersonalities = ['pai', 'default', 'intern', 'engineer', 'architect',
+      const validPersonalities = ['default', 'intern', 'engineer', 'architect',
                                    'researcher', 'designer', 'artist', 'pentester', 'writer'];
       if (validPersonalities.includes(personality)) {
         return personality;
@@ -377,7 +377,7 @@ function getCurrentPersonality(): string {
   } catch {
     // Ignore errors, fall through to default
   }
-  return 'pai'; // Default
+  return 'default';
 }
 
 /**
@@ -387,9 +387,9 @@ export function getVoiceId(agentType: string): string {
   // Load environment variables from ~/.claude/.env
   loadEnv();
 
-  // For main agent (pai), check if user has switched personality via /atlas-voice
+  // For main agent, check if user has switched personality via /atlas-voice
   let effectiveAgentType = agentType.toLowerCase();
-  if (effectiveAgentType === 'pai' || effectiveAgentType === 'default') {
+  if (effectiveAgentType === 'default') {
     effectiveAgentType = getCurrentPersonality();
   }
 

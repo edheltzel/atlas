@@ -4,24 +4,29 @@
  * AgentFactory - Dynamic Agent Composition from Traits
  *
  * Composes specialized agents on-the-fly by combining traits from Traits.yaml.
+ * Voice IDs are loaded from atlas.yaml config for centralized management.
  *
  * Usage:
  *   bun run AgentFactory.ts --task "Review this security architecture"
  *   bun run AgentFactory.ts --traits "security,skeptical,thorough"
  *   bun run AgentFactory.ts --list
  *
- * @version 1.0.0
+ * @version 1.1.0
  */
 
 import { parseArgs } from "util";
 import { readFileSync, existsSync } from "fs";
 import { parse as parseYaml } from "yaml";
 import Handlebars from "handlebars";
+import { loadRuntimeConfig } from "../../../lib/config-loader";
 
 // Paths - adjust PAI_DIR as needed
-const PAI_DIR = process.env.PAI_DIR || `${process.env.HOME}/.config/pai`;
+const PAI_DIR = process.env.PAI_DIR || `${process.env.HOME}/.claude`;
 const TRAITS_PATH = `${PAI_DIR}/skills/Agents/Data/Traits.yaml`;
 const TEMPLATE_PATH = `${PAI_DIR}/skills/Agents/Templates/DynamicAgent.hbs`;
+
+// Voice IDs from atlas.yaml config
+let configVoices: Record<string, string> = {};
 
 // Types
 interface TraitDefinition {
@@ -134,11 +139,19 @@ function resolveVoice(
   const mappings = traits.voice_mappings;
   const registry = mappings.voice_registry || {};
 
+  // Get voice ID from atlas.yaml config first, then fall back to Traits.yaml registry
   const getVoiceId = (voiceName: string, fallbackId?: string): string => {
+    // Check atlas.yaml config (voice names are lowercase there)
+    const configKey = voiceName.toLowerCase();
+    if (configVoices[configKey]) {
+      return configVoices[configKey];
+    }
+    // Fall back to Traits.yaml voice_registry
     if (registry[voiceName]?.voice_id) {
       return registry[voiceName].voice_id;
     }
-    return fallbackId || mappings.default_voice_id || "";
+    // Fall back to default
+    return fallbackId || configVoices.default || mappings.default_voice_id || "";
   };
 
   // Check explicit combination mappings
@@ -252,6 +265,14 @@ function listTraits(traits: TraitsData): void {
 }
 
 async function main() {
+  // Load voice IDs from atlas.yaml config
+  try {
+    const runtimeConfig = await loadRuntimeConfig();
+    configVoices = runtimeConfig.config.voice.voices;
+  } catch (error) {
+    console.warn("⚠️  Could not load atlas.yaml config, using Traits.yaml voice IDs");
+  }
+
   const { values } = parseArgs({
     args: Bun.argv.slice(2),
     options: {

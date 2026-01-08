@@ -44,7 +44,7 @@ The command system exposes 18 slash commands under the `atlas:` namespace.
 #### `/atlas:voice <personality>`
 **Purpose:** Switch active voice personality for TTS output
 **Parameters:**
-- `<personality>` - Required. One of: pai, intern, engineer, architect, researcher, designer, artist, pentester, writer
+- `<personality>` - Required. One of: default, intern, engineer, architect, researcher, designer, artist, pentester, writer
 
 **Example:**
 ```
@@ -65,7 +65,7 @@ The command system exposes 18 slash commands under the `atlas:` namespace.
 ```
 🎙️  Atlas Voice Personalities
 
-  pai          - Professional, expressive - Daniel's primary AI assistant
+  default      - Professional, expressive - Primary AI assistant
   intern       - Enthusiastic, chaotic energy - eager 176 IQ genius
   engineer     - Wise leader, stable - Fortune 10 principal engineer
   ...

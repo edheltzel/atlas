@@ -7,11 +7,12 @@ This file provides guidance to AI coding agents when working with this repositor
 Atlas is the **Personal AI Infrastructure (PAI)** for Claude Code and OpenCode. It provides skills, hooks, commands, voice system, and observability dashboard.
 
 **Key Components:**
-- **Skills** - Modular capabilities (CORE, Art, Agents, Browser, Prompting)
+- **Skills** - Modular capabilities (CORE, Art, Agents, Browser, Prompting, DeepPlan)
 - **Hooks** - TypeScript session lifecycle management
 - **Commands** - 18 slash commands under `/atlas:*` namespace
-- **Voice** - ElevenLabs TTS with 10 personality voices
+- **Voice** - ElevenLabs TTS with 18 voice configurations (8 hook + 10 agent)
 - **Observability** - Real-time Vue dashboard
+- **Config** - Centralized settings in `atlas.yaml` (voice IDs, provider, features)
 
 ## Git Worktrees
 
@@ -53,11 +54,14 @@ git branch -d <branch-name>  # Optional: delete branch after merge
 ```
 atlas/
 ├── .claude/
+│   ├── atlas.yaml         # Main config (voice IDs, settings)
 │   ├── commands/atlas/    # Slash commands (/atlas:*)
 │   ├── skills/            # Skill definitions
 │   ├── hooks/             # TypeScript lifecycle hooks
+│   ├── lib/               # Config loader and types
 │   ├── voice/             # ElevenLabs TTS server
 │   ├── observability/     # Vue dashboard
+│   ├── plans/             # DeepPlan persistent plans
 │   └── docs/              # Documentation
 ├── .config/opencode/      # OpenCode configuration
 ├── .stow-local-ignore     # GNU Stow ignore patterns

@@ -566,7 +566,19 @@ const server = serve({
         const title = data.title || "PAI Notification";
         const message = data.message || "Task completed, Ed";
         const voiceEnabled = data.voice_enabled !== false;
-        const voiceId = data.voice_id || data.voice_name || null;
+        // Resolve voice: direct voice_id > voice_name > personality lookup > null
+        let voiceId = data.voice_id || data.voice_name || null;
+
+        // If personality is provided, look up the voice_id from config
+        if (!voiceId && data.personality) {
+          const personality = data.personality.toLowerCase();
+          voiceId = config.voice.voices[personality] || null;
+          if (voiceId) {
+            console.log(`🎭 Resolved personality "${personality}" → ${voiceId}`);
+          } else {
+            console.warn(`⚠️  Unknown personality "${personality}", using default`);
+          }
+        }
 
         if (voiceId && typeof voiceId !== 'string') {
           throw new Error('Invalid voice_id');

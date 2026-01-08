@@ -6,8 +6,8 @@ Personal AI Infrastructure for Claude Code.
 
 Atlas is a modular infrastructure layer for Claude Code that provides:
 
-- **Voice System** - ElevenLabs TTS with 10 personality voices
-- **Skills** - Reusable capabilities (Art, Agents, Browser, Prompting, CORE)
+- **Voice System** - ElevenLabs/Google TTS with 18 configurable voices
+- **Skills** - Reusable capabilities (CORE, Art, Agents, Browser, Prompting, DeepPlan)
 - **Hooks** - Session lifecycle management and event capture
 - **Commands** - 18 slash commands under the `/atlas:` namespace
 - **Observability** - Real-time WebSocket dashboard for monitoring
@@ -17,11 +17,15 @@ Atlas is a modular infrastructure layer for Claude Code that provides:
 ```
 atlas/
 ├── .claude/              # Claude Code configuration
+│   ├── atlas.yaml        # Main config (voice IDs, provider, features)
+│   ├── .env              # API keys only (secrets)
 │   ├── commands/atlas/   # Slash commands (/atlas:*)
 │   ├── hooks/            # TypeScript lifecycle hooks
 │   ├── skills/           # Modular skill definitions
+│   ├── lib/              # Config loader and types
 │   ├── voice/            # ElevenLabs voice server
 │   ├── observability/    # Vue dashboard (client/server)
+│   ├── plans/            # DeepPlan persistent plans
 │   └── docs/             # Documentation
 └── .config/opencode/     # OpenCode AI configuration
 ```

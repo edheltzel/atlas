@@ -68,7 +68,7 @@ voice:
   provider: elevenlabs
 
   # Default personality when none specified
-  default_personality: pai
+  default_personality: default
 
   # Voice server port
   port: 8888
@@ -79,8 +79,10 @@ voice:
   # Voice IDs per personality
   # Get from ElevenLabs dashboard or Google Cloud Console
   voices:
-    default: "s3TPKV1kjDlVtZbl4Ksh"
-    pai: "your_pai_voice_id"
+    # Fallback voice
+    default: "your_default_voice_id"
+
+    # Hook personalities
     engineer: "your_engineer_voice_id"
     architect: "your_architect_voice_id"
     researcher: "your_researcher_voice_id"
@@ -89,6 +91,18 @@ voice:
     pentester: "your_pentester_voice_id"
     writer: "your_writer_voice_id"
     intern: "your_intern_voice_id"
+
+    # Agent trait voices (can share IDs with hook personalities)
+    authoritative: "your_engineer_voice_id"
+    professional: "your_engineer_voice_id"
+    warm: "your_designer_voice_id"
+    gentle: "your_designer_voice_id"
+    energetic: "your_intern_voice_id"
+    dynamic: "your_artist_voice_id"
+    academic: "your_researcher_voice_id"
+    sophisticated: "your_architect_voice_id"
+    intense: "your_pentester_voice_id"
+    gritty: "your_pentester_voice_id"
 
   # Google TTS settings (when provider: google)
   google:
@@ -127,8 +141,8 @@ Defines voice characteristics (prosody settings) per personality:
 {
   "default_volume": 0.8,
   "voices": {
-    "pai": {
-      "voice_name": "PAI",
+    "default": {
+      "voice_name": "Default",
       "stability": 0.38,
       "similarity_boost": 0.75,
       "description": "Professional, expressive - primary AI assistant"
@@ -149,10 +163,13 @@ Defines voice characteristics (prosody settings) per personality:
 
 ## Voice Personalities
 
+Atlas supports 18 voice configurations: 8 hook personalities and 10 agent trait voices.
+
+### Hook Personalities (Session Hooks)
+
 | Voice Name   | Archetype    | Energy     | Description                       |
 | ------------ | ------------ | ---------- | --------------------------------- |
-| `pai`        | professional | expressive | Primary AI assistant (default)    |
-| `intern`     | enthusiast   | chaotic    | Eager 176 IQ genius               |
+| `default`    | professional | expressive | Primary AI assistant              |
 | `engineer`   | wise-leader  | stable     | Fortune 10 principal engineer     |
 | `architect`  | wise-leader  | stable     | PhD-level system designer         |
 | `researcher` | analyst      | measured   | Comprehensive research specialist |
@@ -160,6 +177,24 @@ Defines voice characteristics (prosody settings) per personality:
 | `artist`     | enthusiast   | chaotic    | Visual content creator            |
 | `pentester`  | enthusiast   | chaotic    | Offensive security specialist     |
 | `writer`     | professional | expressive | Content creation specialist       |
+| `intern`     | enthusiast   | chaotic    | Eager 176 IQ genius               |
+
+### Agent Trait Voices (AgentFactory)
+
+Used by the Agents skill for dynamic agent composition:
+
+| Trait Voice     | Maps To    | Description                    |
+| --------------- | ---------- | ------------------------------ |
+| `authoritative` | engineer   | Commanding, confident delivery |
+| `professional`  | engineer   | Business-appropriate tone      |
+| `warm`          | designer   | Friendly, approachable         |
+| `gentle`        | designer   | Soft, calming delivery         |
+| `energetic`     | intern     | High-energy, enthusiastic      |
+| `dynamic`       | artist     | Expressive, varied inflection  |
+| `academic`      | researcher | Scholarly, precise             |
+| `sophisticated` | architect  | Refined, eloquent              |
+| `intense`       | pentester  | Serious, focused               |
+| `gritty`        | pentester  | Raw, no-nonsense               |
 
 ## Commands
 
@@ -172,7 +207,7 @@ Defines voice characteristics (prosody settings) per personality:
 **Example:**
 ```bash
 /atlas:voice intern    # Switch to intern voice
-/atlas:voice pai       # Back to default
+/atlas:voice default   # Back to default
 ```
 
 ### List All Personalities
@@ -203,12 +238,48 @@ voice:
   provider: google  # or elevenlabs
 ```
 
+## API Request Format
+
+Send POST requests to `http://localhost:8888/notify`:
+
+```json
+{
+  "message": "Task completed successfully",
+  "personality": "intern",
+  "title": "Optional title",
+  "voice_enabled": true
+}
+```
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `message` | string | Yes | Text to speak (max 500 chars) |
+| `personality` | string | No | Personality name from atlas.yaml (e.g., "intern", "gritty") |
+| `voice_id` | string | No | Direct ElevenLabs voice ID (overrides personality) |
+| `title` | string | No | Notification title (default: "PAI Notification") |
+| `voice_enabled` | boolean | No | Enable TTS (default: true) |
+
+**Voice Resolution Order:**
+1. `voice_id` - Direct voice ID if provided
+2. `voice_name` - Alias for voice_id
+3. `personality` - Looked up from `config.voice.voices[personality]`
+4. Default voice - Falls back to `config.voice.voices.default`
+
+**Example with curl:**
+```bash
+curl -X POST http://localhost:8888/notify \
+  -H "Content-Type: application/json" \
+  --data-raw '{"message":"Hello from the intern","personality":"intern"}'
+```
+
 ## How It Works
 
 1. **Task completes** - SessionStop or SubagentStop hook fires
 2. **Hook reads transcript** - Extracts the completion message
-3. **POST to server** - `{ title, message, voice_id, voice_enabled: true }`
-4. **Server loads config** - Reads `atlas.yaml` for voice IDs, `.env` for API key
+3. **POST to server** - `{ message, personality, voice_enabled: true }`
+4. **Server resolves voice** - Looks up personality in `atlas.yaml` voices
 5. **TTS generation** - Calls ElevenLabs or Google TTS API
 6. **Audio plays** - Via system audio player (afplay/mpg123/mpv)
 

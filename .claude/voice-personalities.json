@@ -1,8 +1,8 @@
 {
   "default_volume": 0.8,
   "voices": {
-    "pai": {
-      "voice_name": "PAI",
+    "default": {
+      "voice_name": "Default",
       "stability": 0.38,
       "similarity_boost": 0.75,
       "description": "Professional, expressive - primary AI assistant"
@@ -61,7 +61,7 @@
     "stability_guide": {
       "0.0-0.3": "Very expressive, chaotic energy (Artist, Pentester, Intern)",
       "0.3-0.5": "Expressive with some control (Writer, Designer)",
-      "0.5-0.7": "Balanced, professional (PAI, Researcher)",
+      "0.5-0.7": "Balanced, professional (Default, Researcher)",
       "0.7-1.0": "Very stable, measured delivery (Engineer, Architect)"
     },
     "similarity_boost_guide": {

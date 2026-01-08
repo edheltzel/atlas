@@ -14,7 +14,7 @@ voice:
   provider: elevenlabs
 
   # Default personality when none specified
-  default_personality: pai
+  default_personality: default
 
   # Voice server port
   port: 8888
@@ -35,12 +35,9 @@ voice:
   #   See: cloud.google.com/text-to-speech/docs/voices
   voices:
     # Fallback voice if personality not found
-    default: "s3TPKV1kjDlVtZbl4Ksh"
+    default: "your_default_voice_id"
 
-    # Main assistant voice
-    pai: "your_pai_voice_id"
-
-    # Agent personalities - each can have a distinct voice
+    # Hook personalities (stop-hook-voice, subagent-stop-hook-voice)
     engineer: "your_engineer_voice_id"
     architect: "your_architect_voice_id"
     researcher: "your_researcher_voice_id"
@@ -49,6 +46,19 @@ voice:
     pentester: "your_pentester_voice_id"
     writer: "your_writer_voice_id"
     intern: "your_intern_voice_id"
+
+    # Atlas Agents Skill voices (AgentFactory trait-to-voice mappings)
+    # These can share IDs with hook personalities above
+    authoritative: "your_engineer_voice_id"   # maps to engineer
+    professional: "your_engineer_voice_id"    # maps to engineer
+    warm: "your_designer_voice_id"            # maps to designer
+    gentle: "your_designer_voice_id"          # maps to designer
+    energetic: "your_intern_voice_id"         # maps to intern
+    dynamic: "your_artist_voice_id"           # maps to artist
+    academic: "your_researcher_voice_id"      # maps to researcher
+    sophisticated: "your_architect_voice_id"  # maps to architect
+    intense: "your_pentester_voice_id"        # maps to pentester
+    gritty: "your_pentester_voice_id"         # maps to pentester
 
   # Google TTS settings (when provider: google)
   google:

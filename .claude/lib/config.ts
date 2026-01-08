@@ -24,7 +24,7 @@ export const GoogleTTSSchema = z.object({
 
 export const VoiceSchema = z.object({
   provider: z.enum(['elevenlabs', 'google']).default('elevenlabs'),
-  default_personality: z.string().default('pai'),
+  default_personality: z.string().default('default'),
   port: z.number().int().min(1).max(65535).default(8888),
   default_volume: z.number().min(0).max(1).default(0.8),
   voices: z.record(z.string(), z.string()).default({}),

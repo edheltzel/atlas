@@ -12,7 +12,7 @@ const personalityFile = join(stateDir, 'current-personality.txt');
 
 // Available personalities (must match voice-personalities.json)
 const VALID_PERSONALITIES = [
-  'pai', 'default',  // Primary
+  'default',  // Primary
   'intern', 'engineer', 'architect', 'researcher',
   'designer', 'artist', 'pentester', 'writer'
 ];
@@ -23,8 +23,7 @@ interface PersonalityInfo {
 }
 
 const PERSONALITY_INFO: Record<string, PersonalityInfo> = {
-  'pai': { name: 'PAI', description: 'Professional, expressive - primary AI assistant' },
-  'default': { name: 'Default', description: 'Same as PAI' },
+  'default': { name: 'Default', description: 'Professional, expressive - primary AI assistant' },
   'intern': { name: 'Intern', description: 'Enthusiastic, chaotic energy - eager 176 IQ genius' },
   'engineer': { name: 'Engineer', description: 'Wise leader, stable - Fortune 10 principal engineer' },
   'architect': { name: 'Architect', description: 'Wise leader, deliberate - PhD-level system designer' },
@@ -58,7 +57,7 @@ export function getCurrentPersonality(): string {
   } catch {
     // Ignore errors
   }
-  return 'pai'; // Default
+  return 'default';
 }
 
 /**
