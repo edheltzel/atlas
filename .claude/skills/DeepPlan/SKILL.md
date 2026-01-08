@@ -1,6 +1,7 @@
 ---
 name: deepPlan
 description: Atlas skill for Manus AI-inspired persistent planning. USE WHEN complex multi-step task, research project, extended implementation, OR need goal anchoring. Uses filesystem as memory with 3-file structure.
+context: fork
 ---
 
 # DeepPlan - Persistent File-Based Planning
