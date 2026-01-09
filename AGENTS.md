@@ -13,6 +13,7 @@ Atlas is the **Personal AI Infrastructure (PAI)** for Claude Code and OpenCode. 
 - **Voice** - ElevenLabs TTS with 10 personality voices
 - **Observability** - Real-time Vue dashboard
 - **MEMORY** - Structured history and state tracking system
+- **Bundles** - Portable configuration packages for export/import
 
 ## Git Worktrees
 
@@ -63,6 +64,9 @@ atlas/
 │   ├── hooks/             # TypeScript lifecycle hooks
 │   │   ├── capture-history.ts  # Event capture for MEMORY system
 │   │   └── ...
+│   ├── Bundles/           # Portable configuration packages
+│   │   ├── Atlas-Standard/    # Complete Atlas installation bundle
+│   │   └── tools/             # export-bundle.ts, import-bundle.ts
 │   ├── MEMORY/            # Structured history and state (created at runtime)
 │   │   ├── History/       # Immutable event archive (raw/, research/, sessions/, etc.)
 │   │   ├── Learning/      # Phase-based learnings

@@ -7,11 +7,10 @@ Personal AI Infrastructure for Claude Code.
 Atlas is a modular infrastructure layer for Claude Code that provides:
 
 - **Voice System** - ElevenLabs TTS with 10 personality voices
-- **Skills** - Reusable capabilities (Algorithm, Art, Agents, Browser, CORE, DeepPlan, Prompting)
+- **Skills** - Reusable capabilities (Art, Agents, Browser, Prompting, CORE)
 - **Hooks** - Session lifecycle management and event capture
-- **Commands** - 20+ slash commands under the `/atlas:` namespace
+- **Commands** - 18 slash commands under the `/atlas:` namespace
 - **Observability** - Real-time WebSocket dashboard for monitoring
-- **MEMORY System** - Structured history capture and state tracking
 
 ## Structure
 
@@ -20,15 +19,7 @@ atlas/
 ├── .claude/              # Claude Code configuration
 │   ├── commands/atlas/   # Slash commands (/atlas:*)
 │   ├── hooks/            # TypeScript lifecycle hooks
-│   │   └── capture-history.ts  # MEMORY system event capture
 │   ├── skills/           # Modular skill definitions
-│   │   ├── Algorithm/    # Universal execution engine (ISC tracking)
-│   │   ├── CORE/         # Core identity and context
-│   │   └── DeepPlan/     # Persistent planning
-│   ├── MEMORY/           # History and state (runtime)
-│   │   ├── History/      # Immutable event archive
-│   │   ├── Learning/     # Phase-based learnings
-│   │   └── State/        # Real-time state
 │   ├── voice/            # ElevenLabs voice server
 │   ├── observability/    # Vue dashboard (client/server)
 │   └── docs/             # Documentation
@@ -68,15 +59,12 @@ cd atlas
 |---------|-------------|
 | `/atlas:help` | Show all commands |
 | `/atlas:status` | System health check |
-| `/atlas:algorithm [action]` | Universal execution engine with ISC tracking |
-| `/atlas:deep-plan <task>` | Persistent planning system |
 | `/atlas:voice <name>` | Switch voice personality |
 | `/atlas:art <task>` | Visual content generation |
 | `/atlas:agents <task>` | Custom agent composition |
 | `/atlas:browser <task>` | Web automation |
-| `/atlas:sync-docs [scope]` | Sync documentation files |
 
-See `/atlas:help` for full command reference.
+See `/.claude/docs/ATLAS-COMMANDS.md` for full reference.
 
 ## Philosophy
 

@@ -38,6 +38,12 @@ Quick reference for all Atlas custom commands.
 - `/atlas:pack install <name>` - Install a PAI pack
 - `/atlas:docs [doc]` - Access PAI documentation
 
+## Bundle Management
+- `/atlas:bundle` - List available bundles (alias: `list`)
+- `/atlas:bundle list` - Show available bundles in ~/.claude/Bundles/
+- `/atlas:bundle export <name>` - Export current config as a new bundle
+- `/atlas:bundle info <bundle>` - Show bundle manifest details
+
 ## Documentation
 - `/atlas:sync-docs [scope]` - Sync project documentation (CLAUDE.md, AGENTS.md, README.md)
   - Scopes: `all` (default), `claude`, `agents`, `readme`, `memory`
