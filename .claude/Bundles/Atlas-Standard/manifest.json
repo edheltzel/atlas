@@ -1,0 +1,88 @@
+{
+  "name": "Atlas-Standard",
+  "version": "1.0.0",
+  "description": "Complete Atlas Personal AI Infrastructure",
+  "author": "ed",
+  "created": "2026-01-09",
+  "tier": "complete",
+  "platform": "claude-code",
+
+  "skills": {
+    "required": [
+      "CORE",
+      "Algorithm",
+      "DeepPlan"
+    ],
+    "included": [
+      "Agents",
+      "Art",
+      "Browser",
+      "Prompting",
+      "CreateSkill"
+    ],
+    "optional": [
+      "creating-claude-skills",
+      "converting-claude-subagents",
+      "converting-slash-commands"
+    ]
+  },
+
+  "hooks": {
+    "required": [
+      "initialize-session.ts",
+      "load-core-context.ts",
+      "security-validator.ts"
+    ],
+    "included": [
+      "capture-history.ts",
+      "stop-hook-voice.ts",
+      "subagent-stop-hook-voice.ts"
+    ]
+  },
+
+  "commands": {
+    "namespace": "atlas",
+    "count": 20,
+    "highlight": [
+      "algorithm",
+      "deep-plan",
+      "agents",
+      "browser",
+      "sync-docs"
+    ]
+  },
+
+  "directories": {
+    "required": [
+      "skills/CORE",
+      "skills/Algorithm",
+      "hooks",
+      "commands/atlas"
+    ],
+    "included": [
+      "MEMORY/History",
+      "MEMORY/Learning",
+      "MEMORY/State",
+      "voice",
+      "observability"
+    ]
+  },
+
+  "configuration": {
+    "voice": {
+      "provider": "elevenlabs",
+      "port": 8888,
+      "personalities": 10
+    },
+    "observability": {
+      "port": 4000,
+      "dashboard": true
+    }
+  },
+
+  "dependencies": {
+    "runtime": "bun",
+    "required": ["bun >= 1.0"],
+    "optional": ["elevenlabs-api-key", "google-api-key"]
+  }
+}

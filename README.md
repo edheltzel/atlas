@@ -6,26 +6,36 @@ Personal AI Infrastructure for Claude Code.
 
 Atlas is a modular infrastructure layer for Claude Code that provides:
 
-- **Voice System** - ElevenLabs/Google TTS with 18 configurable voices
-- **Skills** - Reusable capabilities (CORE, Art, Agents, Browser, Prompting, DeepPlan)
+- **Voice System** - ElevenLabs TTS with 10 personality voices
+- **Skills** - Reusable capabilities (CORE, Algorithm, DeepPlan, Art, Agents, Browser, Prompting, CreateSkill)
 - **Hooks** - Session lifecycle management and event capture
-- **Commands** - 18 slash commands under the `/atlas:` namespace
+- **Commands** - 21 slash commands under the `/atlas:` namespace
 - **Observability** - Real-time WebSocket dashboard for monitoring
+- **MEMORY System** - Structured history capture and state tracking
+- **Bundle System** - Portable configurations for export/import across machines
+- **Security** - Path-level protection via patterns.yaml with BLOCK/WARN/AUDIT severity levels
 
 ## Structure
 
 ```
 atlas/
 ├── .claude/              # Claude Code configuration
-│   ├── atlas.yaml        # Main config (voice IDs, provider, features)
-│   ├── .env              # API keys only (secrets)
 │   ├── commands/atlas/   # Slash commands (/atlas:*)
 │   ├── hooks/            # TypeScript lifecycle hooks
-│   ├── skills/           # Modular skill definitions
-│   ├── lib/              # Config loader and types
+│   ├── skills/           # Modular skill definitions (11 skills)
+│   │   ├── Algorithm/    # Universal execution engine (ISC tracking)
+│   │   ├── CORE/         # Core identity and context
+│   │   └── DeepPlan/     # Persistent planning system
+│   ├── Bundles/          # Portable configuration packages
+│   │   ├── Atlas-Standard/   # Complete installation bundle
+│   │   └── tools/            # Export/import utilities
+│   ├── MEMORY/           # History and state (runtime)
+│   │   ├── History/      # Immutable event archive
+│   │   ├── Learning/     # Phase-based learnings
+│   │   └── State/        # Real-time state
+│   ├── security/         # Security patterns and validation config
 │   ├── voice/            # ElevenLabs voice server
 │   ├── observability/    # Vue dashboard (client/server)
-│   ├── plans/            # DeepPlan persistent plans
 │   └── docs/             # Documentation
 └── .config/opencode/     # OpenCode AI configuration
 ```
@@ -59,16 +69,20 @@ cd atlas
 
 ## Commands
 
-| Command                 | Description               |
-| ----------------------- | ------------------------- |
-| `/atlas:help`           | Show all commands         |
-| `/atlas:status`         | System health check       |
-| `/atlas:voice <name>`   | Switch voice personality  |
-| `/atlas:art <task>`     | Visual content generation |
-| `/atlas:agents <task>`  | Custom agent composition  |
-| `/atlas:browser <task>` | Web automation            |
+| Command | Description |
+|---------|-------------|
+| `/atlas:help` | Show all commands |
+| `/atlas:status` | System health check |
+| `/atlas:algorithm [action]` | Universal execution engine with ISC tracking |
+| `/atlas:deep-plan <task>` | Persistent planning system |
+| `/atlas:voice <name>` | Switch voice personality |
+| `/atlas:art <task>` | Visual content generation |
+| `/atlas:agents <task>` | Custom agent composition |
+| `/atlas:browser <task>` | Web automation |
+| `/atlas:sync-docs [scope]` | Sync documentation files |
+| `/atlas:bundle [action]` | Bundle management (list, export, info) |
 
-See `/.claude/docs/ATLAS-COMMANDS.md` for full reference.
+See `/atlas:help` for full command reference.
 
 ## Philosophy
 
@@ -77,9 +91,6 @@ See `/.claude/docs/ATLAS-COMMANDS.md` for full reference.
 - bun (NEVER npm/yarn/pnpm)
 - Markdown over HTML
 
-## References, Credits and Inspiration
+## License
 
-This project is heavily inspired by:
-
-- [PAI](https://github.com/danielmiessler/Personal_AI_Infrastructure)
-- [Always On AI Assistant](https://github.com/disler/always-on-ai-assistant)
+Private - not yet open source.

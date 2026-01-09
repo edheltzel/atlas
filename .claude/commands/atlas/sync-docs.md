@@ -1,5 +1,5 @@
 ---
-description: "Sync project documentation files (CLAUDE.md, AGENTS.md, README.md, memory). Usage: /atlas:syncDocs [scope]"
+description: "Sync project documentation files (CLAUDE.md, AGENTS.md, README.md, memory). Usage: /atlas:sync-docs [scope]"
 ---
 
 # Sync Project Documentation
@@ -19,18 +19,14 @@ Argument: `$ARGUMENTS`
 ## Documentation Files to Sync
 
 ### 1. CLAUDE.md
-
 Project-specific instructions for Claude Code. Should contain:
-
 - Build and test commands
 - Code style and conventions
 - Project-specific patterns
 - Quick reference for common tasks
 
 ### 2. AGENTS.md
-
 Comprehensive project documentation. Should contain:
-
 - Project overview and architecture
 - Development workflow and git strategy
 - Build commands and testing
@@ -38,18 +34,14 @@ Comprehensive project documentation. Should contain:
 - Directory structure
 
 ### 3. README.md
-
 User-facing project documentation. Should contain:
-
 - Project description and purpose
 - Installation instructions
 - Usage examples
 - Contributing guidelines
 
 ### 4. Memory/Context Files
-
 Files that preserve context across sessions:
-
 - `.claude/plans/` - Active and completed plans
 - `.claude/memory/` - Session memories (if used)
 - Project-specific context files
@@ -89,7 +81,6 @@ Based on the scope provided (`$1` or `all` if not specified):
 5. Report what was updated and why
 
 **Important:**
-
 - Do NOT overwrite user customizations
 - Preserve existing structure and formatting
 - Only update factual information that has changed

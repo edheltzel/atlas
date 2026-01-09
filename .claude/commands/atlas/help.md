@@ -11,6 +11,8 @@ Quick reference for all Atlas custom commands.
 - `/atlas:voices` - List all available voice personalities
 
 ## Skills
+- `/atlas:algorithm [action]` - Launch THE ALGORITHM for structured task execution
+  - Actions: `show`, `start LEVEL`, `phase PHASE`
 - `/atlas:art <task>` - Launch Art skill for visual content
 - `/atlas:agents <task>` - Launch Agents skill for custom agents
 - `/atlas:browser <task>` - Launch Browser skill for web automation
@@ -36,6 +38,12 @@ Quick reference for all Atlas custom commands.
 - `/atlas:pack install <name>` - Install a PAI pack
 - `/atlas:docs [doc]` - Access PAI documentation
 
+## Bundle Management
+- `/atlas:bundle` - List available bundles (alias: `list`)
+- `/atlas:bundle list` - Show available bundles in ~/.claude/Bundles/
+- `/atlas:bundle export <name>` - Export current config as a new bundle
+- `/atlas:bundle info <bundle>` - Show bundle manifest details
+
 ## Documentation
 - `/atlas:sync-docs [scope]` - Sync project documentation (CLAUDE.md, AGENTS.md, README.md)
   - Scopes: `all` (default), `claude`, `agents`, `readme`, `memory`
@@ -46,7 +54,7 @@ Quick reference for all Atlas custom commands.
 ---
 
 **About Atlas:**
-Personal AI Infrastructure - modular, self-contained functionality for your AI assistant.
+Personal AI Infrastructure - modular, self-contained functionality for your AI assistant. Includes hook-based security validation protecting against dangerous commands and sensitive file access.
 
 **Core Philosophy:**
 - First-person voice ("I" not "the system")
