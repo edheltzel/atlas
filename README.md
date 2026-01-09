@@ -9,7 +9,8 @@ Atlas is a modular infrastructure layer for Claude Code that provides:
 - **Voice System** - ElevenLabs TTS with 10 personality voices
 - **Skills** - Reusable capabilities (CORE, Algorithm, DeepPlan, Art, Agents, Browser, Prompting, CreateSkill)
 - **Hooks** - Session lifecycle management and event capture
-- **Commands** - 21 slash commands under the `/atlas:` namespace
+- **Commands** - 22 slash commands under the `/atlas:` namespace
+- **Statusline** - Custom statusline with Max plan usage tracking (Eldritch theme)
 - **Observability** - Real-time WebSocket dashboard for monitoring
 - **MEMORY System** - Structured history capture and state tracking
 - **Bundle System** - Portable configurations for export/import across machines
@@ -26,6 +27,7 @@ atlas/
 │   │   ├── Algorithm/    # Universal execution engine (ISC tracking)
 │   │   ├── CORE/         # Core identity and context
 │   │   └── DeepPlan/     # Persistent planning system
+│   ├── lib/              # Shared utilities (config, usage tracking)
 │   ├── Bundles/          # Portable configuration packages
 │   │   ├── Atlas-Standard/   # Complete installation bundle
 │   │   └── tools/            # Export/import utilities
@@ -81,6 +83,7 @@ cd atlas
 | `/atlas:browser <task>` | Web automation |
 | `/atlas:sync-docs [scope]` | Sync documentation files |
 | `/atlas:bundle [action]` | Bundle management (list, export, info) |
+| `/atlas:onDeck` | View active plans and pending items |
 
 See `/atlas:help` for full command reference.
 

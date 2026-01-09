@@ -9,7 +9,8 @@ Atlas is the **Personal AI Infrastructure (PAI)** for Claude Code and OpenCode. 
 **Key Components:**
 - **Skills** - 11 modular capabilities (CORE, Algorithm, DeepPlan, Art, Agents, Browser, Prompting, CreateSkill, + 3 conversion utilities)
 - **Hooks** - 13 TypeScript lifecycle hooks
-- **Commands** - 21 slash commands under `/atlas:*` namespace
+- **Commands** - 22 slash commands under `/atlas:*` namespace
+- **Lib** - Shared utilities (config system, usage tracker)
 - **Voice** - ElevenLabs TTS with 10 personality voices
 - **Observability** - Real-time Vue dashboard
 - **MEMORY** - Structured history and state tracking system
@@ -66,6 +67,10 @@ atlas/
 │   │   ├── capture-history.ts  # Event capture for MEMORY system
 │   │   ├── security-validator.ts  # Security validation (PreToolUse)
 │   │   └── ...
+│   ├── lib/               # Shared utilities
+│   │   ├── config.ts          # Configuration types and schema
+│   │   ├── config-loader.ts   # YAML config loading
+│   │   └── usage-tracker.ts   # Max plan usage tracking
 │   ├── security/          # Security configuration
 │   │   ├── patterns.yaml  # Protected paths and dangerous commands
 │   │   └── README.md      # Security system documentation
