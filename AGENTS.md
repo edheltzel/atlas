@@ -14,6 +14,7 @@ Atlas is the **Personal AI Infrastructure (PAI)** for Claude Code and OpenCode. 
 - **Observability** - Real-time Vue dashboard
 - **MEMORY** - Structured history and state tracking system
 - **Bundles** - Portable configuration packages for export/import
+- **Security** - Path-level protection with BLOCK/WARN/AUDIT severity levels via PreToolUse hooks
 
 ## Git Worktrees
 
@@ -63,7 +64,11 @@ atlas/
 │   │   └── ...            # Art, Agents, Browser, Prompting, etc.
 │   ├── hooks/             # TypeScript lifecycle hooks
 │   │   ├── capture-history.ts  # Event capture for MEMORY system
+│   │   ├── security-validator.ts  # Security validation (PreToolUse)
 │   │   └── ...
+│   ├── security/          # Security configuration
+│   │   ├── patterns.yaml  # Protected paths and dangerous commands
+│   │   └── README.md      # Security system documentation
 │   ├── Bundles/           # Portable configuration packages
 │   │   ├── Atlas-Standard/    # Complete Atlas installation bundle
 │   │   └── tools/             # export-bundle.ts, import-bundle.ts

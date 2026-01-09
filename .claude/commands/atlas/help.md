@@ -54,7 +54,7 @@ Quick reference for all Atlas custom commands.
 ---
 
 **About Atlas:**
-Personal AI Infrastructure - modular, self-contained functionality for your AI assistant.
+Personal AI Infrastructure - modular, self-contained functionality for your AI assistant. Includes hook-based security validation protecting against dangerous commands and sensitive file access.
 
 **Core Philosophy:**
 - First-person voice ("I" not "the system")

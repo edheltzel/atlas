@@ -11,6 +11,7 @@ Atlas is a modular infrastructure layer for Claude Code that provides:
 - **Hooks** - Session lifecycle management and event capture
 - **Commands** - 18 slash commands under the `/atlas:` namespace
 - **Observability** - Real-time WebSocket dashboard for monitoring
+- **Security** - Path-level protection via patterns.yaml with BLOCK/WARN/AUDIT severity levels
 
 ## Structure
 
@@ -20,6 +21,7 @@ atlas/
 │   ├── commands/atlas/   # Slash commands (/atlas:*)
 │   ├── hooks/            # TypeScript lifecycle hooks
 │   ├── skills/           # Modular skill definitions
+│   ├── security/         # Security patterns and validation config
 │   ├── voice/            # ElevenLabs voice server
 │   ├── observability/    # Vue dashboard (client/server)
 │   └── docs/             # Documentation
