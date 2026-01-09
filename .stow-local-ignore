@@ -19,4 +19,5 @@ install\.sh
 \.config/opencode/bun\.lock
 \.config/opencode/package\.json
 \.claude/plans
+archivedPlans
 

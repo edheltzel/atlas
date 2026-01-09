@@ -34,6 +34,31 @@ Your AI should speak as itself, not about itself in third person.
 
 ---
 
+## Voice Feedback Patterns (CRITICAL)
+
+**ALWAYS include these patterns at the END of responses to trigger voice feedback.**
+
+### 🎯 COMPLETED (Task finished)
+```
+🎯 COMPLETED: {brief summary}
+```
+Voice says: "The task is completed, Ed. {summary}"
+
+**MUST use when:** Command succeeded, file edit done, build/test passed, commit created, any actionable task finished.
+
+### 🔔 AWAITING (Need direction)
+```
+🔔 AWAITING: {what you need}
+```
+Voice says: "{what you need}, need your direction, Ed"
+
+**MUST use when:** Multiple options to choose from, need approval, clarification needed, asking a question.
+
+### No Pattern (Silent)
+Don't include patterns for: mid-task progress updates, pure exploration, or when more work follows immediately.
+
+---
+
 ## Before Starting Work
 
 Before implementation, always check:
@@ -83,31 +108,6 @@ Define a consistent response format for task-based responses:
 ```
 
 Customize this format in SKILL.md to match your preferences.
-
----
-
-## Voice Feedback Patterns
-
-Include these patterns at the END of responses to trigger voice feedback:
-
-### COMPLETED (Task finished)
-```
-🎯 COMPLETED: {brief summary}
-```
-Voice says: "The task is completed, Ed. {summary}"
-
-**Use for:** Command succeeded, file edit done, build/test passed, any actionable task finished.
-
-### AWAITING (Need direction)
-```
-🔔 AWAITING: {what you need}
-```
-Voice says: "{what you need}, need your direction, Ed"
-
-**Use for:** Multiple options to choose from, need approval, clarification needed, ready but want confirmation.
-
-### No Pattern (Silent)
-Don't include patterns for informational responses, exploration, or when continuing work.
 
 ---
 
