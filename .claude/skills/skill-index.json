@@ -1,8 +1,8 @@
 {
-  "generated": "2026-01-02T23:14:44.535Z",
-  "totalSkills": 7,
+  "generated": "2026-01-09T16:29:47.544Z",
+  "totalSkills": 11,
   "alwaysLoadedCount": 1,
-  "deferredCount": 6,
+  "deferredCount": 10,
   "skills": {
     "core": {
       "name": "CORE",
@@ -41,6 +41,25 @@
       "workflows": [],
       "tier": "deferred"
     },
+    "atlas:deep-plan": {
+      "name": "atlas:deep-plan",
+      "path": "DeepPlan/SKILL.md",
+      "fullDescription": "Manus AI-inspired persistent planning system. USE WHEN complex multi-step task, research project, extended implementation, OR need goal anchoring. Uses filesystem as memory with 3-file structure.",
+      "triggers": [
+        "complex",
+        "multi-step",
+        "task",
+        "research",
+        "project",
+        "extended",
+        "implementation",
+        "need",
+        "goal",
+        "anchoring"
+      ],
+      "workflows": [],
+      "tier": "deferred"
+    },
     "art": {
       "name": "Art",
       "path": "Art/SKILL.md",
@@ -53,6 +72,20 @@
         "comics",
         "editorial",
         "illustrations"
+      ],
+      "workflows": [],
+      "tier": "deferred"
+    },
+    "createskill": {
+      "name": "CreateSkill",
+      "path": "CreateSkill/SKILL.md",
+      "fullDescription": "Create and validate skills. USE WHEN create skill, new skill, skill structure, canonicalize. SkillSearch('createskill') for docs.",
+      "triggers": [
+        "create",
+        "skill",
+        "new",
+        "structure",
+        "canonicalize"
       ],
       "workflows": [],
       "tier": "deferred"
@@ -76,6 +109,53 @@
         "available",
         "traits",
         "voices"
+      ],
+      "workflows": [],
+      "tier": "deferred"
+    },
+    "algorithm": {
+      "name": "Algorithm",
+      "path": "Algorithm/SKILL.md",
+      "fullDescription": "Universal execution engine using scientific method to achieve ideal state. USE WHEN complex tasks, multi-step work, \"run the algorithm\", \"use the algorithm\", OR any non-trivial request that benefits from structured execution with ISC (Ideal State Criteria) tracking.",
+      "triggers": [
+        "complex",
+        "tasks",
+        "multi-step",
+        "work",
+        "\"run",
+        "the",
+        "algorithm\"",
+        "\"use",
+        "any",
+        "non-trivial",
+        "request",
+        "that",
+        "benefits",
+        "from",
+        "structured",
+        "execution",
+        "with",
+        "isc",
+        "(ideal",
+        "state",
+        "criteria)",
+        "tracking"
+      ],
+      "workflows": [],
+      "tier": "deferred"
+    },
+    "browser": {
+      "name": "Browser",
+      "path": "Browser/SKILL.md",
+      "fullDescription": "Code-first browser automation and web verification. USE WHEN browser, screenshot, navigate, web testing, verify UI, VERIFY phase. Replaces Playwright MCP with 99% token savings.",
+      "triggers": [
+        "browser",
+        "screenshot",
+        "navigate",
+        "web",
+        "testing",
+        "verify",
+        "phase"
       ],
       "workflows": [],
       "tier": "deferred"

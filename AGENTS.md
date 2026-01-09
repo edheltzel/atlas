@@ -7,11 +7,12 @@ This file provides guidance to AI coding agents when working with this repositor
 Atlas is the **Personal AI Infrastructure (PAI)** for Claude Code and OpenCode. It provides skills, hooks, commands, voice system, and observability dashboard.
 
 **Key Components:**
-- **Skills** - Modular capabilities (CORE, Art, Agents, Browser, Prompting)
+- **Skills** - Modular capabilities (CORE, Algorithm, Art, Agents, Browser, DeepPlan, Prompting)
 - **Hooks** - TypeScript session lifecycle management
-- **Commands** - 18 slash commands under `/atlas:*` namespace
+- **Commands** - 20+ slash commands under `/atlas:*` namespace
 - **Voice** - ElevenLabs TTS with 10 personality voices
 - **Observability** - Real-time Vue dashboard
+- **MEMORY** - Structured history and state tracking system
 
 ## Git Worktrees
 
@@ -55,7 +56,17 @@ atlas/
 ├── .claude/
 │   ├── commands/atlas/    # Slash commands (/atlas:*)
 │   ├── skills/            # Skill definitions
+│   │   ├── Algorithm/     # Universal execution engine with ISC tracking
+│   │   ├── CORE/          # Core identity and context
+│   │   ├── DeepPlan/      # Persistent planning system
+│   │   └── ...            # Art, Agents, Browser, Prompting, etc.
 │   ├── hooks/             # TypeScript lifecycle hooks
+│   │   ├── capture-history.ts  # Event capture for MEMORY system
+│   │   └── ...
+│   ├── MEMORY/            # Structured history and state (created at runtime)
+│   │   ├── History/       # Immutable event archive (raw/, research/, sessions/, etc.)
+│   │   ├── Learning/      # Phase-based learnings
+│   │   └── State/         # Real-time state files
 │   ├── voice/             # ElevenLabs TTS server
 │   ├── observability/     # Vue dashboard
 │   └── docs/              # Documentation
