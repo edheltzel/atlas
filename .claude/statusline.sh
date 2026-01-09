@@ -71,6 +71,33 @@ if [ "$CURRENT_USAGE" != "null" ] && [ "$CONTEXT_SIZE" -gt 0 ]; then
   fi
 fi
 
+# --- Cycle Usage (Max Plan Tracking) ---
+USAGE_JSON=$(bun run "$HOME/.claude/lib/usage-tracker.ts" --json 2>/dev/null)
+if [ -n "$USAGE_JSON" ] && [ "$USAGE_JSON" != "null" ]; then
+  CYCLE_PROMPTS=$(echo "$USAGE_JSON" | jq -r '.cyclePrompts // 0')
+  CYCLE_LIMIT=$(echo "$USAGE_JSON" | jq -r '.cycleLimit // 100')
+  CYCLE_PERCENT=$(echo "$USAGE_JSON" | jq -r '.cyclePercent // 0')
+  CYCLE_RESET=$(echo "$USAGE_JSON" | jq -r '.cycleResetMinutes // 0')
+
+  # Color based on usage
+  if [ "$CYCLE_PERCENT" -ge 80 ]; then
+    CYCLE_FG="$CYCLE_CRIT_FG"
+  elif [ "$CYCLE_PERCENT" -ge 50 ]; then
+    CYCLE_FG="$CYCLE_WARN_FG"
+  else
+    CYCLE_FG="$CYCLE_OK_FG"
+  fi
+
+  # Format reset time
+  RESET_H=$((CYCLE_RESET / 60))
+  RESET_M=$((CYCLE_RESET % 60))
+
+  OUTPUT+=" ${SEP_FG}${SEP}${COLOR_RESET} "
+  OUTPUT+="${CYCLE_FG}${ICON_CYCLE} ${CYCLE_PROMPTS}/${CYCLE_LIMIT}p${COLOR_RESET}"
+  OUTPUT+=" ${SEP_FG}${SEP}${COLOR_RESET} "
+  OUTPUT+="${CYCLE_RESET_FG}${ICON_RESET} ${RESET_H}h${RESET_M}m${COLOR_RESET}"
+fi
+
 # --- CWD ---
 OUTPUT+=" ${SEP_FG}${SEP}${COLOR_RESET} "
 OUTPUT+="${CWD_FG}${ICON_FOLDER} ${CWD_DISPLAY}${COLOR_RESET}"

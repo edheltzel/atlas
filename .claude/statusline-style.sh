@@ -26,3 +26,13 @@ ICON_FOLDER=""
 ICON_CONTEXT=""
 ICON_VERSION=""
 ICON_CACHE=""
+
+# Cycle usage colors (reuse context colors for consistency)
+CYCLE_OK_FG=$'\e[38;2;55;244;153m'      # Great Old One Green #37f499
+CYCLE_WARN_FG=$'\e[38;2;247;198;127m'   # Dreaming Orange #f7c67f
+CYCLE_CRIT_FG=$'\e[38;2;241;108;117m'   # R'lyeh Red #f16c75
+CYCLE_RESET_FG=$'\e[38;2;235;250;250m'  # Lighthouse White #ebfafa
+
+# Cycle icons
+ICON_CYCLE="󱀋"
+ICON_RESET="󰔟"
