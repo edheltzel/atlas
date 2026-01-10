@@ -1,129 +1,76 @@
-# Agent Guidelines - Atlas Repository
+# Atlas - AI Agent Guidelines
 
-This file provides guidance to AI coding agents when working with this repository.
+Personal AI Infrastructure for Claude Code.
 
-## Repository Overview
+## Quick Reference
 
-Atlas is the **Personal AI Infrastructure (PAI)** for Claude Code and OpenCode. It provides skills, hooks, commands, voice system, and observability dashboard.
-
-**Key Components:**
-- **Skills** - 11 modular capabilities (CORE, Algorithm, DeepPlan, Art, Agents, Browser, Prompting, CreateSkill, + 3 conversion utilities)
-- **Hooks** - 13 TypeScript lifecycle hooks
-- **Commands** - 22 slash commands under `/atlas:*` namespace
-- **Lib** - Shared utilities (config system, usage tracker)
-- **Voice** - ElevenLabs TTS with 10 personality voices
-- **Observability** - Real-time Vue dashboard
-- **MEMORY** - Structured history and state tracking system
-- **Bundles** - Portable configuration packages for export/import
-- **Security** - Path-level protection with BLOCK/WARN/AUDIT severity levels via PreToolUse hooks
-
-## Git Worktrees
-
-Atlas uses git worktrees for parallel development. Worktrees are stored outside the dotfiles directory.
-
-**Location:** `~/Developer/Atlas-worktrees/<branch-name>/`
-
-**Main branch:** `~/.dotfiles/atlas/` (master)
-
-### Creating a Worktree
-
-```bash
-cd ~/.dotfiles/atlas
-git worktree add ~/Developer/Atlas-worktrees/<branch-name> -b <branch-name>
-```
-
-### Listing Worktrees
-
-```bash
-git worktree list
-```
-
-### Removing a Worktree
-
-```bash
-git worktree remove ~/Developer/Atlas-worktrees/<branch-name>
-git branch -d <branch-name>  # Optional: delete branch after merge
-```
-
-### Worktree Notes
-
-- Atlas is a **git submodule** of `~/.dotfiles`
-- Worktree commands must run from `~/.dotfiles/atlas/`
-- Each worktree is a full working copy with its own branch
-- Changes in worktrees can be committed and pushed independently
-
-## Directory Structure
-
-```
-atlas/
-├── .claude/
-│   ├── commands/atlas/    # Slash commands (/atlas:*)
-│   ├── skills/            # Skill definitions
-│   │   ├── Algorithm/     # Universal execution engine with ISC tracking
-│   │   ├── CORE/          # Core identity and context
-│   │   ├── DeepPlan/      # Persistent planning system
-│   │   └── ...            # Art, Agents, Browser, Prompting, etc.
-│   ├── hooks/             # TypeScript lifecycle hooks
-│   │   ├── capture-history.ts  # Event capture for MEMORY system
-│   │   ├── security-validator.ts  # Security validation (PreToolUse)
-│   │   └── ...
-│   ├── lib/               # Shared utilities
-│   │   ├── config.ts          # Configuration types and schema
-│   │   ├── config-loader.ts   # YAML config loading
-│   │   └── usage-tracker.ts   # Max plan usage tracking
-│   ├── security/          # Security configuration
-│   │   ├── patterns.yaml  # Protected paths and dangerous commands
-│   │   └── README.md      # Security system documentation
-│   ├── Bundles/           # Portable configuration packages
-│   │   ├── Atlas-Standard/    # Complete Atlas installation bundle
-│   │   └── tools/             # export-bundle.ts, import-bundle.ts
-│   ├── MEMORY/            # Structured history and state (created at runtime)
-│   │   ├── History/       # Immutable event archive (raw/, research/, sessions/, etc.)
-│   │   ├── Learning/      # Phase-based learnings
-│   │   └── State/         # Real-time state files
-│   ├── voice/             # ElevenLabs TTS server
-│   ├── observability/     # Vue dashboard
-│   └── docs/              # Documentation
-├── .config/opencode/      # OpenCode configuration
-├── .stow-local-ignore     # GNU Stow ignore patterns
-└── install.sh             # Standalone installer
-```
-
-## Commands
-
-### Development
-
-```bash
-# Restow after changes (from ~/.dotfiles)
-make stow pkg=atlas
-
-# Run voice server
-cd ~/.claude/voice && bun run server.ts
-
-# Run observability dashboard
-cd ~/.claude/observability && bun run dev
-```
-
-### Atlas Slash Commands
-
-Run `/atlas:help` in Claude Code to see all available commands.
-
-## Code Style
+### Code Style
 
 - **Language:** TypeScript preferred
 - **Package Manager:** bun (NEVER npm/yarn/pnpm)
 - **Runtime:** Bun
 - **Markup:** Markdown for documentation
 
-## Installation
+### Directory Structure
 
-Atlas is installed as a stow package within the dotfiles repository:
-
-```bash
-# From ~/.dotfiles
-make stow pkg=atlas
+```
+atlas/
+├── .claude/
+│   ├── commands/atlas/   # 22 slash commands (/atlas:*)
+│   ├── skills/           # 11 skill definitions
+│   ├── hooks/            # 13 TypeScript lifecycle hooks
+│   ├── lib/              # Shared utilities (config, usage tracker)
+│   ├── security/         # Protection patterns
+│   ├── Bundles/          # Portable configurations
+│   ├── MEMORY/           # History and state (runtime)
+│   ├── voice/            # ElevenLabs TTS server
+│   ├── observability/    # Vue dashboard
+│   └── docs/             # Extended documentation
+├── .config/opencode/     # OpenCode configuration
+└── install.sh            # Standalone installer
 ```
 
-Symlinks to:
-- `~/.claude/` - Claude Code configuration
-- `~/.config/opencode/` - OpenCode configuration
+### Critical Rules
+
+1. Skills auto-load via Skill tool - read SKILL.md in skill directory first
+2. Hooks run via `bun run` - never npm/yarn
+3. Run `/atlas:help` for available commands
+
+---
+
+## Reference Documentation
+
+**Load ONLY when working on related tasks:**
+
+### Development Tasks
+
+| When Working On | Read This |
+|-----------------|-----------|
+| Adding/modifying commands | `.claude/docs/ATLAS-COMMANDS.md` |
+| Voice system configuration | `.claude/docs/VOICE-SYSTEM.md` |
+| Security patterns/hooks | `.claude/security/README.md` |
+| Bundle export/import | `.claude/Bundles/README.md` |
+| Any specific skill | `.claude/skills/{SkillName}/SKILL.md` |
+
+### Infrastructure Tasks
+
+| When Working On | Read This |
+|-----------------|-----------|
+| Git worktrees | `.claude/docs/GIT-WORKTREES.md` |
+| Hooks system | `.claude/docs/HOOKS-SYSTEM.md` |
+| Installation | `.claude/docs/INSTALLATION.md` |
+
+---
+
+## Skills Quick Index
+
+| Skill | Purpose | Path |
+|-------|---------|------|
+| Algorithm | Universal execution engine (ISC) | `.claude/skills/Algorithm/` |
+| CORE | Identity and context (auto-loads) | `.claude/skills/CORE/` |
+| DeepPlan | Persistent planning system | `.claude/skills/DeepPlan/` |
+| Art | Visual content generation | `.claude/skills/Art/` |
+| Agents | Custom agent composition | `.claude/skills/Agents/` |
+| Browser | Web automation | `.claude/skills/Browser/` |
+| Prompting | Meta-prompting templates | `.claude/skills/Prompting/` |
+| CreateSkill | Skill creation utility | `.claude/skills/CreateSkill/` |
