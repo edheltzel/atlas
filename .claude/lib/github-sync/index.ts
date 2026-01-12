@@ -58,6 +58,51 @@ import {
 } from './state-manager';
 
 // =============================================================================
+// Parallel Execution Helper
+// =============================================================================
+
+const DEFAULT_CONCURRENCY = 5;
+
+/**
+ * Execute async tasks with concurrency limit.
+ * Returns results in order, handling both successes and failures.
+ */
+async function parallelLimit<T, R>(
+  items: T[],
+  fn: (item: T) => Promise<R>,
+  concurrency: number = DEFAULT_CONCURRENCY
+): Promise<PromiseSettledResult<R>[]> {
+  const results: PromiseSettledResult<R>[] = [];
+  const executing: Promise<void>[] = [];
+
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    const promise = fn(item)
+      .then((value) => {
+        results[i] = { status: 'fulfilled', value };
+      })
+      .catch((reason) => {
+        results[i] = { status: 'rejected', reason };
+      });
+
+    executing.push(promise);
+
+    if (executing.length >= concurrency) {
+      await Promise.race(executing);
+      // Remove completed promises
+      for (let j = executing.length - 1; j >= 0; j--) {
+        if (results[j] !== undefined) {
+          executing.splice(j, 1);
+        }
+      }
+    }
+  }
+
+  await Promise.all(executing);
+  return results;
+}
+
+// =============================================================================
 // Config Loading
 // =============================================================================
 
@@ -212,74 +257,129 @@ async function cmdPush(options: CLIOptions): Promise<SyncResult> {
   // Determine actions
   const actions = determinePushActions(plan.items, state, existingIssues, config);
 
-  for (const action of actions) {
-    try {
-      switch (action.type) {
-        case 'create': {
-          console.log(`Creating: ${action.item.content}`);
-          if (!options.dryRun) {
-            const labels = [
-              config.labels.sync_marker,
-              ...statusToLabels(action.item.status, {
-                pending: config.labels.status_pending,
-                in_progress: config.labels.status_in_progress,
-                completed: config.labels.status_completed,
-              }),
-            ];
+  // Separate actions by type for parallel processing
+  const createActions = actions.filter((a) => a.type === 'create');
+  const closeActions = actions.filter((a) => a.type === 'close');
+  const reopenActions = actions.filter((a) => a.type === 'reopen');
 
-            const issue = await createIssue(repo, {
-              title: itemToIssueTitle(action.item),
-              body: itemToIssueBody(action.item, plan.project),
-              labels,
-              project: config.project || undefined,
-            });
+  // Process CREATE actions in parallel
+  if (createActions.length > 0) {
+    console.log(`Creating ${createActions.length} issues...`);
 
-            state = upsertMapping(state, action.item.content, issue.number, issue.url);
-            console.log(`  -> Issue #${issue.number}`);
-          }
+    if (!options.dryRun) {
+      const startTime = Date.now();
+
+      const createResults = await parallelLimit(
+        createActions,
+        async (action) => {
+          const labels = [
+            config.labels.sync_marker,
+            ...statusToLabels(action.item.status, {
+              pending: config.labels.status_pending,
+              in_progress: config.labels.status_in_progress,
+              completed: config.labels.status_completed,
+            }),
+          ];
+
+          const issue = await createIssue(repo, {
+            title: itemToIssueTitle(action.item),
+            body: itemToIssueBody(action.item, plan.project),
+            labels,
+            project: config.project || undefined,
+          });
+
+          return { action, issue };
+        },
+        DEFAULT_CONCURRENCY
+      );
+
+      // Process results
+      for (const settled of createResults) {
+        if (settled.status === 'fulfilled') {
+          const { action, issue } = settled.value;
+          state = upsertMapping(state, action.item.content, issue.number, issue.url);
+          console.log(`  #${issue.number}: ${action.item.content.slice(0, 50)}...`);
           result.created++;
-          break;
-        }
-
-        case 'close': {
-          console.log(`Closing: #${action.issue!.number} - ${action.item.content}`);
-          if (!options.dryRun) {
-            await closeIssue(repo, action.issue!.number);
-            state = upsertMapping(
-              state,
-              action.item.content,
-              action.issue!.number,
-              action.issue!.url
-            );
-          }
-          result.closed++;
-          break;
-        }
-
-        case 'reopen': {
-          console.log(`Reopening: #${action.issue!.number} - ${action.item.content}`);
-          if (!options.dryRun) {
-            await reopenIssue(repo, action.issue!.number);
-            state = upsertMapping(
-              state,
-              action.item.content,
-              action.issue!.number,
-              action.issue!.url
-            );
-          }
-          result.updated++;
-          break;
-        }
-
-        case 'skip': {
-          // Silent skip
-          break;
+        } else {
+          const msg = settled.reason instanceof Error ? settled.reason.message : String(settled.reason);
+          result.errors.push(msg);
+          console.error(`  Error: ${msg}`);
         }
       }
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
-      result.errors.push(`${action.item.content}: ${msg}`);
-      console.error(`  Error: ${msg}`);
+
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      console.log(`  Created ${result.created} issues in ${elapsed}s`);
+    } else {
+      for (const action of createActions) {
+        console.log(`  Would create: ${action.item.content}`);
+        result.created++;
+      }
+    }
+  }
+
+  // Process CLOSE actions in parallel
+  if (closeActions.length > 0) {
+    console.log(`Closing ${closeActions.length} issues...`);
+
+    if (!options.dryRun) {
+      const closeResults = await parallelLimit(
+        closeActions,
+        async (action) => {
+          await closeIssue(repo, action.issue!.number);
+          return action;
+        },
+        DEFAULT_CONCURRENCY
+      );
+
+      for (const settled of closeResults) {
+        if (settled.status === 'fulfilled') {
+          const action = settled.value;
+          state = upsertMapping(state, action.item.content, action.issue!.number, action.issue!.url);
+          console.log(`  Closed #${action.issue!.number}`);
+          result.closed++;
+        } else {
+          const msg = settled.reason instanceof Error ? settled.reason.message : String(settled.reason);
+          result.errors.push(msg);
+        }
+      }
+    } else {
+      for (const action of closeActions) {
+        console.log(`  Would close: #${action.issue!.number}`);
+        result.closed++;
+      }
+    }
+  }
+
+  // Process REOPEN actions in parallel
+  if (reopenActions.length > 0) {
+    console.log(`Reopening ${reopenActions.length} issues...`);
+
+    if (!options.dryRun) {
+      const reopenResults = await parallelLimit(
+        reopenActions,
+        async (action) => {
+          await reopenIssue(repo, action.issue!.number);
+          return action;
+        },
+        DEFAULT_CONCURRENCY
+      );
+
+      for (const settled of reopenResults) {
+        if (settled.status === 'fulfilled') {
+          const action = settled.value;
+          state = upsertMapping(state, action.item.content, action.issue!.number, action.issue!.url);
+          console.log(`  Reopened #${action.issue!.number}`);
+          result.updated++;
+        } else {
+          const msg = settled.reason instanceof Error ? settled.reason.message : String(settled.reason);
+          result.errors.push(msg);
+        }
+      }
+    } else {
+      for (const action of reopenActions) {
+        console.log(`  Would reopen: #${action.issue!.number}`);
+        result.updated++;
+      }
     }
   }
 

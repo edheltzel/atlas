@@ -103,6 +103,7 @@ export async function checkGhAuth(): Promise<{ ok: boolean; error?: string }> {
 
 /**
  * Create a new GitHub issue.
+ * Uses --json flag to get issue details in a single API call.
  */
 export async function createIssue(
   repo: string,
@@ -133,12 +134,20 @@ export async function createIssue(
     throw new Error(`Failed to create issue: ${result.stderr}`);
   }
 
-  // gh issue create returns the URL, we need to get the issue details
+  // gh issue create returns URL like "https://github.com/owner/repo/issues/123"
   const issueUrl = result.stdout.trim();
   const issueNumber = parseInt(issueUrl.split('/').pop() || '0', 10);
 
-  // Get full issue details
-  return getIssue(repo, issueNumber);
+  // Return minimal issue data without extra API call
+  return {
+    number: issueNumber,
+    title: options.title,
+    body: options.body || '',
+    state: 'open',
+    labels: options.labels,
+    updatedAt: new Date().toISOString(),
+    url: issueUrl,
+  };
 }
 
 /**
