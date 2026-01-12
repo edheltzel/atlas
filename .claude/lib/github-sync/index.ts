@@ -32,6 +32,7 @@ import {
   checkGhAuth,
   createIssue,
   createIssuesBatch,
+  createIssuesGraphQL,
   closeIssue,
   closeIssuesBatch,
   reopenIssue,
@@ -285,7 +286,7 @@ async function cmdPush(options: CLIOptions): Promise<SyncResult> {
         ],
       }));
 
-      // Single batch call - all issues created in parallel
+      // Parallel REST API calls - fastest method (GraphQL mutations are sequential server-side)
       const { results: createdIssues, errors: createErrors } = await createIssuesBatch(
         repo,
         issuesToCreate

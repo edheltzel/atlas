@@ -37,6 +37,108 @@ async function runGh(args: string[], cwd?: string): Promise<CommandResult> {
 }
 
 // =============================================================================
+// Cache (avoids redundant API calls)
+// =============================================================================
+
+const cache = {
+  token: null as string | null,
+  repoIds: new Map<string, string>(),
+  labelIds: new Map<string, Map<string, string>>(),
+};
+
+async function getToken(): Promise<string> {
+  if (cache.token) return cache.token;
+  const result = await runGh(['auth', 'token']);
+  if (result.exitCode !== 0) {
+    throw new Error('Failed to get GitHub token');
+  }
+  cache.token = result.stdout.trim();
+  return cache.token;
+}
+
+function escapeGraphQL(str: string): string {
+  return str
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r')
+    .replace(/\t/g, '\\t');
+}
+
+async function graphqlRequest(query: string): Promise<any> {
+  const token = await getToken();
+  const response = await fetch('https://api.github.com/graphql', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ query }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`GraphQL request failed: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+async function getRepoNodeId(owner: string, repo: string): Promise<string> {
+  const cacheKey = `${owner}/${repo}`;
+  if (cache.repoIds.has(cacheKey)) {
+    return cache.repoIds.get(cacheKey)!;
+  }
+
+  const query = `query { repository(owner: "${owner}", name: "${repo}") { id } }`;
+  const data = await graphqlRequest(query);
+
+  if (!data.data?.repository?.id) {
+    throw new Error(`Repository ${cacheKey} not found`);
+  }
+
+  cache.repoIds.set(cacheKey, data.data.repository.id);
+  return data.data.repository.id;
+}
+
+async function getLabelNodeIds(
+  owner: string,
+  repo: string,
+  labelNames: string[]
+): Promise<string[]> {
+  if (labelNames.length === 0) return [];
+
+  const cacheKey = `${owner}/${repo}`;
+  if (!cache.labelIds.has(cacheKey)) {
+    cache.labelIds.set(cacheKey, new Map());
+  }
+  const repoLabelCache = cache.labelIds.get(cacheKey)!;
+
+  // Check which labels we need to fetch
+  const missingLabels = labelNames.filter((name) => !repoLabelCache.has(name));
+
+  if (missingLabels.length > 0) {
+    // Fetch all labels for the repo (more efficient than individual queries)
+    const query = `query {
+      repository(owner: "${owner}", name: "${repo}") {
+        labels(first: 100) {
+          nodes { id name }
+        }
+      }
+    }`;
+    const data = await graphqlRequest(query);
+
+    for (const label of data.data?.repository?.labels?.nodes || []) {
+      repoLabelCache.set(label.name, label.id);
+    }
+  }
+
+  // Return IDs for requested labels (skip any not found)
+  return labelNames
+    .map((name) => repoLabelCache.get(name))
+    .filter((id): id is string => id !== undefined);
+}
+
+// =============================================================================
 // Repository Detection
 // =============================================================================
 
@@ -492,4 +594,96 @@ export async function removeLabels(
   if (result.exitCode !== 0) {
     throw new Error(`Failed to remove labels from issue #${number}: ${result.stderr}`);
   }
+}
+
+// =============================================================================
+// GraphQL Batch Operations (Fastest)
+// =============================================================================
+
+/**
+ * Create multiple issues using GraphQL batched mutations.
+ * Single HTTP request for all issues - fastest method.
+ */
+export async function createIssuesGraphQL(
+  repo: string,
+  issues: CreateIssueOptions[]
+): Promise<{ results: GitHubIssue[]; errors: string[] }> {
+  const [owner, repoName] = repo.split('/');
+  const results: GitHubIssue[] = [];
+  const errors: string[] = [];
+
+  if (issues.length === 0) {
+    return { results, errors };
+  }
+
+  try {
+    // Get repo node ID (cached)
+    const repoId = await getRepoNodeId(owner, repoName);
+
+    // Get label IDs for all unique labels (cached)
+    const allLabels = [...new Set(issues.flatMap((i) => i.labels))];
+    await getLabelNodeIds(owner, repoName, allLabels);
+    const labelCache = cache.labelIds.get(`${owner}/${repoName}`)!;
+
+    // Build batched mutation with aliases
+    const mutations = await Promise.all(
+      issues.map(async (issue, i) => {
+        const labelIds = issue.labels
+          .map((name) => labelCache.get(name))
+          .filter((id): id is string => id !== undefined);
+
+        const labelIdsStr = labelIds.map((id) => `"${id}"`).join(', ');
+
+        return `
+      i${i}: createIssue(input: {
+        repositoryId: "${repoId}"
+        title: "${escapeGraphQL(issue.title)}"
+        body: "${escapeGraphQL(issue.body || '')}"
+        ${labelIds.length > 0 ? `labelIds: [${labelIdsStr}]` : ''}
+      }) {
+        issue {
+          number
+          url
+          title
+          state
+          updatedAt
+        }
+      }`;
+      })
+    );
+
+    const query = `mutation BatchCreateIssues {\n${mutations.join('\n')}\n}`;
+
+    // Single HTTP request for all issues
+    const data = await graphqlRequest(query);
+
+    // Check for top-level errors
+    if (data.errors && data.errors.length > 0) {
+      for (const err of data.errors) {
+        errors.push(err.message);
+      }
+    }
+
+    // Parse results
+    for (let i = 0; i < issues.length; i++) {
+      const result = data.data?.[`i${i}`];
+      if (result?.issue) {
+        results.push({
+          number: result.issue.number,
+          url: result.issue.url,
+          title: result.issue.title,
+          body: issues[i].body || '',
+          state: result.issue.state.toLowerCase() as IssueState,
+          labels: issues[i].labels,
+          updatedAt: result.issue.updatedAt,
+        });
+      } else {
+        errors.push(`Failed to create issue ${i}: ${issues[i].title}`);
+      }
+    }
+  } catch (error) {
+    errors.push(error instanceof Error ? error.message : String(error));
+  }
+
+  return { results, errors };
 }

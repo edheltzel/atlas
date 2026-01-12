@@ -108,3 +108,14 @@ github_sync:
       synced_at: 2026-01-12T10:00:00Z
 ---
 ```
+
+## Performance
+
+Uses parallel REST API calls via native `fetch()` for maximum throughput:
+
+| Issues | Time | Method |
+|--------|------|--------|
+| 10 | ~0.5s | Parallel REST (default) |
+| 16 | ~0.8s | Parallel REST |
+
+**Note:** GraphQL batching is available but slower (~2s for 10 issues) because GitHub executes mutations sequentially server-side. REST parallel is faster.
