@@ -17,7 +17,7 @@ Personal AI Infrastructure for Claude Code.
 atlas/
 ├── .claude/
 │   ├── commands/atlas/   # 22 slash commands (/atlas:*)
-│   ├── skills/           # 11 skill definitions
+│   ├── skills/           # 12 skill definitions
 │   ├── hooks/            # 13 TypeScript lifecycle hooks
 │   ├── lib/              # Shared utilities (config, usage tracker)
 │   ├── security/         # Protection patterns
@@ -74,3 +74,4 @@ atlas/
 | Browser | Web automation | `.claude/skills/Browser/` |
 | Prompting | Meta-prompting templates | `.claude/skills/Prompting/` |
 | CreateSkill | Skill creation utility | `.claude/skills/CreateSkill/` |
+| UISkills | UI constraints for agents | `.claude/skills/UISkills/` |
