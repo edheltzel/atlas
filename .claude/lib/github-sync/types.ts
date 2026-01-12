@@ -229,6 +229,7 @@ export interface CreateIssueOptions {
   title: string;
   body: string;
   labels: string[];
+  assignees?: string[];
   project?: string;
 }
 
@@ -357,6 +358,7 @@ export interface GitHubSyncConfig {
   enabled: boolean;
   auto_sync_on_session_end: boolean;
   labels: GitHubSyncLabels;
+  default_assignees: string[];
   project: string | null;
   conflict_strategy: 'local_wins' | 'remote_wins' | 'newer_wins' | 'prompt';
 }
@@ -370,6 +372,7 @@ export const DEFAULT_CONFIG: GitHubSyncConfig = {
     status_in_progress: 'in-progress',
     status_completed: 'completed',
   },
+  default_assignees: ['edheltzel'],
   project: null,
   conflict_strategy: 'newer_wins',
 };

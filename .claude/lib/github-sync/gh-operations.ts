@@ -454,6 +454,7 @@ export async function createIssuesBatch(
               title: options.title,
               body: options.body || '',
               labels: options.labels,
+              assignees: options.assignees ?? [],
             }),
           }
         );

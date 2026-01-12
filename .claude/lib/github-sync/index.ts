@@ -285,6 +285,7 @@ async function cmdPush(options: CLIOptions): Promise<SyncResult> {
             completed: config.labels.status_completed,
           }),
         ],
+        assignees: config.default_assignees,
       }));
 
       // Parallel REST API calls - fastest method (GraphQL mutations are sequential server-side)
