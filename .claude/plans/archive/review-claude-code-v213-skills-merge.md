@@ -1,7 +1,8 @@
 # Review: Claude Code v2.1.3 Skills/Commands Merge
 
-**Status:** In Review
+**Status:** Completed
 **Created:** 2026-01-10
+**Completed:** 2026-01-12
 
 ## Summary
 
@@ -98,19 +99,21 @@ Many `/atlas:*` commands simply delegate to skills:
 
 ## Recommended Actions
 
-### Phase 1: Audit (No Code Changes)
+### Phase 1: Audit (No Code Changes) - ✅ COMPLETED
 
-- [ ] List all skills currently visible in slash menu
-- [ ] Identify any skills that should be hidden (`user-invocable: false`)
-- [ ] Check for redundancy between commands and skills
+- [x] List all skills currently visible in slash menu
+- [x] Identify any skills that should be hidden (`user-invocable: false`)
+- [x] Check for redundancy between commands and skills
 
-### Phase 2: Optimize (Optional)
+**Result:** Reviewed all 11 skills. Added `user-invocable: false` to CORE skill (commit 815bb4e). Other skills left visible per user decision.
+
+### Phase 2: Optimize (Optional) - DEFERRED
 
 - [ ] Consider removing command wrappers that only delegate to skills
-- [ ] Add `user-invocable: false` to internal-only skills
+- [x] Add `user-invocable: false` to internal-only skills *(Done for CORE only)*
 - [ ] Add `disable-model-invocation: true` to user-only skills if needed
 
-### Phase 3: Documentation
+### Phase 3: Documentation - DEFERRED
 
 - [ ] Update Atlas docs to reflect unified concept
 - [ ] Remove any references to "commands vs skills" distinction
