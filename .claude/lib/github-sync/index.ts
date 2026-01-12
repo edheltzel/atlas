@@ -31,7 +31,9 @@ import {
   detectRepo,
   checkGhAuth,
   createIssue,
+  createIssuesBatch,
   closeIssue,
+  closeIssuesBatch,
   reopenIssue,
   listIssues,
   ensureLabels,
@@ -262,52 +264,49 @@ async function cmdPush(options: CLIOptions): Promise<SyncResult> {
   const closeActions = actions.filter((a) => a.type === 'close');
   const reopenActions = actions.filter((a) => a.type === 'reopen');
 
-  // Process CREATE actions in parallel
+  // Process CREATE actions using true async batch API
   if (createActions.length > 0) {
     console.log(`Creating ${createActions.length} issues...`);
 
     if (!options.dryRun) {
       const startTime = Date.now();
 
-      const createResults = await parallelLimit(
-        createActions,
-        async (action) => {
-          const labels = [
-            config.labels.sync_marker,
-            ...statusToLabels(action.item.status, {
-              pending: config.labels.status_pending,
-              in_progress: config.labels.status_in_progress,
-              completed: config.labels.status_completed,
-            }),
-          ];
+      // Prepare batch request
+      const issuesToCreate = createActions.map((action) => ({
+        title: itemToIssueTitle(action.item),
+        body: itemToIssueBody(action.item, plan.project),
+        labels: [
+          config.labels.sync_marker,
+          ...statusToLabels(action.item.status, {
+            pending: config.labels.status_pending,
+            in_progress: config.labels.status_in_progress,
+            completed: config.labels.status_completed,
+          }),
+        ],
+      }));
 
-          const issue = await createIssue(repo, {
-            title: itemToIssueTitle(action.item),
-            body: itemToIssueBody(action.item, plan.project),
-            labels,
-            project: config.project || undefined,
-          });
-
-          return { action, issue };
-        },
-        DEFAULT_CONCURRENCY
+      // Single batch call - all issues created in parallel
+      const { results: createdIssues, errors: createErrors } = await createIssuesBatch(
+        repo,
+        issuesToCreate
       );
 
-      // Process results
-      for (const settled of createResults) {
-        if (settled.status === 'fulfilled') {
-          const { action, issue } = settled.value;
-          state = upsertMapping(state, action.item.content, issue.number, issue.url);
-          console.log(`  #${issue.number}: ${action.item.content.slice(0, 50)}...`);
-          result.created++;
-        } else {
-          const msg = settled.reason instanceof Error ? settled.reason.message : String(settled.reason);
-          result.errors.push(msg);
-          console.error(`  Error: ${msg}`);
-        }
+      // Map results back to actions
+      for (let i = 0; i < createdIssues.length; i++) {
+        const issue = createdIssues[i];
+        const action = createActions[i];
+        state = upsertMapping(state, action.item.content, issue.number, issue.url);
+        console.log(`  #${issue.number}: ${action.item.content.slice(0, 50)}...`);
+        result.created++;
       }
 
-      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      // Record errors
+      for (const error of createErrors) {
+        result.errors.push(error);
+        console.error(`  Error: ${error}`);
+      }
+
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
       console.log(`  Created ${result.created} issues in ${elapsed}s`);
     } else {
       for (const action of createActions) {
@@ -317,30 +316,24 @@ async function cmdPush(options: CLIOptions): Promise<SyncResult> {
     }
   }
 
-  // Process CLOSE actions in parallel
+  // Process CLOSE actions using true async batch API
   if (closeActions.length > 0) {
     console.log(`Closing ${closeActions.length} issues...`);
 
     if (!options.dryRun) {
-      const closeResults = await parallelLimit(
-        closeActions,
-        async (action) => {
-          await closeIssue(repo, action.issue!.number);
-          return action;
-        },
-        DEFAULT_CONCURRENCY
-      );
+      const issueNumbers = closeActions.map((a) => a.issue!.number);
+      const { closed, errors: closeErrors } = await closeIssuesBatch(repo, issueNumbers);
 
-      for (const settled of closeResults) {
-        if (settled.status === 'fulfilled') {
-          const action = settled.value;
+      for (const action of closeActions) {
+        if (closed.includes(action.issue!.number)) {
           state = upsertMapping(state, action.item.content, action.issue!.number, action.issue!.url);
           console.log(`  Closed #${action.issue!.number}`);
           result.closed++;
-        } else {
-          const msg = settled.reason instanceof Error ? settled.reason.message : String(settled.reason);
-          result.errors.push(msg);
         }
+      }
+
+      for (const error of closeErrors) {
+        result.errors.push(error);
       }
     } else {
       for (const action of closeActions) {
@@ -350,29 +343,20 @@ async function cmdPush(options: CLIOptions): Promise<SyncResult> {
     }
   }
 
-  // Process REOPEN actions in parallel
+  // Process REOPEN actions (still uses sequential - less common)
   if (reopenActions.length > 0) {
     console.log(`Reopening ${reopenActions.length} issues...`);
 
     if (!options.dryRun) {
-      const reopenResults = await parallelLimit(
-        reopenActions,
-        async (action) => {
+      for (const action of reopenActions) {
+        try {
           await reopenIssue(repo, action.issue!.number);
-          return action;
-        },
-        DEFAULT_CONCURRENCY
-      );
-
-      for (const settled of reopenResults) {
-        if (settled.status === 'fulfilled') {
-          const action = settled.value;
           state = upsertMapping(state, action.item.content, action.issue!.number, action.issue!.url);
           console.log(`  Reopened #${action.issue!.number}`);
           result.updated++;
-        } else {
-          const msg = settled.reason instanceof Error ? settled.reason.message : String(settled.reason);
-          result.errors.push(msg);
+        } catch (error) {
+          const msg = error instanceof Error ? error.message : String(error);
+          result.errors.push(`#${action.issue!.number}: ${msg}`);
         }
       }
     } else {

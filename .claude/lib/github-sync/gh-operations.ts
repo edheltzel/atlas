@@ -151,6 +151,149 @@ export async function createIssue(
 }
 
 /**
+ * Create multiple issues in parallel using REST API directly.
+ * Much faster than spawning multiple gh CLI processes.
+ */
+export async function createIssuesBatch(
+  repo: string,
+  issues: CreateIssueOptions[]
+): Promise<{ results: GitHubIssue[]; errors: string[] }> {
+  const [owner, repoName] = repo.split('/');
+  const results: GitHubIssue[] = [];
+  const errors: string[] = [];
+
+  // Get GitHub token from gh CLI
+  const tokenResult = await runGh(['auth', 'token']);
+  if (tokenResult.exitCode !== 0) {
+    throw new Error('Failed to get GitHub token');
+  }
+  const token = tokenResult.stdout.trim();
+
+  // Create all issues in parallel using fetch
+  const promises = issues.map(async (options, index) => {
+    try {
+      const response = await fetch(
+        `https://api.github.com/repos/${owner}/${repoName}/issues`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/vnd.github+json',
+            'X-GitHub-Api-Version': '2022-11-28',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            title: options.title,
+            body: options.body || '',
+            labels: options.labels,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`HTTP ${response.status}: ${error}`);
+      }
+
+      const data = await response.json();
+      return {
+        index,
+        issue: {
+          number: data.number,
+          title: data.title,
+          body: data.body || '',
+          state: data.state as IssueState,
+          labels: data.labels?.map((l: { name: string }) => l.name) || [],
+          updatedAt: data.updated_at,
+          url: data.html_url,
+        },
+      };
+    } catch (error) {
+      return {
+        index,
+        error: error instanceof Error ? error.message : String(error),
+      };
+    }
+  });
+
+  // Wait for all to complete
+  const settled = await Promise.all(promises);
+
+  // Sort by index to maintain order
+  settled.sort((a, b) => a.index - b.index);
+
+  for (const result of settled) {
+    if ('issue' in result) {
+      results.push(result.issue);
+    } else {
+      errors.push(result.error);
+    }
+  }
+
+  return { results, errors };
+}
+
+/**
+ * Close multiple issues in parallel using REST API.
+ */
+export async function closeIssuesBatch(
+  repo: string,
+  issueNumbers: number[]
+): Promise<{ closed: number[]; errors: string[] }> {
+  const [owner, repoName] = repo.split('/');
+  const closed: number[] = [];
+  const errors: string[] = [];
+
+  const tokenResult = await runGh(['auth', 'token']);
+  if (tokenResult.exitCode !== 0) {
+    throw new Error('Failed to get GitHub token');
+  }
+  const token = tokenResult.stdout.trim();
+
+  const promises = issueNumbers.map(async (number) => {
+    try {
+      const response = await fetch(
+        `https://api.github.com/repos/${owner}/${repoName}/issues/${number}`,
+        {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/vnd.github+json',
+            'X-GitHub-Api-Version': '2022-11-28',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ state: 'closed' }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      return { number, success: true };
+    } catch (error) {
+      return {
+        number,
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+      };
+    }
+  });
+
+  const results = await Promise.all(promises);
+
+  for (const result of results) {
+    if (result.success) {
+      closed.push(result.number);
+    } else {
+      errors.push(`#${result.number}: ${result.error}`);
+    }
+  }
+
+  return { closed, errors };
+}
+
+/**
  * Get issue details by number.
  */
 export async function getIssue(
