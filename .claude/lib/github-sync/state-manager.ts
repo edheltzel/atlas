@@ -74,8 +74,8 @@ export function upsertMapping(
   const mapping: IssueMapping = {
     step: itemContent,
     issue: issueNumber,
-    url: issueUrl,
     synced_at: now,
+    ...(issueUrl !== undefined && { url: issueUrl }),
   };
 
   if (existingIndex >= 0) {
@@ -103,12 +103,44 @@ export function removeMapping(
 // Sync Logic
 // =============================================================================
 
-export interface SyncAction {
-  type: 'create' | 'update' | 'close' | 'reopen' | 'skip';
+// Discriminated union for sync actions - provides exhaustive type checking
+export interface SyncActionCreate {
+  type: 'create';
   item: PlanItem;
-  issue?: GitHubIssue;
   reason?: string;
 }
+
+export interface SyncActionUpdate {
+  type: 'update';
+  item: PlanItem;
+  issue: GitHubIssue;
+}
+
+export interface SyncActionClose {
+  type: 'close';
+  item: PlanItem;
+  issue: GitHubIssue;
+}
+
+export interface SyncActionReopen {
+  type: 'reopen';
+  item: PlanItem;
+  issue: GitHubIssue;
+}
+
+export interface SyncActionSkip {
+  type: 'skip';
+  item: PlanItem;
+  issue: GitHubIssue;
+  reason: string;
+}
+
+export type SyncAction =
+  | SyncActionCreate
+  | SyncActionUpdate
+  | SyncActionClose
+  | SyncActionReopen
+  | SyncActionSkip;
 
 /**
  * Determine sync actions needed for push operation.

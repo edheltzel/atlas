@@ -80,6 +80,7 @@ async function parallelLimit<T, R>(
 
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
+    if (item === undefined) continue;
     const promise = fn(item)
       .then((value) => {
         results[i] = { status: 'fulfilled', value };
@@ -110,7 +111,7 @@ async function parallelLimit<T, R>(
 // =============================================================================
 
 function loadConfig(): GitHubSyncConfig {
-  const paiDir = process.env.PAI_DIR || resolve(homedir(), '.claude');
+  const paiDir = process.env['PAI_DIR'] ?? resolve(homedir(), '.claude');
   const configPath = resolve(paiDir, 'atlas.yaml');
 
   if (!existsSync(configPath)) {
@@ -296,6 +297,7 @@ async function cmdPush(options: CLIOptions): Promise<SyncResult> {
       for (let i = 0; i < createdIssues.length; i++) {
         const issue = createdIssues[i];
         const action = createActions[i];
+        if (!issue || !action) continue;
         state = upsertMapping(state, action.item.content, issue.number, issue.url);
         console.log(`  #${issue.number}: ${action.item.content.slice(0, 50)}...`);
         result.created++;

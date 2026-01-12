@@ -92,8 +92,9 @@ export function parsePlanContent(content: string): ParsedPlan {
       const yamlContent = lines.slice(1, frontmatterEnd).join('\n');
       try {
         frontmatter = parseYaml(yamlContent) || {};
-        if (frontmatter.github_sync) {
-          syncState = frontmatter.github_sync as SyncState;
+        const ghSync = frontmatter['github_sync'];
+        if (ghSync) {
+          syncState = ghSync as SyncState;
         }
       } catch {
         // Invalid YAML, continue with empty frontmatter
@@ -112,19 +113,21 @@ export function parsePlanContent(content: string): ParsedPlan {
 
     // Phase header (### Phase N: Name)
     const phaseMatch = line?.match(/^###\s+(.+)$/);
-    if (phaseMatch) {
-      currentPhase = phaseMatch[1].trim();
+    const phaseContent = phaseMatch?.[1];
+    if (phaseContent) {
+      currentPhase = phaseContent.trim();
       continue;
     }
 
     // Checkbox item (- [ ] or - [x])
     const checkboxMatch = line?.match(/^(\s*)-\s*\[([ xX])\]\s*(.+)$/);
-    if (checkboxMatch) {
-      const isChecked = checkboxMatch[2].toLowerCase() === 'x';
-      const itemContent = checkboxMatch[3].trim();
+    const checkChar = checkboxMatch?.[2];
+    const itemContent = checkboxMatch?.[3];
+    if (checkboxMatch && checkChar && itemContent) {
+      const isChecked = checkChar.toLowerCase() === 'x';
 
       items.push({
-        content: itemContent,
+        content: itemContent.trim(),
         status: isChecked ? 'completed' : 'pending',
         phase: currentPhase,
         lineNumber,
@@ -134,8 +137,8 @@ export function parsePlanContent(content: string): ParsedPlan {
   }
 
   return {
-    project: (frontmatter.project as string) || '',
-    directory: (frontmatter.directory as string) || '',
+    project: String(frontmatter['project'] ?? ''),
+    directory: String(frontmatter['directory'] ?? ''),
     items,
     syncState,
     frontmatter,
@@ -188,7 +191,7 @@ export function updateSyncState(
   }
 
   // Update github_sync
-  frontmatter.github_sync = syncState;
+  frontmatter['github_sync'] = syncState;
 
   // Rebuild file
   const newYaml = stringifyYaml(frontmatter);
@@ -212,10 +215,13 @@ export function updateItemStatus(
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const checkboxMatch = line?.match(/^(\s*-\s*\[)([ xX])(\]\s*)(.+)$/);
+    const prefix = checkboxMatch?.[1];
+    const suffix = checkboxMatch?.[3];
+    const matchContent = checkboxMatch?.[4];
 
-    if (checkboxMatch && checkboxMatch[4].trim() === content) {
+    if (prefix && suffix && matchContent && matchContent.trim() === content) {
       const newCheckbox = newStatus === 'completed' ? 'x' : ' ';
-      lines[i] = `${checkboxMatch[1]}${newCheckbox}${checkboxMatch[3]}${checkboxMatch[4]}`;
+      lines[i] = `${prefix}${newCheckbox}${suffix}${matchContent}`;
       break;
     }
   }
@@ -238,10 +244,13 @@ export function updateMultipleItems(
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       const checkboxMatch = line?.match(/^(\s*-\s*\[)([ xX])(\]\s*)(.+)$/);
+      const prefix = checkboxMatch?.[1];
+      const suffix = checkboxMatch?.[3];
+      const matchContent = checkboxMatch?.[4];
 
-      if (checkboxMatch && checkboxMatch[4].trim() === content) {
+      if (prefix && suffix && matchContent && matchContent.trim() === content) {
         const newCheckbox = status === 'completed' ? 'x' : ' ';
-        lines[i] = `${checkboxMatch[1]}${newCheckbox}${checkboxMatch[3]}${checkboxMatch[4]}`;
+        lines[i] = `${prefix}${newCheckbox}${suffix}${matchContent}`;
         break;
       }
     }
