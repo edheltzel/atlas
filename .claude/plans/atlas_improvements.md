@@ -37,7 +37,12 @@ Improvements to Atlas architecture and skills.
 **Details (Issue #2):**
 > Add https://github.com/ibelick/ui-skills
 
+### Phase 3: Two-Way GitHub Sync
+- [x] Add SessionStart hook for background pull
+- [x] Make DeepPlan the default for task/issue creation
+
 ## Status Updates
 
 - 2026-01-12: Created plan from existing GitHub issues #1 and #2
 - 2026-01-12: Added UISkills from ibelick/ui-skills (Issue #2 closed)
+- 2026-01-12: Added two-way GitHub sync (pull on start, push on end) + DeepPlan integration
