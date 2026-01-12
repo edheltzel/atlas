@@ -1,0 +1,343 @@
+/**
+ * GitHub CLI Operations
+ *
+ * Wrapper functions for `gh` CLI commands.
+ * Uses Bun's shell for subprocess execution.
+ */
+
+import type {
+  GitHubIssue,
+  CreateIssueOptions,
+  UpdateIssueOptions,
+  IssueState,
+} from './types';
+
+// =============================================================================
+// Helpers
+// =============================================================================
+
+interface CommandResult {
+  stdout: string;
+  stderr: string;
+  exitCode: number;
+}
+
+async function runGh(args: string[], cwd?: string): Promise<CommandResult> {
+  const proc = Bun.spawn(['gh', ...args], {
+    cwd,
+    stdout: 'pipe',
+    stderr: 'pipe',
+  });
+
+  const stdout = await new Response(proc.stdout).text();
+  const stderr = await new Response(proc.stderr).text();
+  const exitCode = await proc.exited;
+
+  return { stdout, stderr, exitCode };
+}
+
+// =============================================================================
+// Repository Detection
+// =============================================================================
+
+/**
+ * Detect GitHub repo from git remote origin.
+ * Returns owner/repo format or null if not a GitHub repo.
+ */
+export async function detectRepo(cwd?: string): Promise<string | null> {
+  try {
+    // Check if in a git repo
+    const gitCheck = Bun.spawn(['git', 'rev-parse', '--is-inside-work-tree'], {
+      cwd,
+      stdout: 'pipe',
+      stderr: 'pipe',
+    });
+    if ((await gitCheck.exited) !== 0) return null;
+
+    // Get remote URL
+    const remoteProc = Bun.spawn(['git', 'remote', 'get-url', 'origin'], {
+      cwd,
+      stdout: 'pipe',
+      stderr: 'pipe',
+    });
+    const remoteUrl = await new Response(remoteProc.stdout).text();
+    if ((await remoteProc.exited) !== 0) return null;
+
+    // Parse GitHub URL
+    // Handles: git@github.com:owner/repo.git
+    //          https://github.com/owner/repo.git
+    const url = remoteUrl.trim();
+
+    // SSH format
+    const sshMatch = url.match(/git@github\.com:([^/]+)\/(.+?)(?:\.git)?$/);
+    if (sshMatch) return `${sshMatch[1]}/${sshMatch[2]}`;
+
+    // HTTPS format
+    const httpsMatch = url.match(/github\.com\/([^/]+)\/(.+?)(?:\.git)?$/);
+    if (httpsMatch) return `${httpsMatch[1]}/${httpsMatch[2]}`;
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Check if gh CLI is installed and authenticated.
+ */
+export async function checkGhAuth(): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const result = await runGh(['auth', 'status']);
+    if (result.exitCode !== 0) {
+      return { ok: false, error: 'Not authenticated. Run: gh auth login' };
+    }
+    return { ok: true };
+  } catch {
+    return { ok: false, error: 'gh CLI not found. Install: brew install gh' };
+  }
+}
+
+// =============================================================================
+// Issue Operations
+// =============================================================================
+
+/**
+ * Create a new GitHub issue.
+ */
+export async function createIssue(
+  repo: string,
+  options: CreateIssueOptions
+): Promise<GitHubIssue> {
+  const args = [
+    'issue',
+    'create',
+    '-R',
+    repo,
+    '-t',
+    options.title,
+    '-b',
+    options.body || '',
+  ];
+
+  if (options.labels.length > 0) {
+    args.push('-l', options.labels.join(','));
+  }
+
+  if (options.project) {
+    args.push('-p', options.project);
+  }
+
+  const result = await runGh(args);
+
+  if (result.exitCode !== 0) {
+    throw new Error(`Failed to create issue: ${result.stderr}`);
+  }
+
+  // gh issue create returns the URL, we need to get the issue details
+  const issueUrl = result.stdout.trim();
+  const issueNumber = parseInt(issueUrl.split('/').pop() || '0', 10);
+
+  // Get full issue details
+  return getIssue(repo, issueNumber);
+}
+
+/**
+ * Get issue details by number.
+ */
+export async function getIssue(
+  repo: string,
+  number: number
+): Promise<GitHubIssue> {
+  const result = await runGh([
+    'issue',
+    'view',
+    String(number),
+    '-R',
+    repo,
+    '--json',
+    'number,title,body,state,labels,updatedAt,url',
+  ]);
+
+  if (result.exitCode !== 0) {
+    throw new Error(`Failed to get issue #${number}: ${result.stderr}`);
+  }
+
+  const data = JSON.parse(result.stdout);
+  return {
+    number: data.number,
+    title: data.title,
+    body: data.body || '',
+    state: data.state.toLowerCase() as IssueState,
+    labels: data.labels?.map((l: { name: string }) => l.name) || [],
+    updatedAt: data.updatedAt,
+    url: data.url,
+  };
+}
+
+/**
+ * Update an existing issue.
+ */
+export async function updateIssue(
+  repo: string,
+  number: number,
+  options: UpdateIssueOptions
+): Promise<void> {
+  const args = ['issue', 'edit', String(number), '-R', repo];
+
+  if (options.title) args.push('-t', options.title);
+  if (options.body !== undefined) args.push('-b', options.body);
+
+  const result = await runGh(args);
+
+  if (result.exitCode !== 0) {
+    throw new Error(`Failed to update issue #${number}: ${result.stderr}`);
+  }
+}
+
+/**
+ * Close an issue.
+ */
+export async function closeIssue(repo: string, number: number): Promise<void> {
+  const result = await runGh(['issue', 'close', String(number), '-R', repo]);
+
+  if (result.exitCode !== 0) {
+    throw new Error(`Failed to close issue #${number}: ${result.stderr}`);
+  }
+}
+
+/**
+ * Reopen an issue.
+ */
+export async function reopenIssue(repo: string, number: number): Promise<void> {
+  const result = await runGh(['issue', 'reopen', String(number), '-R', repo]);
+
+  if (result.exitCode !== 0) {
+    throw new Error(`Failed to reopen issue #${number}: ${result.stderr}`);
+  }
+}
+
+/**
+ * List issues with filters.
+ */
+export async function listIssues(
+  repo: string,
+  filters?: { labels?: string[]; state?: 'open' | 'closed' | 'all' }
+): Promise<GitHubIssue[]> {
+  const args = [
+    'issue',
+    'list',
+    '-R',
+    repo,
+    '--json',
+    'number,title,body,state,labels,updatedAt,url',
+    '-L',
+    '100',
+  ];
+
+  if (filters?.labels?.length) {
+    args.push('-l', filters.labels.join(','));
+  }
+
+  if (filters?.state) {
+    args.push('-s', filters.state);
+  }
+
+  const result = await runGh(args);
+
+  if (result.exitCode !== 0) {
+    return [];
+  }
+
+  const data = JSON.parse(result.stdout);
+  return data.map(
+    (issue: {
+      number: number;
+      title: string;
+      body: string;
+      state: string;
+      labels: { name: string }[];
+      updatedAt: string;
+      url: string;
+    }) => ({
+      number: issue.number,
+      title: issue.title,
+      body: issue.body || '',
+      state: issue.state.toLowerCase() as IssueState,
+      labels: issue.labels?.map((l) => l.name) || [],
+      updatedAt: issue.updatedAt,
+      url: issue.url,
+    })
+  );
+}
+
+// =============================================================================
+// Label Operations
+// =============================================================================
+
+/**
+ * Ensure required labels exist in the repo.
+ */
+export async function ensureLabels(
+  repo: string,
+  labels: string[]
+): Promise<void> {
+  for (const label of labels) {
+    // Create label if it doesn't exist (--force makes it idempotent)
+    await runGh([
+      'label',
+      'create',
+      label,
+      '-R',
+      repo,
+      '--force',
+      '-d',
+      `Atlas sync label: ${label}`,
+    ]);
+  }
+}
+
+/**
+ * Add labels to an issue.
+ */
+export async function addLabels(
+  repo: string,
+  number: number,
+  labels: string[]
+): Promise<void> {
+  const result = await runGh([
+    'issue',
+    'edit',
+    String(number),
+    '-R',
+    repo,
+    '--add-label',
+    labels.join(','),
+  ]);
+
+  if (result.exitCode !== 0) {
+    throw new Error(`Failed to add labels to issue #${number}: ${result.stderr}`);
+  }
+}
+
+/**
+ * Remove labels from an issue.
+ */
+export async function removeLabels(
+  repo: string,
+  number: number,
+  labels: string[]
+): Promise<void> {
+  const result = await runGh([
+    'issue',
+    'edit',
+    String(number),
+    '-R',
+    repo,
+    '--remove-label',
+    labels.join(','),
+  ]);
+
+  if (result.exitCode !== 0) {
+    throw new Error(`Failed to remove labels from issue #${number}: ${result.stderr}`);
+  }
+}

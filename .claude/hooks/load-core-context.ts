@@ -40,9 +40,6 @@ function getLocalTimestamp(): string {
 async function sendVoiceGreeting(): Promise<void> {
   const serverUrl = process.env.PAI_VOICE_SERVER || 'http://localhost:8888/notify';
 
-  // Wait a moment for voice server to be ready
-  await new Promise(resolve => setTimeout(resolve, 1500));
-
   try {
     await fetch(serverUrl, {
       method: 'POST',
@@ -52,9 +49,10 @@ async function sendVoiceGreeting(): Promise<void> {
         message: 'Hello, Ed. Atlas, standing by.',
         voice_enabled: true
       }),
+      signal: AbortSignal.timeout(2000) // 2s timeout
     });
   } catch (error) {
-    // Fail silently - voice server may not be running yet
+    // Fail silently - voice server may not be running
   }
 }
 
@@ -107,8 +105,8 @@ Hello, Ed. Atlas, standing by.`;
     // Output goes to stdout - Claude Code will see it
     console.log(output);
 
-    // Send voice greeting
-    await sendVoiceGreeting();
+    // Send voice greeting (fire-and-forget, don't block hook)
+    sendVoiceGreeting().catch(() => {});
 
   } catch (error) {
     // Never crash - just skip

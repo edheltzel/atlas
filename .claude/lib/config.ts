@@ -41,11 +41,29 @@ export const FeaturesSchema = z.object({
   observability_enabled: z.boolean().default(true),
 });
 
+export const GitHubSyncLabelsSchema = z.object({
+  sync_marker: z.string().default('atlas-sync'),
+  status_pending: z.string().default('pending'),
+  status_in_progress: z.string().default('in-progress'),
+  status_completed: z.string().default('completed'),
+});
+
+export const GitHubSyncSchema = z.object({
+  enabled: z.boolean().default(true),
+  auto_sync_on_session_end: z.boolean().default(true),
+  labels: GitHubSyncLabelsSchema.default({}),
+  project: z.string().nullable().default(null),
+  conflict_strategy: z
+    .enum(['local_wins', 'remote_wins', 'newer_wins', 'prompt'])
+    .default('newer_wins'),
+});
+
 export const AtlasConfigSchema = z.object({
   identity: IdentitySchema.default({}),
   voice: VoiceSchema.default({}),
   observability: ObservabilitySchema.default({}),
   features: FeaturesSchema.default({}),
+  github_sync: GitHubSyncSchema.optional(),
 });
 
 // =============================================================================
@@ -57,6 +75,8 @@ export type GoogleTTS = z.infer<typeof GoogleTTSSchema>;
 export type VoiceConfig = z.infer<typeof VoiceSchema>;
 export type ObservabilityConfig = z.infer<typeof ObservabilitySchema>;
 export type FeaturesConfig = z.infer<typeof FeaturesSchema>;
+export type GitHubSyncLabels = z.infer<typeof GitHubSyncLabelsSchema>;
+export type GitHubSyncConfig = z.infer<typeof GitHubSyncSchema>;
 export type AtlasConfig = z.infer<typeof AtlasConfigSchema>;
 
 // =============================================================================
