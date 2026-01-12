@@ -1,6 +1,6 @@
 ---
 name: Algorithm
-description: Universal execution engine using scientific method to achieve ideal state. USE WHEN complex tasks, multi-step work, "run the algorithm", "use the algorithm", OR any non-trivial request that benefits from structured execution with ISC (Ideal State Criteria) tracking.
+description: Atlas skill, universal execution engine using scientific method to achieve ideal state. USE WHEN complex tasks, multi-step work, "run the algorithm", "use the algorithm", OR any non-trivial request that benefits from structured execution with ISC (Ideal State Criteria) tracking.
 ---
 
 # THE ALGORITHM - Universal Execution Engine

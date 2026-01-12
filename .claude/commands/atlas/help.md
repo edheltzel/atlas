@@ -10,14 +10,14 @@ Quick reference for all Atlas custom commands.
 - `/atlas:voice <name>` - Switch voice personality
 - `/atlas:voices` - List all available voice personalities
 
-## Skills
-- `/atlas:algorithm [action]` - Launch THE ALGORITHM for structured task execution
+## Skills (invoke directly via /SkillName)
+- `/Algorithm [action]` - Structured task execution with ISC tracking
   - Actions: `show`, `start LEVEL`, `phase PHASE`
-- `/atlas:art <task>` - Launch Art skill for visual content
-- `/atlas:agents <task>` - Launch Agents skill for custom agents
-- `/atlas:browser <task>` - Launch Browser skill for web automation
-- `/atlas:deep-plan <task>` - Manus AI-inspired deep planning for complex tasks
-- `/atlas:prompting <task>` - Launch Prompting skill for meta-prompting
+- `/Art <task>` - Visual content with Excalidraw aesthetic
+- `/Agents <task>` - Custom agent composition
+- `/Browser <task>` - Web automation and verification
+- `/DeepPlan <task>` - Manus AI-inspired persistent planning
+- `/Prompting <task>` - Meta-prompting and templates
 - `/atlas:skills` - List installed skills
 
 ## System Status

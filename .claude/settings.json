@@ -50,6 +50,10 @@
           {
             "type": "command",
             "command": "bun run $PAI_DIR/hooks/capture-all-events.ts --event-type SessionEnd"
+          },
+          {
+            "type": "command",
+            "command": "bun run $PAI_DIR/hooks/sync-issues-on-session-end.ts"
           }
         ]
       }

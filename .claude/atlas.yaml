@@ -55,3 +55,20 @@ observability:
 features:
   voice_enabled: true
   observability_enabled: true
+
+# GitHub Issues Sync
+# Sync DeepPlan task_plan.md checkboxes with GitHub Issues
+github_sync:
+  enabled: true
+  # Auto-sync on session end
+  auto_sync_on_session_end: true
+  # Issue labels
+  labels:
+    sync_marker: atlas-sync      # Identifies synced issues
+    status_pending: pending
+    status_in_progress: in-progress
+    status_completed: completed
+  # Optional: GitHub Project board name
+  project: null
+  # Conflict resolution: local_wins, remote_wins, newer_wins, prompt
+  conflict_strategy: newer_wins

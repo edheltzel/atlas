@@ -1,6 +1,6 @@
 ---
 name: prompting
-description: Atlas skill for meta-prompting and dynamic prompt generation using templates, standards, and patterns. USE WHEN meta-prompting, template generation, prompt optimization, or programmatic prompt composition.
+description: Atlas skill, meta-prompting and dynamic prompt generation using templates, standards, and patterns. USE WHEN meta-prompting, template generation, prompt optimization, or programmatic prompt composition.
 context: fork
 ---
 
