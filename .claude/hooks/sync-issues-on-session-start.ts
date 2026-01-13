@@ -7,6 +7,7 @@
  */
 
 import { existsSync, readFileSync } from 'fs';
+import { spawn } from 'child_process';
 import { join } from 'path';
 import { homedir } from 'os';
 import { parse as parseYaml } from 'yaml';
@@ -96,8 +97,11 @@ function loadSyncConfig(paiDir: string): GitHubSyncConfig | null {
 }
 
 async function main(): Promise<void> {
-  // Exit immediately - run sync in detached background process
-  // This ensures we NEVER block session start
+  // Hard timeout - NEVER block session start for more than 2 seconds
+  const timeout = setTimeout(() => {
+    console.error('[Atlas] GitHub sync check timed out, skipping');
+    process.exit(0);
+  }, 2000);
 
   try {
     const stdinData = await Bun.stdin.text();
@@ -127,13 +131,15 @@ async function main(): Promise<void> {
     // Spawn detached background process for pull
     const syncTool = join(paiDir, 'lib', 'github-sync', 'index.ts');
 
-    // Use spawn with detached to run in background
-    Bun.spawn(['bun', 'run', syncTool, 'pull'], {
+    // Use Node's spawn with detached: true for true background execution
+    const child = spawn('bun', ['run', syncTool, 'pull'], {
       cwd,
-      stdout: 'ignore',
-      stderr: 'ignore',
-      // Detach from parent - runs independently
+      detached: true,
+      stdio: 'ignore',
     });
+
+    // Unref allows parent to exit independently
+    child.unref();
 
     // Don't wait - exit immediately so session starts fast
     console.error('[Atlas] GitHub pull started in background');
@@ -146,6 +152,7 @@ async function main(): Promise<void> {
     );
   }
 
+  clearTimeout(timeout);
   process.exit(0);
 }
 
