@@ -36,3 +36,7 @@ CYCLE_RESET_FG=$'\e[38;2;235;250;250m'  # Lighthouse White #ebfafa
 # Cycle icons
 ICON_CYCLE="󱀋"
 ICON_RESET="󰔟"
+
+# Git branch
+ICON_BRANCH=$'\xef\x84\xa6'            # Nerd Font git branch (U+F126)
+BRANCH_FG=$'\e[38;2;55;244;153m'       # Great Old One Green #37f499

@@ -98,8 +98,19 @@ if [ -n "$USAGE_JSON" ] && [ "$USAGE_JSON" != "null" ]; then
   OUTPUT+="${CYCLE_RESET_FG}${ICON_RESET} ${RESET_H}h${RESET_M}m${COLOR_RESET}"
 fi
 
-# --- CWD ---
+# --- CWD with Git Branch ---
 OUTPUT+=" ${SEP_FG}${SEP}${COLOR_RESET} "
-OUTPUT+="${CWD_FG}${ICON_FOLDER} ${CWD_DISPLAY}${COLOR_RESET}"
+
+# Get git branch if in a repo
+GIT_BRANCH=""
+if [ -d "$CWD/.git" ] || git -C "$CWD" rev-parse --git-dir > /dev/null 2>&1; then
+  GIT_BRANCH=$(git -C "$CWD" symbolic-ref --short HEAD 2>/dev/null || git -C "$CWD" describe --tags --exact-match 2>/dev/null || git -C "$CWD" rev-parse --short HEAD 2>/dev/null)
+fi
+
+if [ -n "$GIT_BRANCH" ]; then
+  OUTPUT+="${CWD_FG}${ICON_FOLDER} ${CWD_DISPLAY}${COLOR_RESET} ${SEP_FG}on${COLOR_RESET} ${BRANCH_FG}${ICON_BRANCH} ${GIT_BRANCH}${COLOR_RESET}"
+else
+  OUTPUT+="${CWD_FG}${ICON_FOLDER} ${CWD_DISPLAY}${COLOR_RESET}"
+fi
 
 echo "$OUTPUT"
