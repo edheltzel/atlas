@@ -6,21 +6,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSy
 import { join, dirname } from 'path';
 import { homedir } from 'os';
 import { extractAgentInstanceId } from './lib/metadata-extraction';
-
-function getLocalTimestamp(): string {
-  const date = new Date();
-  const tz = process.env.TIME_ZONE || Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const localDate = new Date(date.toLocaleString('en-US', { timeZone: tz }));
-
-  const year = localDate.getFullYear();
-  const month = String(localDate.getMonth() + 1).padStart(2, '0');
-  const day = String(localDate.getDate()).padStart(2, '0');
-  const hours = String(localDate.getHours()).padStart(2, '0');
-  const minutes = String(localDate.getMinutes()).padStart(2, '0');
-  const seconds = String(localDate.getSeconds()).padStart(2, '0');
-
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-}
+import { getLocalTimestamp, getYearMonth } from './lib/timestamps';
 
 async function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -124,9 +110,8 @@ async function captureAgentOutput(
   const paiDir = process.env.PAI_DIR || join(homedir(), '.config', 'pai');
   const historyDir = join(paiDir, 'history');
 
-  const now = new Date();
-  const timestamp = now.toISOString().replace(/[-:]/g, '').split('.')[0];
-  const yearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const timestamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0];
+  const yearMonth = getYearMonth();
 
   // Route by agent type
   let captureType = 'RESEARCH';

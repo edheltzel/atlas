@@ -5,27 +5,27 @@
 import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
+import { getLocalTimestamp, getYearMonth, generateFilename } from './lib/timestamps';
+
+// Constants
+const MIN_RESPONSE_LENGTH = 50;
+const MAX_SUMMARY_LENGTH = 100;
+const MAX_RESPONSE_SIZE = 5000;
+const MAX_FILENAME_DESC_LENGTH = 60;
+const MIN_LEARNING_INDICATORS = 2;
+
+// Types
+interface ContentBlock {
+  type?: string;
+  text?: string;
+  content?: string;
+}
 
 interface StopPayload {
   stop_hook_active: boolean;
   transcript_path?: string;
   response?: string;
   session_id?: string;
-}
-
-function getLocalTimestamp(): string {
-  const date = new Date();
-  const tz = process.env.TIME_ZONE || Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const localDate = new Date(date.toLocaleString('en-US', { timeZone: tz }));
-
-  const year = localDate.getFullYear();
-  const month = String(localDate.getMonth() + 1).padStart(2, '0');
-  const day = String(localDate.getDate()).padStart(2, '0');
-  const hours = String(localDate.getHours()).padStart(2, '0');
-  const minutes = String(localDate.getMinutes()).padStart(2, '0');
-  const seconds = String(localDate.getSeconds()).padStart(2, '0');
-
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
 function hasLearningIndicators(text: string): boolean {
@@ -35,38 +35,37 @@ function hasLearningIndicators(text: string): boolean {
     'mistake', 'error', 'bug', 'solution'
   ];
   const lowerText = text.toLowerCase();
-  const matches = indicators.filter(i => lowerText.includes(i));
-  return matches.length >= 2;
+  let count = 0;
+  for (const indicator of indicators) {
+    if (lowerText.includes(indicator) && ++count >= MIN_LEARNING_INDICATORS) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function extractSummary(response: string): string {
   // Look for COMPLETED section
   const completedMatch = response.match(/🎯\s*COMPLETED[:\s]*(.+?)(?:\n|$)/i);
   if (completedMatch) {
-    return completedMatch[1].trim().slice(0, 100);
+    return completedMatch[1].trim().slice(0, MAX_SUMMARY_LENGTH);
   }
 
   // Look for SUMMARY section
   const summaryMatch = response.match(/📋\s*SUMMARY[:\s]*(.+?)(?:\n|$)/i);
   if (summaryMatch) {
-    return summaryMatch[1].trim().slice(0, 100);
+    return summaryMatch[1].trim().slice(0, MAX_SUMMARY_LENGTH);
   }
 
   // Fallback: first meaningful line
   const lines = response.split('\n').filter(l => l.trim().length > 10);
   if (lines.length > 0) {
-    return lines[0].trim().slice(0, 100);
+    return lines[0].trim().slice(0, MAX_SUMMARY_LENGTH);
   }
 
   return 'work-session';
 }
 
-function generateFilename(type: string, description: string): string {
-  const now = new Date();
-  const timestamp = now.toISOString().replace(/[-:]/g, '').split('.')[0];
-  const kebab = description.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
-  return `${timestamp}_${type}_${kebab}.md`;
-}
 
 /**
  * Extract the last assistant response from a transcript file.
@@ -96,7 +95,7 @@ function extractResponseFromTranscript(transcriptPath: string): string | null {
             : [entry.message.content];
 
           const response = contentArray
-            .map((c: any) => {
+            .map((c: string | ContentBlock) => {
               if (typeof c === 'string') return c;
               if (c?.text) return c.text;
               if (c?.content) return String(c.content);
@@ -105,7 +104,7 @@ function extractResponseFromTranscript(transcriptPath: string): string | null {
             .join('\n')
             .trim();
 
-          if (response && response.length > 50) {
+          if (response && response.length > MIN_RESPONSE_LENGTH) {
             return response;
           }
         }
@@ -127,7 +126,13 @@ async function main() {
       process.exit(0);
     }
 
-    const payload: StopPayload = JSON.parse(stdinData);
+    const parsed = JSON.parse(stdinData);
+
+    // Validate payload structure
+    if (typeof parsed !== 'object' || parsed === null) {
+      process.exit(0);
+    }
+    const payload = parsed as StopPayload;
 
     // Try to get response from payload first, then from transcript
     let response = payload.response;
@@ -146,8 +151,7 @@ async function main() {
     const type = isLearning ? 'LEARNING' : 'SESSION';
     const subdir = isLearning ? 'learnings' : 'sessions';
 
-    const now = new Date();
-    const yearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const yearMonth = getYearMonth();
     const outputDir = join(historyDir, subdir, yearMonth);
 
     if (!existsSync(outputDir)) {
@@ -155,11 +159,11 @@ async function main() {
     }
 
     const summary = extractSummary(response);
-    const filename = generateFilename(type, summary);
+    const filename = generateFilename(type, summary, MAX_FILENAME_DESC_LENGTH);
     const filepath = join(outputDir, filename);
 
     // Limit response size to prevent huge files
-    const truncatedResponse = response.slice(0, 5000);
+    const truncatedResponse = response.slice(0, MAX_RESPONSE_SIZE);
 
     const content = `---
 capture_type: ${type}
