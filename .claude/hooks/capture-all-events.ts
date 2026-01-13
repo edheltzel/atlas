@@ -7,6 +7,28 @@ import { join } from 'path';
 import { homedir } from 'os';
 import { enrichEventWithAgentMetadata, isAgentSpawningCall } from './lib/metadata-extraction';
 
+// Read stdin with timeout to prevent hanging on exit
+async function readStdinWithTimeout(timeoutMs: number = 500): Promise<string> {
+  const decoder = new TextDecoder();
+  const reader = Bun.stdin.stream().getReader();
+  let input = '';
+
+  const timeoutPromise = new Promise<void>((resolve) => {
+    setTimeout(() => resolve(), timeoutMs);
+  });
+
+  const readPromise = (async () => {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      input += decoder.decode(value, { stream: true });
+    }
+  })();
+
+  await Promise.race([readPromise, timeoutPromise]);
+  return input;
+}
+
 interface HookEvent {
   source_app: string;
   session_id: string;
@@ -85,7 +107,10 @@ async function main() {
     }
 
     const eventType = args[eventTypeIndex + 1];
-    const stdinData = await Bun.stdin.text();
+    const stdinData = await readStdinWithTimeout(500);
+    if (!stdinData.trim()) {
+      process.exit(0);
+    }
     const hookData = JSON.parse(stdinData);
 
     const sessionId = hookData.session_id || 'main';

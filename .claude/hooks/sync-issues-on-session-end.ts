@@ -11,6 +11,28 @@ import { join, resolve } from 'path';
 import { homedir } from 'os';
 import { parse as parseYaml } from 'yaml';
 
+// Read stdin with timeout to prevent hanging on exit
+async function readStdinWithTimeout(timeoutMs: number = 500): Promise<string> {
+  const decoder = new TextDecoder();
+  const reader = Bun.stdin.stream().getReader();
+  let input = '';
+
+  const timeoutPromise = new Promise<void>((resolve) => {
+    setTimeout(() => resolve(), timeoutMs);
+  });
+
+  const readPromise = (async () => {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      input += decoder.decode(value, { stream: true });
+    }
+  })();
+
+  await Promise.race([readPromise, timeoutPromise]);
+  return input;
+}
+
 interface SessionEndPayload {
   session_id: string;
   cwd?: string;
@@ -81,8 +103,8 @@ function loadSyncConfig(paiDir: string): GitHubSyncConfig | null {
 
 async function main(): Promise<void> {
   try {
-    // Read stdin payload
-    const stdinData = await Bun.stdin.text();
+    // Read stdin payload with timeout to prevent hanging
+    const stdinData = await readStdinWithTimeout(500);
     if (!stdinData.trim()) {
       process.exit(0);
     }
