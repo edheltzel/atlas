@@ -1,0 +1,22 @@
+{
+  "name": "tab-titles",
+  "version": "1.0.0",
+  "description": "Dynamic terminal tab titles based on project and activity",
+  "dependencies": [],
+
+  "hooks": {
+    "UserPromptSubmit": [
+      { "command": "bun run $CLAUDE_DIR/hooks/update-tab-titles.ts" }
+    ]
+  },
+
+  "files": [
+    { "src": "hooks/", "dest": "hooks/" }
+  ],
+
+  "config": {},
+
+  "env": [],
+
+  "commands": []
+}

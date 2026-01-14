@@ -1,0 +1,52 @@
+{
+  "name": "voice",
+  "version": "1.0.0",
+  "description": "Voice notifications for task completion using ElevenLabs or Google TTS",
+  "dependencies": [],
+
+  "hooks": {
+    "SessionStart": [
+      { "command": "bun run $CLAUDE_DIR/hooks/start-voice-server.ts" }
+    ],
+    "Stop": [
+      { "command": "bun run $CLAUDE_DIR/hooks/stop-hook-voice.ts" }
+    ],
+    "SubagentStop": [
+      { "command": "bun run $CLAUDE_DIR/hooks/subagent-stop-hook-voice.ts" }
+    ]
+  },
+
+  "files": [
+    { "src": "voice/", "dest": "voice/" },
+    { "src": "hooks/", "dest": "hooks/" },
+    { "src": "lib/", "dest": "lib/" }
+  ],
+
+  "config": {
+    "voice": {
+      "provider": "elevenlabs",
+      "port": 8888,
+      "default_volume": 0.8,
+      "voices": {
+        "default": "s3TPKV1kjDlVtZbl4Ksh"
+      }
+    }
+  },
+
+  "env": [
+    {
+      "key": "ELEVENLABS_API_KEY",
+      "required": false,
+      "description": "ElevenLabs API key (required if using elevenlabs provider)"
+    },
+    {
+      "key": "GOOGLE_API_KEY",
+      "required": false,
+      "description": "Google Cloud API key (required if using google provider)"
+    }
+  ],
+
+  "commands": ["voice.md", "voices.md"],
+
+  "postInstall": "cd $CLAUDE_DIR/voice && bun install"
+}

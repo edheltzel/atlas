@@ -1,0 +1,37 @@
+{
+  "env": {
+    "PAI_DIR": "/Users/ed/.claude"
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run $PAI_DIR/hooks/start-voice-server.ts"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run $PAI_DIR/hooks/stop-hook-voice.ts"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run $PAI_DIR/hooks/subagent-stop-hook-voice.ts"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -15,19 +15,27 @@ Personal AI Infrastructure for Claude Code.
 
 ```
 atlas/
-├── .claude/
-│   ├── commands/atlas/   # 22 slash commands (/atlas:*)
-│   ├── skills/           # 11 skill definitions
-│   ├── hooks/            # 13 TypeScript lifecycle hooks
-│   ├── lib/              # Shared utilities (config, usage tracker)
+├── .claude/              # Installed components
+│   ├── commands/atlas/   # Slash commands (/atlas:*)
+│   ├── skills/           # Skill definitions
+│   ├── hooks/            # Lifecycle hooks
+│   ├── lib/              # Shared utilities
 │   ├── security/         # Protection patterns
-│   ├── Bundles/          # Portable configurations
-│   ├── MEMORY/           # History and state (runtime)
-│   ├── voice/            # ElevenLabs TTS server
-│   ├── observability/    # Vue dashboard
-│   └── docs/             # Extended documentation
-├── .config/opencode/     # OpenCode configuration
-└── install.sh            # Standalone installer
+│   ├── voice/            # TTS server
+│   └── observability/    # Vue dashboard
+├── exports/              # MODULAR SYSTEM
+│   ├── wizard.sh         # Interactive installer
+│   ├── merge-hooks.ts    # Hook merger utility
+│   └── modules/          # 8 independent modules
+│       ├── voice/        # TTS notifications
+│       ├── core/         # Identity & context
+│       ├── security/     # Command validation
+│       ├── observability/# Real-time dashboard
+│       ├── statusline/   # Custom statusline
+│       ├── tab-titles/   # Dynamic tab titles
+│       ├── skills/       # Algorithm, Art, etc.
+│       └── commands/     # /atlas:* commands
+└── install.sh            # Full installer
 ```
 
 ### Critical Rules
@@ -35,6 +43,26 @@ atlas/
 1. Skills auto-load via Skill tool - read SKILL.md in skill directory first
 2. Hooks run via `bun run` - never npm/yarn
 3. Run `/atlas:help` for available commands
+4. **Modules are independent** - install only what you need
+
+---
+
+## Modular Installation
+
+Atlas is fully modular. Install individual components:
+
+```bash
+# Interactive wizard
+./exports/wizard.sh
+
+# Non-interactive
+./exports/wizard.sh --install voice core security
+
+# List available modules
+./exports/wizard.sh --list
+```
+
+Each module has a `module.json` manifest. See `exports/MODULE-SPEC.md` for format.
 
 ---
 
@@ -46,10 +74,10 @@ atlas/
 
 | When Working On | Read This |
 |-----------------|-----------|
+| Module system | `exports/MODULE-SPEC.md` |
 | Adding/modifying commands | `.claude/docs/ATLAS-COMMANDS.md` |
 | Voice system configuration | `.claude/docs/VOICE-SYSTEM.md` |
 | Security patterns/hooks | `.claude/security/README.md` |
-| Bundle export/import | `.claude/Bundles/README.md` |
 | Any specific skill | `.claude/skills/{SkillName}/SKILL.md` |
 
 ### Infrastructure Tasks

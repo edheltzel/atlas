@@ -1,0 +1,26 @@
+{
+  "name": "security",
+  "version": "1.0.0",
+  "description": "Command validation and protection against dangerous operations",
+  "dependencies": [],
+
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "command": "bun run $CLAUDE_DIR/hooks/security-validator.ts"
+      }
+    ]
+  },
+
+  "files": [
+    { "src": "hooks/", "dest": "hooks/" },
+    { "src": "security/", "dest": "security/" }
+  ],
+
+  "config": {},
+
+  "env": [],
+
+  "commands": []
+}

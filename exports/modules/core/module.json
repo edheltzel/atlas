@@ -1,0 +1,42 @@
+{
+  "name": "core",
+  "version": "1.0.0",
+  "description": "Core identity, session initialization, and context loading",
+  "dependencies": [],
+
+  "hooks": {
+    "SessionStart": [
+      { "command": "bun run $CLAUDE_DIR/hooks/initialize-session.ts" },
+      { "command": "bun run $CLAUDE_DIR/hooks/load-core-context.ts" }
+    ]
+  },
+
+  "files": [
+    { "src": "hooks/", "dest": "hooks/" },
+    { "src": "skills/CORE/", "dest": "skills/CORE/" }
+  ],
+
+  "config": {
+    "identity": {
+      "name": "Atlas",
+      "timezone": "America/Los_Angeles"
+    }
+  },
+
+  "env": [
+    {
+      "key": "PAI_DIR",
+      "required": false,
+      "default": "$HOME/.claude",
+      "description": "Directory for Claude Code extensions"
+    },
+    {
+      "key": "TIME_ZONE",
+      "required": false,
+      "default": "America/Los_Angeles",
+      "description": "Timezone for timestamps"
+    }
+  ],
+
+  "commands": ["context.md", "status.md", "check.md", "help.md"]
+}

@@ -1,0 +1,18 @@
+{
+  "name": "commands",
+  "version": "1.0.0",
+  "description": "Atlas slash commands (/atlas:*)",
+  "dependencies": [],
+
+  "hooks": {},
+
+  "files": [
+    { "src": "commands/atlas/", "dest": "commands/atlas/" }
+  ],
+
+  "config": {},
+
+  "env": [],
+
+  "commands": []
+}
