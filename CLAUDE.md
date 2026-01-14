@@ -94,11 +94,29 @@ Each module has a `module.json` manifest. See `exports/MODULE-SPEC.md` for forma
 
 | Skill | Purpose | Path |
 |-------|---------|------|
-| Algorithm | Universal execution engine (ISC) | `.claude/skills/Algorithm/` |
+| Algorithm | Universal execution engine with ISC, Phases, Capabilities | `.claude/skills/Algorithm/` |
 | CORE | Identity and context (auto-loads) | `.claude/skills/CORE/` |
 | DeepPlan | Persistent planning system | `.claude/skills/DeepPlan/` |
 | Art | Visual content generation | `.claude/skills/Art/` |
 | Agents | Custom agent composition | `.claude/skills/Agents/` |
-| Browser | Web automation | `.claude/skills/Browser/` |
+| Browser | Web automation with persistent sessions | `.claude/skills/Browser/` |
 | Prompting | Meta-prompting templates | `.claude/skills/Prompting/` |
 | CreateSkill | Skill creation utility | `.claude/skills/CreateSkill/` |
+
+### Algorithm Skill Structure (PAI v2.1.0)
+
+```
+Algorithm/
+├── SKILL.md          # Main skill definition
+├── Data/             # Capability definitions
+├── Phases/           # Build, Execute, Learn, Observe, Plan, Think, Verify
+├── Reference/        # CapabilityMatrix, EffortMatrix, ISCFormat
+└── Tools/            # 7 TypeScript tools
+    ├── AlgorithmDisplay.ts
+    ├── CapabilityLoader.ts
+    ├── CapabilitySelector.ts
+    ├── EffortClassifier.ts
+    ├── ISCManager.ts
+    ├── RalphLoopExecutor.ts
+    └── TraitModifiers.ts
+```
