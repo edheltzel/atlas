@@ -14,3 +14,7 @@ bun.lockb
 
 # Build artifacts
 dist/
+
+# Local commands (machine-specific, keep README)
+.claude/commands/local/*
+!.claude/commands/local/README.md

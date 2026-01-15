@@ -356,6 +356,27 @@ Or from within Claude Code: `/atlas:modules`
 
 ---
 
+## Local Commands
+
+Create machine-specific commands that aren't tracked in git.
+
+Place custom commands in `~/.claude/commands/local/`:
+
+```bash
+~/.claude/commands/local/
+├── README.md          # Tracked (explains the directory)
+└── my-command.md      # Not tracked (your private commands)
+```
+
+Commands become available as `/local:<name>`. For example, `sync-tools.md` becomes `/local:sync-tools`.
+
+**Use cases:**
+- Commands referencing local paths (`~/Developer/...`)
+- Sync scripts for local repositories
+- Machine-specific workflows
+
+---
+
 ## Troubleshooting
 
 | Problem | Solution |
