@@ -1,7 +1,5 @@
 <div align="center">
 
-<img src="assets/atlas-logo.svg" alt="Atlas Logo" width="200">
-
 # Atlas
 
 **Personal AI Infrastructure for Claude Code**
@@ -20,9 +18,32 @@
 
 Atlas extends [Claude Code](https://docs.anthropic.com/en/docs/claude-code) with modular capabilities that make your AI assistant *yours* - persistent memory, life goals context, voice feedback, and more.
 
-<div align="center">
-<img src="assets/atlas-modules.svg" alt="Atlas Modules" width="700">
-</div>
+```mermaid
+flowchart TB
+    subgraph Core["Core Infrastructure"]
+        CORE[CORE<br/>Identity + TELOS]
+        MEMORY[MEMORY<br/>Persistent State]
+        SECURITY[Security<br/>Command Validation]
+    end
+
+    subgraph Features["Features"]
+        VOICE[Voice<br/>TTS Notifications]
+        OBS[Observability<br/>Real-time Dashboard]
+        STATUS[Statusline<br/>Terminal Info]
+    end
+
+    subgraph Capabilities["Capabilities"]
+        SKILLS[Skills<br/>12 Capabilities]
+        CMDS[Commands<br/>22 /atlas:* cmds]
+        HOOKS[Hooks<br/>13 Lifecycle Events]
+    end
+
+    CLAUDE((Claude Code))
+
+    Core --> CLAUDE
+    Features --> CLAUDE
+    Capabilities --> CLAUDE
+```
 
 | Module | What it does |
 |--------|--------------|
@@ -31,7 +52,6 @@ Atlas extends [Claude Code](https://docs.anthropic.com/en/docs/claude-code) with
 | **security** | Blocks dangerous commands (rm -rf, reverse shells, etc.) |
 | **observability** | Real-time dashboard showing what Claude is doing |
 | **statusline** | Shows git branch, model, and usage in your terminal |
-| **tab-titles** | Updates terminal tab titles based on project |
 | **skills** | 12 skills: Algorithm, Art, Browser, Agents, Upgrades, and more |
 | **commands** | 22 slash commands (`/atlas:help`, `/atlas:status`, etc.) |
 | **memory** | Persistent memory across sessions (State, Learnings, Signals) |
@@ -53,11 +73,8 @@ Atlas extends [Claude Code](https://docs.anthropic.com/en/docs/claude-code) with
 ### Option 1: Interactive Wizard (Recommended)
 
 ```bash
-# Clone the repo
 git clone https://github.com/edheltzel/atlas.git
 cd atlas
-
-# Run the wizard - select which modules to install
 ./exports/wizard.sh
 ```
 
@@ -68,12 +85,7 @@ The wizard shows all available modules and lets you pick what you want.
 ```bash
 git clone https://github.com/edheltzel/atlas.git
 cd atlas
-
-# Install only what you need
 ./exports/wizard.sh --install voice core security
-
-# See all available modules
-./exports/wizard.sh --list
 ```
 
 ### Option 3: Full Install (Everything)
@@ -100,11 +112,20 @@ stow atlas
 
 Your AI sees your priorities at every session start. No more re-explaining your situation.
 
-<div align="center">
-<img src="assets/atlas-telos.svg" alt="TELOS System" width="550">
-</div>
+```mermaid
+flowchart LR
+    subgraph TELOS["TELOS.md"]
+        CAREER[Career<br/>Projects, Goals]
+        LEARNING[Learning<br/>Skills, Growth]
+        HEALTH[Health<br/>Fitness, Wellness]
+        RELATIONSHIPS[Relationships<br/>Family, Friends]
+    end
 
-Define your life areas, current focus, and active projects in `~/.claude/skills/CORE/USER/TELOS.md`. This loads automatically at session start, giving your AI context about what matters to you.
+    TELOS -->|loads at<br/>session start| AI[AI Context]
+    AI -->|understands| PRIORITIES[Your Priorities]
+```
+
+Define your life areas in `~/.claude/skills/CORE/USER/TELOS.md`. This loads automatically, giving your AI context about what matters to you.
 
 ---
 
@@ -112,9 +133,26 @@ Define your life areas, current focus, and active projects in `~/.claude/skills/
 
 Persistent memory that survives sessions. "Continue where we left off" actually works.
 
-<div align="center">
-<img src="assets/atlas-memory.svg" alt="MEMORY System" width="600">
-</div>
+```mermaid
+flowchart LR
+    subgraph HOT["🔥 HOT"]
+        STATE[State/<br/>active-work.json]
+        WORK[Work/<br/>Task traces]
+    end
+
+    subgraph WARM["💡 WARM"]
+        LEARNING[Learning/<br/>Phase insights]
+        SIGNALS[Signals/<br/>Patterns]
+    end
+
+    subgraph COLD["❄️ COLD"]
+        SESSIONS[sessions/]
+        ARCHIVE[archive/]
+    end
+
+    HOT -->|curates to| WARM
+    WARM -->|archives to| COLD
+```
 
 | Tier | Directory | Purpose |
 |------|-----------|---------|
@@ -140,8 +178,6 @@ Stay current with Claude Code updates:
 
 ### Voice (Optional)
 
-To enable voice notifications, add your API key to `~/.claude/.env`:
-
 ```bash
 # For ElevenLabs (recommended)
 echo "ELEVENLABS_API_KEY=your_key_here" >> ~/.claude/.env
@@ -156,20 +192,15 @@ Edit `~/.claude/skills/CORE/SKILL.md` to customize your AI's name and personalit
 
 ### TELOS (Life Goals)
 
-Personalize your life operating system:
-
 ```bash
-# Edit your TELOS file
 code ~/.claude/skills/CORE/USER/TELOS.md
 ```
 
-Define your life areas, current focus, and active projects. This loads at every session start.
+Define your life areas, current focus, and active projects.
 
 ---
 
 ## Usage
-
-After installation, start Claude Code normally:
 
 ```bash
 claude
@@ -189,28 +220,20 @@ Atlas loads automatically. Try these commands:
 ## Adding/Removing Modules Later
 
 ```bash
-# Add a module
 ./exports/wizard.sh --install observability
-
-# From within Claude Code
-/atlas:modules
 ```
+
+Or from within Claude Code: `/atlas:modules`
 
 ---
 
 ## Troubleshooting
 
-**Voice not working?**
-- Check `~/.claude/.env` has your API key
-- Run `curl http://localhost:8888/health` to test the voice server
-
-**Hooks not running?**
-- Ensure bun is installed: `bun --version`
-- Check `~/.claude/settings.json` has the hook configurations
-
-**Module not loading?**
-- Run `/atlas:status` to check what's installed
-- Re-run the wizard to reinstall: `./exports/wizard.sh`
+| Problem | Solution |
+|---------|----------|
+| Voice not working | Check `~/.claude/.env` has API key |
+| Hooks not running | Run `bun --version` to verify bun installed |
+| Module not loading | Run `/atlas:status` to diagnose |
 
 ---
 
