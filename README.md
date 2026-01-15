@@ -257,14 +257,67 @@ Find voice IDs at [ElevenLabs Voice Library](https://elevenlabs.io/voice-library
 
 ### Identity
 
-The wizard configures your AI's name and your name during installation. To change later:
+Your AI assistant has a configurable identity that personalizes every interaction.
+
+```mermaid
+flowchart LR
+    subgraph Wizard["Install Wizard"]
+        Q1[AI Name?]
+        Q2[Your Name?]
+    end
+
+    subgraph Files["Updated Files"]
+        SKILL[CORE/SKILL.md]
+        HOOK[load-core-context.ts]
+    end
+
+    subgraph Result["Session Start"]
+        GREETING["Hello, Tony. Jarvis, standing by."]
+    end
+
+    Wizard --> Files --> Result
+```
+
+**During Installation:**
+
+The wizard prompts for identity configuration:
+
+```
+━━━ Identity Configuration ━━━
+
+AI Assistant name [Atlas]: Jarvis
+Your name: Tony
+
+Identity configured:
+  AI Name: Jarvis
+  User: Tony
+```
+
+**What Gets Configured:**
+
+| File | What Changes |
+|------|--------------|
+| `~/.claude/skills/CORE/SKILL.md` | AI name, user name, "who I work for" |
+| `~/.claude/hooks/load-core-context.ts` | Session greeting voice line |
+
+**To Change Later:**
 
 ```bash
-# Edit the CORE skill
 code ~/.claude/skills/CORE/SKILL.md
 ```
 
-Update the Identity section with your preferred AI name and personality.
+Edit the Identity section:
+
+```markdown
+## Identity
+
+**Assistant:**
+- Name: Jarvis
+- Role: Tony's AI assistant
+
+**User:**
+- Name: Tony
+```
 
 ### TELOS (Life Goals)
 
