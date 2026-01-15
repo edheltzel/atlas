@@ -237,6 +237,19 @@ Or from within Claude Code: `/atlas:modules`
 
 ---
 
+## Inspiration
+
+Atlas builds on ideas and patterns from these projects:
+
+| Project | Author | Inspiration |
+|---------|--------|-------------|
+| [Personal AI Infrastructure (PAI)](https://github.com/danielmiessler/Personal_AI_Infrastructure) | Daniel Miessler | Core architecture, skill system, Algorithm |
+| [Telos](https://github.com/danielmiessler/Telos) | Daniel Miessler | Life operating system concept |
+| [Always-On AI Assistant](https://github.com/disler/always-on-ai-assistant) | Disler | Persistent AI assistant patterns |
+| [POC Realtime AI Assistant](https://github.com/disler/poc-realtime-ai-assistant) | Disler | Real-time voice interaction |
+
+---
+
 ## License
 
-Private - not yet open source.
+MIT License - See [LICENSE](LICENSE) for details.
