@@ -111,9 +111,33 @@ Customize this format in SKILL.md to match your preferences.
 
 ---
 
+## Extended Documentation
+
+**USER/** - Personal context and identity:
+- `TELOS.md` - Life operating system and goal tracking
+- `DAIDENTITY.md` - Digital assistant identity
+- `ABOUTME.md`, `BASICINFO.md` - User profile
+- `CONTACTS.md` - Contact information
+- `TECHSTACKPREFERENCES.md` - Technology preferences
+- `PAISECURITYSYSTEM/` - Security protocols and patterns
+
+**SYSTEM/** - Architecture and systems:
+- `PAISYSTEMARCHITECTURE.md` - 15 Founding Principles
+- `SKILLSYSTEM.md` - Skill architecture reference
+- `MEMORYSYSTEM.md` - Memory and state management
+- `THEHOOKSYSTEM.md` - Hook system documentation
+- `THEDELEGATIONSYSTEM.md` - Agent delegation patterns
+- `CLIFIRSTARCHITECTURE.md` - CLI-first design principles
+
+**Workflows/** - Operational workflows:
+- `UpdateDocumentation.md` - Documentation update process
+
+---
+
 ## Quick Reference
 
 **Full documentation available in context files:**
-- Contacts: `Contacts.md`
-- Stack preferences: `CoreStack.md`
-- Security protocols: `SecurityProtocols.md`
+- Contacts: `Contacts.md` or `USER/CONTACTS.md`
+- Stack preferences: `CoreStack.md` or `USER/TECHSTACKPREFERENCES.md`
+- Security protocols: `USER/PAISECURITYSYSTEM/`
+- Architecture: `SYSTEM/PAISYSTEMARCHITECTURE.md`
