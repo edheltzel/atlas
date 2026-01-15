@@ -176,15 +176,76 @@ Stay current with Claude Code updates:
 
 ## Configuration
 
-### Voice (Optional)
+### Voice System
+
+Atlas speaks task completions aloud using ElevenLabs or Google Cloud TTS.
+
+```mermaid
+flowchart LR
+    subgraph Hooks["Hooks"]
+        STOP[stop-hook-voice.ts]
+        SUBAGENT[subagent-stop-hook.ts]
+    end
+
+    subgraph Server["Voice Server :8888"]
+        HTTP[HTTP Server]
+        CACHE[Audio Cache]
+    end
+
+    subgraph APIs["External APIs"]
+        ELEVEN[ElevenLabs]
+        GOOGLE[Google TTS]
+    end
+
+    STOP -->|Task Complete| HTTP
+    SUBAGENT -->|Subagent Done| HTTP
+    HTTP --> CACHE
+    CACHE -->|Miss| ELEVEN
+    ELEVEN -->|Fallback| GOOGLE
+    CACHE -->|Play| SPEAKER[Speaker]
+```
+
+**Setup:**
 
 ```bash
-# For ElevenLabs (recommended)
+# ElevenLabs (recommended - higher quality)
 echo "ELEVENLABS_API_KEY=your_key_here" >> ~/.claude/.env
 
-# Or for Google Cloud TTS (free tier: 4M chars/month)
+# Google Cloud TTS (fallback - free tier: 4M chars/month)
 echo "GOOGLE_API_KEY=your_key_here" >> ~/.claude/.env
 ```
+
+**Voice Customization:**
+
+Configure voices in `~/.claude/voice/voice-config.json`:
+
+```json
+{
+  "voices": {
+    "engineer": {
+      "id": "21m00Tcm4TlvDq8ikWAM",
+      "name": "Rachel",
+      "provider": "elevenlabs"
+    },
+    "architect": {
+      "id": "EXAVITQu4vr4xnSDxMaL",
+      "name": "Bella",
+      "provider": "elevenlabs"
+    }
+  },
+  "default": "engineer"
+}
+```
+
+Find voice IDs at [ElevenLabs Voice Library](https://elevenlabs.io/voice-library). Switch voices with:
+
+```bash
+/atlas:voice engineer   # Switch to Rachel
+/atlas:voice architect  # Switch to Bella
+/atlas:voices           # List available voices
+```
+
+---
 
 ### Identity
 
