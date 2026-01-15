@@ -34,7 +34,7 @@ flowchart TB
 
     subgraph Capabilities["Capabilities"]
         SKILLS[Skills<br/>12 Capabilities]
-        CMDS[Commands<br/>22 /atlas:* cmds]
+        CMDS[Commands<br/>16 /atlas:* cmds]
         HOOKS[Hooks<br/>13 Lifecycle Events]
     end
 
@@ -53,7 +53,7 @@ flowchart TB
 | **observability** | Real-time dashboard showing what Claude is doing |
 | **statusline** | Shows git branch, model, and usage in your terminal |
 | **skills** | 12 skills: Algorithm, Art, Browser, Agents, Upgrades, and more |
-| **commands** | 22 slash commands (`/atlas:help`, `/atlas:status`, etc.) |
+| **commands** | 16 slash commands (`/atlas:help`, `/atlas:status`, etc.) |
 | **memory** | Persistent memory across sessions (State, Learnings, Signals) |
 
 ---
@@ -225,24 +225,17 @@ echo "GOOGLE_API_KEY=your_key_here" >> ~/.claude/.env
 
 **Voice Customization:**
 
-Configure voices in `~/.claude/voice/voice-config.json`:
+Configure voices in `~/.claude/atlas.yaml`:
 
-```json
-{
-  "voices": {
-    "engineer": {
-      "id": "21m00Tcm4TlvDq8ikWAM",
-      "name": "Rachel",
-      "provider": "elevenlabs"
-    },
-    "architect": {
-      "id": "EXAVITQu4vr4xnSDxMaL",
-      "name": "Bella",
-      "provider": "elevenlabs"
-    }
-  },
-  "default": "engineer"
-}
+```yaml
+voice:
+  provider: elevenlabs          # or 'google'
+  default_volume: 0.8           # 0.0 - 1.0
+  voices:
+    default: "your-voice-id"
+    engineer: "voice-id-1"
+    architect: "voice-id-2"
+    researcher: "voice-id-3"
 ```
 
 Find voice IDs at [ElevenLabs Voice Library](https://elevenlabs.io/voice-library). Switch voices with:

@@ -20,7 +20,7 @@ Manage PAI packs for your Atlas system.
 **If no arguments or "list":** Display the pack list with installation status.
 
 **If "install <pack-name>":** Install the specified pack by:
-1. Reading the pack file from `~/Developer/ai-dev/PAI/Packs/<pack-name>.md`
+1. Reading the pack file from `~/Developer/AI/PAI/Packs/<pack-name>.md`
 2. Parsing and extracting all code files, settings, and env vars
 3. Creating required directories and writing files
 4. Merging settings.json entries (don't overwrite existing)
@@ -32,9 +32,9 @@ Manage PAI packs for your Atlas system.
 
 !echo "📦 Atlas Pack System\n" && \
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n" && \
-(if [ -d ~/Developer/ai-dev/PAI/Packs ]; then \
+(if [ -d ~/Developer/AI/PAI/Packs ]; then \
   installed=$(bun run ~/.claude/tools/detect-installed-packs.ts 2>/dev/null || echo ""); \
-  cd ~/Developer/ai-dev/PAI/Packs && \
+  cd ~/Developer/AI/PAI/Packs && \
   echo "Feature Packs:" && \
   for pack in $(ls -1 kai-*-system.md 2>/dev/null | sed 's/.md$//'); do \
     if echo "$installed" | grep -q "^$pack$"; then \
@@ -62,7 +62,7 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
   echo "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" && \
   echo "✅ = Installed" && \
   echo "\nUse: /atlas:pack install <pack-name>" && \
-  echo "Docs: ~/Developer/ai-dev/PAI/PACKS.md\n"; \
+  echo "Docs: ~/Developer/AI/PAI/PACKS.md\n"; \
 else \
-  echo "❌ PAI repository not found at ~/Developer/ai-dev/PAI\n"; \
+  echo "❌ PAI repository not found at ~/Developer/AI/PAI\n"; \
 fi)

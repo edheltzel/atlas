@@ -15,7 +15,7 @@
 - Pack-based modularity
 - Stack preference enforcement
 
-The command system exposes 18 slash commands under the `atlas:` namespace.
+The command system exposes 16 slash commands under the `atlas:` namespace.
 
 ## Architecture
 
@@ -31,7 +31,7 @@ The command system exposes 18 slash commands under the `atlas:` namespace.
 - `~/.claude/hooks/` - Hook scripts (TypeScript, executed by bun)
 - `~/.claude/skills/` - Skill definitions (Markdown)
 - `~/.claude/observability/` - Real-time dashboard server
-- `~/Developer/ai-dev/PAI/` - PAI pack repository
+- `~/Developer/AI/PAI/` - PAI pack repository
 
 **Runtime:** bun (NOT npm/yarn/pnpm)
 **Language:** TypeScript preferred over Python
@@ -75,84 +75,34 @@ The command system exposes 18 slash commands under the `atlas:` namespace.
 
 ### Skills
 
-Skills are specialized capabilities that can be invoked via the Skill tool or slash commands.
+Skills are **auto-discovered** by Claude based on your request. No explicit slash command needed.
 
-#### `/atlas:art <task>`
-**Purpose:** Launch Art skill for visual content generation
-**Domain:** Excalidraw-style diagrams, comics, architectural sketches
-**Delegation:** Uses `Skill` tool to invoke "Art" skill
-**Example:**
+**Available Skills:**
+
+| Skill | Trigger Phrases | Domain |
+|-------|-----------------|--------|
+| Algorithm | "run the algorithm", "structured execution" | ISC-based task execution with phases |
+| Art | "create a diagram", "visual content" | Excalidraw-style diagrams, comics |
+| Agents | "spawn agents", "custom agents" | Multi-agent orchestration |
+| Browser | "screenshot", "verify UI", "web automation" | Browser automation, verification |
+| DeepPlan | "plan this complex task", "deep planning" | Persistent file-based planning |
+| Prompting | "meta-prompting", "prompt template" | Template generation, optimization |
+
+**How Auto-Discovery Works:**
+1. Claude reads each skill's `description` field in `SKILL.md`
+2. When your request matches, Claude asks to use the Skill tool
+3. The full skill instructions load only after approval
+
+**Example Interactions:**
 ```
-/atlas:art Create a system architecture diagram for microservices
-```
+User: "Help me plan this complex authentication system"
+→ Claude auto-discovers DeepPlan skill
 
-#### `/atlas:agents <task>`
-**Purpose:** Launch Agents skill for custom agent composition
-**Domain:** Multi-agent orchestration, personality assignment, parallel execution
-**Delegation:** Uses `Skill` tool to invoke "Agents" skill
-**Example:**
-```
-/atlas:agents Spawn 3 researchers to analyze this codebase
-```
+User: "Create an architecture diagram"
+→ Claude auto-discovers Art skill
 
-#### `/atlas:prompting <task>`
-**Purpose:** Launch Prompting skill for meta-prompting
-**Domain:** Template generation, prompt optimization, pattern libraries
-**Delegation:** Uses `Skill` tool to invoke "Prompting" skill
-**Example:**
-```
-/atlas:prompting Generate a template for code review prompts
-```
-
-#### `/atlas:browser <task>`
-**Purpose:** Launch Browser skill for web automation and verification
-**Domain:** Screenshots, element verification, page interactions, VERIFY phase
-**Delegation:** Uses `Skill` tool to invoke "Browser" skill
-**Example:**
-```
-/atlas:browser Take a screenshot of https://example.com
-/atlas:browser Verify the login form exists on https://myapp.com
-```
-
-#### `/atlas:deep-plan <task>`
-**Purpose:** Manus AI-inspired persistent planning for complex multi-step tasks
-**Domain:** Complex implementations, research projects, extended work requiring goal anchoring
-**Delegation:** Uses `Skill` tool to invoke "DeepPlan" skill
-
-**Core Features:**
-1. **3-File System:** Creates `task_plan.md`, `notes.md`, and deliverable files
-2. **Existing Plan Discovery:** Scans `~/.claude/plans/` for related project plans
-3. **TodoWrite Integration:** Files persist, todos provide session visibility
-4. **Goal Anchoring:** Re-reads plan before major decisions to prevent drift
-
-**Workflow:**
-1. Discover existing plans for current project
-2. Create structured planning files in current directory
-3. Sync phases with TodoWrite for visibility
-4. Update progress as work proceeds
-5. Review goals before major decisions
-
-**Example:**
-```
-/atlas:deep-plan Build authentication system with OAuth
-/atlas:deep-plan Continue the auth implementation
-```
-
-**Plan File Structure:**
-```markdown
----
-project: project-name
-directory: /path/to/project
-created: 2026-01-07
-status: in_progress
----
-
-# Task: [Description]
-
-## Phases
-### Phase 1: Research & Discovery
-- [ ] Step 1
-- [ ] Step 2
+User: "Run the algorithm on this task"
+→ Claude auto-discovers Algorithm skill
 ```
 
 #### `/atlas:skills`
@@ -286,7 +236,7 @@ Packs are self-contained markdown files that add capabilities to Atlas.
 #### `/atlas:pack [action] [name]`
 **Purpose:** Unified pack management - list available/installed packs or install new ones
 **Allowed Tools:** Read, Write, Edit, Bash
-**Source:** `~/Developer/ai-dev/PAI/Packs/`
+**Source:** `~/Developer/AI/PAI/Packs/`
 
 **Subcommands:**
 | Command | Action |
@@ -327,7 +277,7 @@ Use: /atlas:pack install <pack-name>
 ```
 
 **Installation Process:**
-1. Read pack file from `~/Developer/ai-dev/PAI/Packs/<pack-name>.md`
+1. Read pack file from `~/Developer/AI/PAI/Packs/<pack-name>.md`
 2. Parse contents (code files, settings, dependencies)
 3. Create required directories
 4. Write all code files
@@ -443,11 +393,13 @@ Most commands output structured text with:
 ## Integration Points
 
 ### With Skills System
-Commands can invoke skills via the `Skill` tool:
-- `/atlas:art` → Skill("Art")
-- `/atlas:agents` → Skill("Agents")
-- `/atlas:deep-plan` → Skill("DeepPlan")
-- `/atlas:prompting` → Skill("Prompting")
+Skills are **auto-discovered** via the `Skill` tool based on request context:
+- "create diagram" → Art skill
+- "spawn agents" → Agents skill
+- "plan complex task" → DeepPlan skill
+- "prompt template" → Prompting skill
+- "run algorithm" → Algorithm skill
+- "browser automation" → Browser skill
 
 ### With Hooks System
 Commands execute hooks via `bun run`:
@@ -528,7 +480,7 @@ Commands use:
 ### File System Access
 Commands only access:
 - `~/.claude/` - Atlas installation directory
-- `~/Developer/ai-dev/PAI/` - PAI pack repository
+- `~/Developer/AI/PAI/` - PAI pack repository
 - Current working directory (read-only)
 
 ---
@@ -627,8 +579,8 @@ bash -x <(sed -n '/^!/p' ~/.claude/commands/atlas:<name>.md | sed 's/^!//')
 ## Related Documentation
 
 - **User README:** `ai/.claude/commands/README.md`
-- **PAI Documentation:** `~/Developer/ai-dev/PAI/README.md`
-- **Pack System:** `~/Developer/ai-dev/PAI/PACKS.md`
+- **PAI Documentation:** `~/Developer/AI/PAI/README.md`
+- **Pack System:** `~/Developer/AI/PAI/PACKS.md`
 - **Skills Index:** `~/.claude/skills/skill-index.json`
 - **Hook System:** `~/.claude/settings.json`
 

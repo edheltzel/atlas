@@ -21,14 +21,14 @@ Commands will be symlinked to `~/.claude/commands/atlas/` and available as `/atl
 | `/atlas:voice <name>` | Switch voice personality |
 | `/atlas:voices` | List all available voice personalities |
 
-### Skills (6)
+### Skills (1)
+Skills are **auto-discovered** - just describe what you need:
+- "create diagram" → Art skill
+- "spawn agents" → Agents skill
+- "plan complex task" → DeepPlan skill
+
 | Command | Description |
 |---------|-------------|
-| `/atlas:art <task>` | Launch Art skill for visual content generation |
-| `/atlas:agents <task>` | Launch Agents skill for custom agent composition |
-| `/atlas:browser <task>` | Launch Browser skill for web automation |
-| `/atlas:deep-plan <task>` | Manus AI-inspired deep planning for complex tasks |
-| `/atlas:prompting <task>` | Launch Prompting skill for meta-prompting |
 | `/atlas:skills` | List all installed skills |
 
 ### System Status (4)
@@ -68,10 +68,10 @@ Commands follow the `/atlas:<command>` naming convention (matching Anthropic's p
 ```
 commands/
 └── atlas/
-    ├── agents.md        → /atlas:agents
-    ├── art.md           → /atlas:art
-    ├── browser.md       → /atlas:browser
-    ├── deep-plan.md     → /atlas:deep-plan
+    ├── help.md          → /atlas:help
+    ├── status.md        → /atlas:status
+    ├── skills.md        → /atlas:skills
+    ├── voice.md         → /atlas:voice
     ├── ...
     └── voices.md        → /atlas:voices
 ```
@@ -96,7 +96,7 @@ Most commands require:
 - Atlas settings (`~/.claude/settings.json`)
 
 Some commands also require:
-- PAI repository at `~/Developer/ai-dev/PAI/` (for pack management)
+- PAI repository at `~/Developer/AI/PAI/` (for pack management)
 - Voice server running (for voice commands)
 - Observability server (for dashboard commands)
 

@@ -11,14 +11,15 @@ Quick reference for all Atlas custom commands.
 - `/atlas:voices` - List all available voice personalities
 
 ## Skills
-- `/atlas:algorithm [action]` - Launch THE ALGORITHM for structured task execution
-  - Actions: `show`, `start LEVEL`, `phase PHASE`
-- `/atlas:art <task>` - Launch Art skill for visual content
-- `/atlas:agents <task>` - Launch Agents skill for custom agents
-- `/atlas:browser <task>` - Launch Browser skill for web automation
-- `/atlas:deep-plan <task>` - Manus AI-inspired deep planning for complex tasks
-- `/atlas:prompting <task>` - Launch Prompting skill for meta-prompting
-- `/atlas:skills` - List installed skills
+Skills are **auto-discovered** based on your request. Just describe what you need:
+- "run the algorithm" → Algorithm skill
+- "create a diagram" → Art skill
+- "automate browser testing" → Browser skill
+- "plan this complex task" → DeepPlan skill
+- "create custom agents" → Agents skill
+- "help with prompting" → Prompting skill
+
+- `/atlas:skills` - List all installed skills
 
 ## System Status
 - `/atlas:status` - Show Atlas system status and health
