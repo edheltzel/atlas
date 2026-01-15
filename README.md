@@ -78,14 +78,22 @@ cd atlas
 ./exports/wizard.sh
 ```
 
-The wizard shows all available modules and lets you pick what you want.
+The wizard will:
+1. Let you select which modules to install
+2. Ask for your AI's name (default: Atlas)
+3. Ask for your name (for personalized greetings)
 
 ### Option 2: Install Specific Modules
 
 ```bash
 git clone https://github.com/edheltzel/atlas.git
 cd atlas
+
+# Basic install
 ./exports/wizard.sh --install voice core security
+
+# With identity configuration
+./exports/wizard.sh --install --ai-name "Jarvis" --user-name "Tony" voice core security
 ```
 
 ### Option 3: Full Install (Everything)
@@ -249,7 +257,14 @@ Find voice IDs at [ElevenLabs Voice Library](https://elevenlabs.io/voice-library
 
 ### Identity
 
-Edit `~/.claude/skills/CORE/SKILL.md` to customize your AI's name and personality.
+The wizard configures your AI's name and your name during installation. To change later:
+
+```bash
+# Edit the CORE skill
+code ~/.claude/skills/CORE/SKILL.md
+```
+
+Update the Identity section with your preferred AI name and personality.
 
 ### TELOS (Life Goals)
 

@@ -21,6 +21,10 @@ BOLD='\033[1m'
 declare -A SELECTED_MODULES
 declare -A MODULE_DESCRIPTIONS
 
+# Identity configuration
+AI_NAME="Atlas"
+USER_NAME=""
+
 # Get all available modules
 get_modules() {
   for dir in "$MODULES_DIR"/*/; do
@@ -89,8 +93,69 @@ select_all() {
   done
 }
 
+# Configure identity
+configure_identity() {
+  echo ""
+  echo -e "${BOLD}${CYAN}━━━ Identity Configuration ━━━${NC}"
+  echo ""
+  echo -e "Configure your AI assistant's identity."
+  echo ""
+
+  # AI Name
+  read -p "AI Assistant name [Atlas]: " input_ai_name
+  AI_NAME="${input_ai_name:-Atlas}"
+
+  # User Name
+  read -p "Your name: " input_user_name
+  USER_NAME="${input_user_name}"
+
+  if [ -z "$USER_NAME" ]; then
+    echo -e "${YELLOW}No name provided - will use generic greeting${NC}"
+  fi
+
+  echo ""
+  echo -e "${GREEN}Identity configured:${NC}"
+  echo -e "  AI Name: ${BOLD}$AI_NAME${NC}"
+  if [ -n "$USER_NAME" ]; then
+    echo -e "  User: ${BOLD}$USER_NAME${NC}"
+  fi
+  echo ""
+}
+
+# Update CORE skill with identity
+update_core_identity() {
+  local skill_file="$CLAUDE_DIR/skills/CORE/SKILL.md"
+
+  if [ ! -f "$skill_file" ]; then
+    return
+  fi
+
+  # Update AI name
+  if [ -n "$AI_NAME" ] && [ "$AI_NAME" != "Atlas" ]; then
+    sed -i '' "s/- Name: Atlas/- Name: $AI_NAME/g" "$skill_file" 2>/dev/null || true
+  fi
+
+  # Update user name
+  if [ -n "$USER_NAME" ]; then
+    sed -i '' "s/- Name: Ed/- Name: $USER_NAME/g" "$skill_file" 2>/dev/null || true
+    sed -i '' "s/Ed's AI assistant/$USER_NAME's AI assistant/g" "$skill_file" 2>/dev/null || true
+  fi
+
+  # Update voice greeting in hook
+  local hook_file="$CLAUDE_DIR/hooks/load-core-context.ts"
+  if [ -f "$hook_file" ] && [ -n "$USER_NAME" ]; then
+    sed -i '' "s/Hello, Ed\. Atlas, standing by\./Hello, $USER_NAME. $AI_NAME, standing by./g" "$hook_file" 2>/dev/null || true
+    sed -i '' "s/message: 'Hello, Ed/message: 'Hello, $USER_NAME/g" "$hook_file" 2>/dev/null || true
+  fi
+
+  echo -e "${GREEN}  ✓ Identity configured in CORE skill${NC}"
+}
+
 # Install selected modules
 install_modules() {
+  # Configure identity first
+  configure_identity
+
   echo ""
   echo -e "${BOLD}Installing selected modules...${NC}"
   echo ""
@@ -117,13 +182,23 @@ install_modules() {
     fi
   done
 
+  # Update identity in CORE skill if it was installed
+  if [ "${SELECTED_MODULES[core]}" = "1" ]; then
+    update_core_identity
+  fi
+
   echo ""
   echo -e "${GREEN}${BOLD}Installation complete!${NC}"
   echo ""
+  echo -e "Your AI assistant ${BOLD}$AI_NAME${NC} is ready."
+  echo ""
   echo "Next steps:"
-  echo "  1. Review ~/.claude/settings.json"
-  echo "  2. Add any required API keys to ~/.claude/.env"
-  echo "  3. Start a new Claude Code session"
+  echo "  1. Add any required API keys to ~/.claude/.env"
+  echo "  2. Start a new Claude Code session"
+  echo ""
+  if [ -n "$USER_NAME" ]; then
+    echo -e "${CYAN}$AI_NAME will greet you as $USER_NAME${NC}"
+  fi
 }
 
 # Install a single module
@@ -209,16 +284,40 @@ if [ "$1" = "--install" ]; then
 
   if [ $# -eq 0 ]; then
     echo "Usage: wizard.sh --install module1 module2 ..."
+    echo "       wizard.sh --install --ai-name MyAI --user-name John module1 module2"
     exit 1
   fi
 
-  for mod in "$@"; do
-    if [ -n "${MODULE_DESCRIPTIONS[$mod]}" ]; then
-      SELECTED_MODULES[$mod]="1"
-    else
-      echo "Unknown module: $mod"
-    fi
+  # Parse flags
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --ai-name)
+        AI_NAME="$2"
+        shift 2
+        ;;
+      --user-name)
+        USER_NAME="$2"
+        shift 2
+        ;;
+      *)
+        if [ -n "${MODULE_DESCRIPTIONS[$1]}" ]; then
+          SELECTED_MODULES[$1]="1"
+        else
+          echo "Unknown module: $1"
+        fi
+        shift
+        ;;
+    esac
   done
+
+  # Skip interactive identity config if flags provided
+  if [ -n "$USER_NAME" ]; then
+    configure_identity() {
+      echo -e "${GREEN}Identity configured via flags:${NC}"
+      echo -e "  AI Name: ${BOLD}$AI_NAME${NC}"
+      echo -e "  User: ${BOLD}$USER_NAME${NC}"
+    }
+  fi
 
   install_modules
   exit 0
