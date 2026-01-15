@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1024" height="1024" fill="#ffffff"/>
+
+  <!--
+    V9-F: Compact crisp star
+  -->
+
+  <path
+    d="M 200 720
+       A 340 340 0 0 1 824 720
+       L 512 160
+       Z"
+    fill="none"
+    stroke="#1a1a2e"
+    stroke-width="76"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <path
+    d="M 512 425
+       L 524 465
+       L 564 480
+       L 524 495
+       L 512 535
+       L 500 495
+       L 460 480
+       L 500 465
+       Z"
+    fill="#ff006e"
+  />
+
+</svg>

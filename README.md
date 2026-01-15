@@ -1,12 +1,28 @@
+<div align="center">
+
+<img src="assets/atlas-logo.svg" alt="Atlas Logo" width="200">
+
 # Atlas
 
-Personal AI Infrastructure for Claude Code.
+**Personal AI Infrastructure for Claude Code**
+
+[![Built with Claude](https://img.shields.io/badge/Built_with-Claude-D4A574?style=flat&logo=anthropic&logoColor=white)](https://claude.ai)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Bun](https://img.shields.io/badge/Bun-000000?style=flat&logo=bun&logoColor=white)](https://bun.sh)
+
+</div>
+
+---
 
 > **AI Agents:** Read [CLAUDE.md](CLAUDE.md) for development instructions.
 
 ## What is Atlas?
 
-Atlas extends [Claude Code](https://docs.anthropic.com/en/docs/claude-code) with modular capabilities:
+Atlas extends [Claude Code](https://docs.anthropic.com/en/docs/claude-code) with modular capabilities that make your AI assistant *yours* - persistent memory, life goals context, voice feedback, and more.
+
+<div align="center">
+<img src="assets/atlas-modules.svg" alt="Atlas Modules" width="700">
+</div>
 
 | Module | What it does |
 |--------|--------------|
@@ -20,6 +36,8 @@ Atlas extends [Claude Code](https://docs.anthropic.com/en/docs/claude-code) with
 | **commands** | 22 slash commands (`/atlas:help`, `/atlas:status`, etc.) |
 | **memory** | Persistent memory across sessions (State, Learnings, Signals) |
 
+---
+
 ## Prerequisites
 
 1. **Claude Code** - [Install from Anthropic](https://docs.anthropic.com/en/docs/claude-code)
@@ -27,6 +45,8 @@ Atlas extends [Claude Code](https://docs.anthropic.com/en/docs/claude-code) with
    ```bash
    curl -fsSL https://bun.sh/install | bash
    ```
+
+---
 
 ## Installation
 
@@ -72,36 +92,49 @@ git submodule add https://github.com/edheltzel/atlas.git atlas
 stow atlas
 ```
 
+---
+
 ## Key Features
 
 ### TELOS - Life Operating System
 
-Atlas loads your life goals at session start via `~/.claude/skills/CORE/USER/TELOS.md`. Define your:
-- Life areas (career, health, relationships, etc.)
-- Current focus and priorities
-- Active projects and their status
+Your AI sees your priorities at every session start. No more re-explaining your situation.
 
-This helps your AI understand context and prioritize accordingly.
+<div align="center">
+<img src="assets/atlas-telos.svg" alt="TELOS System" width="550">
+</div>
+
+Define your life areas, current focus, and active projects in `~/.claude/skills/CORE/USER/TELOS.md`. This loads automatically at session start, giving your AI context about what matters to you.
+
+---
 
 ### MEMORY System
 
-Persistent memory at `~/.claude/MEMORY/`:
+Persistent memory that survives sessions. "Continue where we left off" actually works.
 
-| Directory | Purpose |
-|-----------|---------|
-| `State/` | Active work, algorithm stats, streaks |
-| `Work/` | Per-task traces and decision logs |
-| `Learning/` | Insights organized by Algorithm phase |
-| `Signals/` | Failures, loopbacks, patterns detected |
+<div align="center">
+<img src="assets/atlas-memory.svg" alt="MEMORY System" width="600">
+</div>
+
+| Tier | Directory | Purpose |
+|------|-----------|---------|
+| **HOT** | `State/`, `Work/` | Active task, current traces |
+| **WARM** | `Learning/`, `Signals/` | Curated insights, pattern detection |
+| **COLD** | `sessions/`, `archive/` | Full historical record |
+
+---
 
 ### Upgrades Skill
 
 Stay current with Claude Code updates:
+
 ```
-"check for updates"      → Scans 30+ Anthropic sources
+"check for updates"       → Scans 30+ Anthropic sources
 "any new Claude features?" → Checks blogs, GitHub, changelogs
-"deep dive release notes" → Parallel research on each feature
+"deep dive release notes"  → Parallel research on each feature
 ```
+
+---
 
 ## Configuration
 
@@ -132,6 +165,8 @@ code ~/.claude/skills/CORE/USER/TELOS.md
 
 Define your life areas, current focus, and active projects. This loads at every session start.
 
+---
+
 ## Usage
 
 After installation, start Claude Code normally:
@@ -149,6 +184,8 @@ Atlas loads automatically. Try these commands:
 | `/atlas:algorithm` | Run structured task execution |
 | `/atlas:voice engineer` | Switch voice personality |
 
+---
+
 ## Adding/Removing Modules Later
 
 ```bash
@@ -158,6 +195,8 @@ Atlas loads automatically. Try these commands:
 # From within Claude Code
 /atlas:modules
 ```
+
+---
 
 ## Troubleshooting
 
@@ -172,6 +211,8 @@ Atlas loads automatically. Try these commands:
 **Module not loading?**
 - Run `/atlas:status` to check what's installed
 - Re-run the wizard to reinstall: `./exports/wizard.sh`
+
+---
 
 ## License
 

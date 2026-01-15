@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="600" height="350" viewBox="0 0 600 350" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="hand-drawn" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="1" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="600" height="350" fill="#0a0a0f"/>
+
+  <!-- Title -->
+  <text x="30" y="40" font-family="Georgia, serif" font-size="24" font-style="italic" fill="#e5e7eb">TELOS</text>
+  <text x="30" y="60" font-family="Arial, sans-serif" font-size="12" fill="#9ca3af">Life Operating System - Loads Every Session</text>
+
+  <!-- Life Areas - 4 quadrants -->
+  <!-- Career -->
+  <rect x="40" y="90" width="120" height="100" rx="6" fill="#1a1a2e" stroke="#4a90d9" stroke-width="2" filter="url(#hand-drawn)"/>
+  <text x="100" y="115" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#4a90d9" text-anchor="middle">Career</text>
+  <text x="100" y="135" font-family="Arial, sans-serif" font-size="10" fill="#9ca3af" text-anchor="middle">Client Work</text>
+  <text x="100" y="150" font-family="Arial, sans-serif" font-size="10" fill="#9ca3af" text-anchor="middle">MyChron</text>
+  <text x="100" y="165" font-family="Arial, sans-serif" font-size="10" fill="#9ca3af" text-anchor="middle">Open Source</text>
+
+  <!-- Learning -->
+  <rect x="170" y="90" width="120" height="100" rx="6" fill="#1a1a2e" stroke="#22d3ee" stroke-width="2" filter="url(#hand-drawn)"/>
+  <text x="230" y="115" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#22d3ee" text-anchor="middle">Learning</text>
+  <text x="230" y="135" font-family="Arial, sans-serif" font-size="10" fill="#9ca3af" text-anchor="middle">AI/ML</text>
+  <text x="230" y="150" font-family="Arial, sans-serif" font-size="10" fill="#9ca3af" text-anchor="middle">Maker Skills</text>
+  <text x="230" y="165" font-family="Arial, sans-serif" font-size="10" fill="#9ca3af" text-anchor="middle">Woodworking</text>
+
+  <!-- Health -->
+  <rect x="300" y="90" width="120" height="100" rx="6" fill="#1a1a2e" stroke="#8b5cf6" stroke-width="2" filter="url(#hand-drawn)"/>
+  <text x="360" y="115" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#8b5cf6" text-anchor="middle">Health</text>
+  <text x="360" y="135" font-family="Arial, sans-serif" font-size="10" fill="#9ca3af" text-anchor="middle">Exercise</text>
+  <text x="360" y="150" font-family="Arial, sans-serif" font-size="10" fill="#9ca3af" text-anchor="middle">Nutrition</text>
+  <text x="360" y="165" font-family="Arial, sans-serif" font-size="10" fill="#9ca3af" text-anchor="middle">Mental Health</text>
+
+  <!-- Relationships -->
+  <rect x="430" y="90" width="120" height="100" rx="6" fill="#1a1a2e" stroke="#f97316" stroke-width="2" filter="url(#hand-drawn)"/>
+  <text x="490" y="115" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#f97316" text-anchor="middle">Relationships</text>
+  <text x="490" y="135" font-family="Arial, sans-serif" font-size="10" fill="#9ca3af" text-anchor="middle">Family</text>
+  <text x="490" y="150" font-family="Arial, sans-serif" font-size="10" fill="#9ca3af" text-anchor="middle">Friends</text>
+  <text x="490" y="165" font-family="Arial, sans-serif" font-size="10" fill="#9ca3af" text-anchor="middle">Training Partners</text>
+
+  <!-- Arrow down to AI -->
+  <path d="M 300 200 L 300 240 L 290 230 M 300 240 L 310 230" stroke="#22d3ee" stroke-width="2" fill="none"/>
+
+  <!-- AI Understanding box -->
+  <rect x="150" y="250" width="300" height="70" rx="8" fill="none" stroke="#4a90d9" stroke-width="2" filter="url(#hand-drawn)"/>
+  <text x="300" y="280" font-family="Georgia, serif" font-size="14" font-style="italic" fill="#e5e7eb" text-anchor="middle">AI sees your priorities every session</text>
+  <text x="300" y="300" font-family="Arial, sans-serif" font-size="11" fill="#9ca3af" text-anchor="middle">Context without re-explaining</text>
+
+  <!-- Insight -->
+  <text x="500" y="330" font-family="Arial, sans-serif" font-size="11" font-style="italic" fill="#4a90d9">*informed, not generic*</text>
+</svg>
