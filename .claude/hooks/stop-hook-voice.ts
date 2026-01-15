@@ -107,8 +107,8 @@ async function main() {
     spokenMessage = `${awaiting}, need your direction, Ed`;
   }
 
-  // Get voice ID for this agent
-  const voiceId = getVoiceId(agentType);
+  // Get voice ID for this agent from atlas.yaml
+  const voiceId = await getVoiceId(agentType);
 
   // Send voice notification using shared utility
   const payload: NotificationPayload = {

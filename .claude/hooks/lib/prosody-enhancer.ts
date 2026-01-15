@@ -5,30 +5,7 @@
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
-
-// Load .env from PAI directory (same as voice server)
-let envLoaded = false;
-function loadEnv(): void {
-  if (envLoaded) return;
-
-  const paiDir = process.env.PAI_DIR || join(homedir(), '.claude');
-  const envPath = join(paiDir, '.env');
-
-  if (existsSync(envPath)) {
-    const envContent = readFileSync(envPath, 'utf-8');
-    envContent.split('\n').forEach(line => {
-      const eqIndex = line.indexOf('=');
-      if (eqIndex > 0) {
-        const key = line.substring(0, eqIndex).trim();
-        const value = line.substring(eqIndex + 1).trim();
-        if (key && value && !key.startsWith('#')) {
-          process.env[key] = value;
-        }
-      }
-    });
-  }
-  envLoaded = true;
-}
+import { getVoiceId as getVoiceIdFromConfig } from '../../lib/config-loader';
 
 export interface AgentPersonality {
   name: string;
@@ -382,24 +359,23 @@ function getCurrentPersonality(): string {
 
 /**
  * Get the voice ID for an agent type
+ * Reads from atlas.yaml voice.voices configuration
  */
-export function getVoiceId(agentType: string): string {
-  // Load environment variables from ~/.claude/.env
-  loadEnv();
-
+export async function getVoiceId(agentType: string): Promise<string> {
   // For main agent, check if user has switched personality via /atlas-voice
   let effectiveAgentType = agentType.toLowerCase();
   if (effectiveAgentType === 'default') {
     effectiveAgentType = getCurrentPersonality();
   }
 
-  // Read from environment - personality-specific voice
-  const envKey = `ELEVENLABS_VOICE_${effectiveAgentType.toUpperCase()}`;
-  const envVoice = process.env[envKey];
-  if (envVoice) {
-    return envVoice;
+  // Get voice ID from atlas.yaml config
+  const voiceId = await getVoiceIdFromConfig(effectiveAgentType);
+
+  if (voiceId) {
+    return voiceId;
   }
 
-  // Fallback to default
-  return process.env.ELEVENLABS_VOICE_DEFAULT || '';
+  // Fallback to default voice from config
+  const defaultVoice = await getVoiceIdFromConfig('default');
+  return defaultVoice || '';
 }

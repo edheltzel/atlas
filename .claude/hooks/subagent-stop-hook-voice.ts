@@ -112,8 +112,8 @@ async function main() {
     finalMessage = `${agentDisplayName} completed ${completionMessage}`;
   }
 
-  // Get voice ID for this agent type
-  const voiceId = getVoiceId(finalAgentType);
+  // Get voice ID for this agent type from atlas.yaml
+  const voiceId = await getVoiceId(finalAgentType);
 
   // Send voice notification using shared utility
   await sendNotification({
