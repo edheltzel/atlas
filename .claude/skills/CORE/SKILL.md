@@ -95,6 +95,30 @@ Default preferences (customize in CoreStack.md):
 
 ---
 
+## MEMORY System
+
+Persistent memory across sessions at `~/.claude/MEMORY/`:
+
+| Directory | Purpose |
+|-----------|---------|
+| `State/` | Real-time operational state (active-work.json, algorithm-stats.json) |
+| `Work/` | Per-task working memory with decision traces |
+| `Learning/` | Curated insights organized by Algorithm phase |
+| `Signals/` | Pattern detection (failures.jsonl, loopbacks.jsonl) |
+| `sessions/` | Session summaries |
+| `decisions/` | Architectural decision records |
+| `research/` | Research session outputs |
+
+**Quick commands:**
+```bash
+cat ~/.claude/MEMORY/State/active-work.json  # Current task
+ls ~/.claude/MEMORY/Work/                     # All work items
+```
+
+**Full documentation:** `SYSTEM/MEMORYSYSTEM.md`
+
+---
+
 ## Response Format (Optional)
 
 Define a consistent response format for task-based responses:

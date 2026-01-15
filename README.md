@@ -11,13 +11,14 @@ Atlas extends [Claude Code](https://docs.anthropic.com/en/docs/claude-code) with
 | Module | What it does |
 |--------|--------------|
 | **voice** | Speaks task completions aloud (ElevenLabs/Google TTS) |
-| **core** | Loads your identity and preferences at session start |
+| **core** | Loads identity, preferences, and TELOS (life goals) at session start |
 | **security** | Blocks dangerous commands (rm -rf, reverse shells, etc.) |
 | **observability** | Real-time dashboard showing what Claude is doing |
 | **statusline** | Shows git branch, model, and usage in your terminal |
 | **tab-titles** | Updates terminal tab titles based on project |
-| **skills** | Algorithm, Art, Browser automation, Agents, and more |
-| **commands** | 20+ slash commands (`/atlas:help`, `/atlas:status`, etc.) |
+| **skills** | 12 skills: Algorithm, Art, Browser, Agents, Upgrades, and more |
+| **commands** | 22 slash commands (`/atlas:help`, `/atlas:status`, etc.) |
+| **memory** | Persistent memory across sessions (State, Learnings, Signals) |
 
 ## Prerequisites
 
@@ -71,6 +72,37 @@ git submodule add https://github.com/edheltzel/atlas.git atlas
 stow atlas
 ```
 
+## Key Features
+
+### TELOS - Life Operating System
+
+Atlas loads your life goals at session start via `~/.claude/skills/CORE/USER/TELOS.md`. Define your:
+- Life areas (career, health, relationships, etc.)
+- Current focus and priorities
+- Active projects and their status
+
+This helps your AI understand context and prioritize accordingly.
+
+### MEMORY System
+
+Persistent memory at `~/.claude/MEMORY/`:
+
+| Directory | Purpose |
+|-----------|---------|
+| `State/` | Active work, algorithm stats, streaks |
+| `Work/` | Per-task traces and decision logs |
+| `Learning/` | Insights organized by Algorithm phase |
+| `Signals/` | Failures, loopbacks, patterns detected |
+
+### Upgrades Skill
+
+Stay current with Claude Code updates:
+```
+"check for updates"      → Scans 30+ Anthropic sources
+"any new Claude features?" → Checks blogs, GitHub, changelogs
+"deep dive release notes" → Parallel research on each feature
+```
+
 ## Configuration
 
 ### Voice (Optional)
@@ -88,6 +120,17 @@ echo "GOOGLE_API_KEY=your_key_here" >> ~/.claude/.env
 ### Identity
 
 Edit `~/.claude/skills/CORE/SKILL.md` to customize your AI's name and personality.
+
+### TELOS (Life Goals)
+
+Personalize your life operating system:
+
+```bash
+# Edit your TELOS file
+code ~/.claude/skills/CORE/USER/TELOS.md
+```
+
+Define your life areas, current focus, and active projects. This loads at every session start.
 
 ## Usage
 

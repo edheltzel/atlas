@@ -76,6 +76,9 @@ async function main() {
     // Look for CORE skill to load
     // The CORE skill contains identity, response format, and operating principles
     const coreSkillPath = join(paiDir, 'skills', 'CORE', 'SKILL.md');
+    const telosPath = join(paiDir, 'skills', 'CORE', 'USER', 'TELOS.md');
+    const principlesPath = join(paiDir, 'skills', 'CORE', 'SYSTEM', 'PAISYSTEMARCHITECTURE.md');
+    const activeWorkPath = join(paiDir, 'MEMORY', 'State', 'active-work.json');
 
     if (!existsSync(coreSkillPath)) {
       // No CORE skill installed - that's fine
@@ -86,6 +89,30 @@ async function main() {
     // Read the skill content
     const skillContent = readFileSync(coreSkillPath, 'utf-8');
 
+    // Read TELOS if available (life goals/priorities)
+    let telosContent = '';
+    if (existsSync(telosPath)) {
+      const telosRaw = readFileSync(telosPath, 'utf-8');
+      // Extract just the Life Areas section (skip the header comments)
+      const telosMatch = telosRaw.match(/# TELOS[\s\S]*/);
+      if (telosMatch) {
+        telosContent = `\n\n---\n\n## TELOS (Life Goals)\n\n${telosMatch[0]}`;
+      }
+    }
+
+    // Read active work if available
+    let activeWorkContent = '';
+    if (existsSync(activeWorkPath)) {
+      try {
+        const activeWork = JSON.parse(readFileSync(activeWorkPath, 'utf-8'));
+        if (activeWork.task) {
+          activeWorkContent = `\n\n---\n\n## Active Work\n\n**Task:** ${activeWork.task}\n**Phase:** ${activeWork.phase || 'Unknown'}\n**Started:** ${activeWork.started || 'Unknown'}`;
+        }
+      } catch {
+        // Ignore parse errors
+      }
+    }
+
     // Output as system-reminder for Claude to process
     // This format is recognized by Claude Code
     const output = `<system-reminder>
@@ -95,7 +122,7 @@ PAI CORE CONTEXT (Auto-loaded at Session Start)
 
 The following context has been loaded from ${coreSkillPath}:
 
-${skillContent}
+${skillContent}${telosContent}${activeWorkContent}
 
 This context is now active for this session. Follow all instructions, preferences, and guidelines contained above.
 </system-reminder>

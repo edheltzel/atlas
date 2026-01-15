@@ -17,24 +17,22 @@ Personal AI Infrastructure for Claude Code.
 atlas/
 ├── .claude/              # Installed components
 │   ├── commands/atlas/   # Slash commands (/atlas:*)
-│   ├── skills/           # Skill definitions
-│   ├── hooks/            # Lifecycle hooks
+│   ├── skills/           # 12 skill definitions
+│   ├── hooks/            # 13 lifecycle hooks
 │   ├── lib/              # Shared utilities
 │   ├── security/         # Protection patterns
 │   ├── voice/            # TTS server
-│   └── observability/    # Vue dashboard
+│   ├── observability/    # Vue dashboard
+│   └── MEMORY/           # Persistent memory system
+│       ├── State/        # active-work.json, algorithm-stats.json
+│       ├── Work/         # Per-task traces
+│       ├── Learning/     # Insights by Algorithm phase
+│       ├── Signals/      # failures.jsonl, patterns.jsonl
+│       └── sessions/     # Session summaries
 ├── exports/              # MODULAR SYSTEM
 │   ├── wizard.sh         # Interactive installer
 │   ├── merge-hooks.ts    # Hook merger utility
 │   └── modules/          # 8 independent modules
-│       ├── voice/        # TTS notifications
-│       ├── core/         # Identity & context
-│       ├── security/     # Command validation
-│       ├── observability/# Real-time dashboard
-│       ├── statusline/   # Custom statusline
-│       ├── tab-titles/   # Dynamic tab titles
-│       ├── skills/       # Algorithm, Art, etc.
-│       └── commands/     # /atlas:* commands
 └── install.sh            # Full installer
 ```
 
@@ -90,18 +88,35 @@ Each module has a `module.json` manifest. See `exports/MODULE-SPEC.md` for forma
 
 ---
 
-## Skills Quick Index
+## Skills Quick Index (12 Skills)
 
 | Skill | Purpose | Path |
 |-------|---------|------|
 | Algorithm | Universal execution engine with ISC, Phases, Capabilities | `.claude/skills/Algorithm/` |
-| CORE | Identity and context (auto-loads) | `.claude/skills/CORE/` |
+| CORE | Identity, context, TELOS (auto-loads) | `.claude/skills/CORE/` |
 | DeepPlan | Persistent planning system | `.claude/skills/DeepPlan/` |
 | Art | Visual content generation | `.claude/skills/Art/` |
 | Agents | Custom agent composition | `.claude/skills/Agents/` |
 | Browser | Web automation with persistent sessions | `.claude/skills/Browser/` |
 | Prompting | Meta-prompting templates | `.claude/skills/Prompting/` |
 | CreateSkill | Skill creation utility | `.claude/skills/CreateSkill/` |
+| Upgrades | Monitor Anthropic ecosystem (30+ sources), YouTube channels | `.claude/skills/Upgrades/` |
+
+### CORE Skill Structure
+
+```
+CORE/
+├── SKILL.md          # Main skill definition (auto-loads)
+├── USER/             # Personal context
+│   ├── TELOS.md      # Life goals (loads at session start)
+│   ├── ABOUTME.md, BASICINFO.md
+│   └── PAISECURITYSYSTEM/
+├── SYSTEM/           # Architecture docs
+│   ├── PAISYSTEMARCHITECTURE.md  # 15 Founding Principles
+│   ├── MEMORYSYSTEM.md
+│   └── SKILLSYSTEM.md
+└── Workflows/
+```
 
 ### Algorithm Skill Structure (PAI v2.1.0)
 
