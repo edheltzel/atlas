@@ -387,11 +387,19 @@ export function getCacheStats(): {
 
 /**
  * Common phrases to pre-cache on server startup
+ * These are populated dynamically by server.ts with actual voice IDs from config
  */
-export const COMMON_PHRASES: { text: string; voiceId: string }[] = [
-  // Main agent completions - these would use actual voice IDs in production
-  // Placeholder - actual pre-warming happens in server.ts with real voice IDs
-];
+export function getCommonPhrases(defaultVoiceId: string): { text: string; voiceId: string }[] {
+  return [
+    // Startup greeting - high frequency (9+ hits observed)
+    { text: "Hello, Ed. Atlas, standing by.", voiceId: defaultVoiceId },
+    // Common awaiting patterns
+    { text: "need your direction, Ed", voiceId: defaultVoiceId },
+    { text: "Your call, Ed", voiceId: defaultVoiceId },
+    // Common completion prefix (will match if message is exactly this)
+    { text: "The task is completed, Ed.", voiceId: defaultVoiceId },
+  ];
+}
 
 /**
  * Pre-warm cache with common phrases

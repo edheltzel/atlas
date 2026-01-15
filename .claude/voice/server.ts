@@ -16,6 +16,7 @@ import {
   clearExpired,
   prewarmCache,
   generateCacheKey,
+  getCommonPhrases,
   CACHE_DIR,
 } from "./lib/cache";
 import {
@@ -234,7 +235,7 @@ async function generateSpeechElevenLabs(
     },
     body: JSON.stringify({
       text: text,
-      model_id: 'eleven_turbo_v2_5',
+      model_id: 'eleven_flash_v2_5',
       voice_settings: settings,
     }),
   });
@@ -245,7 +246,8 @@ async function generateSpeechElevenLabs(
   }
 
   const ttfb = performance.now() - startTime;
-  console.log(`⚡ TTFB: ${ttfb.toFixed(0)}ms`);
+  const charCount = response.headers.get('x-character-count');
+  console.log(`⚡ TTFB: ${ttfb.toFixed(0)}ms | 💰 Chars: ${charCount || 'N/A'}`);
 
   // Collect streaming response
   const chunks: Uint8Array[] = [];
@@ -699,3 +701,16 @@ if (expiredCleared > 0) {
 
 // Warm up connection on startup (non-blocking)
 warmupConnection();
+
+// Pre-warm cache with common phrases (non-blocking)
+// This generates and caches frequently-used phrases to avoid API calls later
+(async () => {
+  const phrases = getCommonPhrases(DEFAULT_VOICE_ID);
+  const cached = await prewarmCache(phrases, async (text, voiceId) => {
+    const settings = { stability: 0.5, similarity_boost: 0.5 };
+    return generateSpeech(text, voiceId, settings);
+  });
+  if (cached > 0) {
+    console.log(`🔥 Pre-warmed ${cached} common phrases`);
+  }
+})();
