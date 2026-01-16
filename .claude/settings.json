@@ -119,6 +119,14 @@
         "hooks": [
           {
             "type": "command",
+            "command": "bun run $PAI_DIR/hooks/ExplicitRatingCapture.hook.ts"
+          },
+          {
+            "type": "command",
+            "command": "bun run $PAI_DIR/hooks/ImplicitSentimentCapture.hook.ts"
+          },
+          {
+            "type": "command",
             "command": "bun run $PAI_DIR/hooks/update-tab-titles.ts"
           },
           {
