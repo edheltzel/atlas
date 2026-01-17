@@ -2,7 +2,7 @@
 
 # Atlas
 
-**Personal AI Infrastructure for Claude Code**
+**Personal AI Agent for Claude Code**
 
 [![Built with Claude](https://img.shields.io/badge/Built_with-Claude-D4A574?style=flat&logo=anthropic&logoColor=white)](https://claude.ai)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
