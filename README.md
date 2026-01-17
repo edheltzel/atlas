@@ -16,7 +16,7 @@
 
 ## What is Atlas?
 
-Atlas extends [Claude Code](https://docs.anthropic.com/en/docs/claude-code) with modular capabilities that make your AI assistant *yours* - persistent memory, life goals context, voice feedback, and more.
+Atlas extends [Claude Code](https://docs.anthropic.com/en/docs/claude-code) with modular capabilities that make your AI agent *yours* - persistent memory, context for life goals, voice feedback, and more.
 
 ```mermaid
 flowchart TB
@@ -80,7 +80,7 @@ cd atlas
 
 The wizard will:
 1. Let you select which modules to install
-2. Ask for your AI's name (default: Atlas)
+2. Ask for your Agent's name (default: Atlas)
 3. Ask for your name (for personalized greetings)
 
 ### Option 2: Install Specific Modules
@@ -250,7 +250,7 @@ Find voice IDs at [ElevenLabs Voice Library](https://elevenlabs.io/voice-library
 
 ### Identity
 
-Your AI assistant has a configurable identity that personalizes every interaction.
+Your AI agent has a configurable identity that personalizes every interaction.
 
 ```mermaid
 flowchart LR
@@ -278,7 +278,7 @@ The wizard prompts for identity configuration:
 ```
 ━━━ Identity Configuration ━━━
 
-AI Assistant name [Atlas]: Jarvis
+AI Agent name [Atlas]: Jarvis
 Your name: Tony
 
 Identity configured:
@@ -312,7 +312,7 @@ Edit the Identity section:
 - Name: Tony
 ```
 
-### TELOS (Life Goals)
+### DELTA (Progress & Growth in Life)
 
 ```bash
 code ~/.claude/skills/CORE/USER/TELOS.md
@@ -349,7 +349,7 @@ Or from within Claude Code: `/atlas:modules`
 
 ---
 
-## Local Commands
+## Local Commands (More than projects needs)
 
 Create machine-specific commands that aren't tracked in git.
 
@@ -366,7 +366,7 @@ Commands become available as `/local:<name>`. For example, `sync-tools.md` becom
 **Use cases:**
 - Commands referencing local paths (`~/Developer/...`)
 - Sync scripts for local repositories
-- Machine-specific workflows
+- Machine-specific workflows (MacDaddy-M1Air, BigMac-MacStudioM1Ultra)
 
 ---
 
