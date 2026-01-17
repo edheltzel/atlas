@@ -71,6 +71,70 @@ if [ "$CURRENT_USAGE" != "null" ] && [ "$CONTEXT_SIZE" -gt 0 ]; then
   fi
 fi
 
+# --- Learning Signal ---
+RATINGS_FILE="$HOME/.claude/MEMORY/Learning/Signals/ratings.jsonl"
+if [ -f "$RATINGS_FILE" ] && [ -s "$RATINGS_FILE" ]; then
+  # Get last 10 ratings
+  RATINGS=$(tail -10 "$RATINGS_FILE" 2>/dev/null | jq -r '.rating // empty' 2>/dev/null | grep -v '^$')
+
+  if [ -n "$RATINGS" ]; then
+    # Calculate average
+    COUNT=0
+    SUM=0
+    while read -r rating; do
+      if [ -n "$rating" ] && [ "$rating" != "null" ]; then
+        SUM=$((SUM + rating))
+        COUNT=$((COUNT + 1))
+      fi
+    done <<< "$RATINGS"
+
+    if [ "$COUNT" -gt 0 ]; then
+      AVG=$(echo "scale=1; $SUM / $COUNT" | bc 2>/dev/null || echo "0")
+      AVG_INT=${AVG%.*}
+      [ -z "$AVG_INT" ] && AVG_INT=0
+
+      # Calculate trend (compare first half to second half)
+      TREND="→"
+      if [ "$COUNT" -ge 4 ]; then
+        HALF=$((COUNT / 2))
+        FIRST_SUM=0
+        SECOND_SUM=0
+        I=0
+        while read -r rating; do
+          if [ "$I" -lt "$HALF" ]; then
+            FIRST_SUM=$((FIRST_SUM + rating))
+          else
+            SECOND_SUM=$((SECOND_SUM + rating))
+          fi
+          I=$((I + 1))
+        done <<< "$RATINGS"
+
+        FIRST_AVG=$(echo "scale=2; $FIRST_SUM / $HALF" | bc 2>/dev/null || echo "0")
+        SECOND_AVG=$(echo "scale=2; $SECOND_SUM / ($COUNT - $HALF)" | bc 2>/dev/null || echo "0")
+        DIFF=$(echo "$SECOND_AVG - $FIRST_AVG" | bc 2>/dev/null || echo "0")
+
+        if [ "$(echo "$DIFF > 0.5" | bc 2>/dev/null)" = "1" ]; then
+          TREND="↑"
+        elif [ "$(echo "$DIFF < -0.5" | bc 2>/dev/null)" = "1" ]; then
+          TREND="↓"
+        fi
+      fi
+
+      # Color based on average
+      if [ "$AVG_INT" -ge 7 ]; then
+        LEARN_FG="$LEARNING_OK_FG"
+      elif [ "$AVG_INT" -ge 4 ]; then
+        LEARN_FG="$LEARNING_WARN_FG"
+      else
+        LEARN_FG="$LEARNING_CRIT_FG"
+      fi
+
+      OUTPUT+=" ${SEP_FG}${SEP}${COLOR_RESET} "
+      OUTPUT+="${LEARN_FG}${ICON_LEARNING} ${AVG}${LEARNING_TREND_FG}${TREND}${COLOR_RESET}"
+    fi
+  fi
+fi
+
 # --- Cycle Usage (Max Plan Tracking) ---
 USAGE_JSON=$(bun run "$HOME/.claude/lib/usage-tracker.ts" --json 2>/dev/null)
 if [ -n "$USAGE_JSON" ] && [ "$USAGE_JSON" != "null" ]; then

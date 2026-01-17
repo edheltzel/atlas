@@ -40,3 +40,12 @@ ICON_RESET="󰔟"
 # Git branch
 ICON_BRANCH=$'\xef\x84\xa6'            # Nerd Font git branch (U+F126)
 BRANCH_FG=$'\e[38;2;55;244;153m'       # Great Old One Green #37f499
+
+# Learning signal colors
+LEARNING_OK_FG=$'\e[38;2;55;244;153m'     # Great Old One Green #37f499 (7-10)
+LEARNING_WARN_FG=$'\e[38;2;247;198;127m'  # Dreaming Orange #f7c67f (4-6)
+LEARNING_CRIT_FG=$'\e[38;2;241;108;117m'  # R'lyeh Red #f16c75 (1-3)
+LEARNING_TREND_FG=$'\e[38;2;164;140;242m' # Lovecraft Purple #a48cf2
+
+# Learning icon
+ICON_LEARNING="󰋽"  # Nerd Font lightbulb
