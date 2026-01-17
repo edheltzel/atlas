@@ -45,6 +45,10 @@
         "hooks": [
           {
             "type": "command",
+            "command": "bun run $PAI_DIR/hooks/WorkCompletionLearning.hook.ts"
+          },
+          {
+            "type": "command",
             "command": "bun run $PAI_DIR/hooks/capture-session-summary.ts"
           },
           {
