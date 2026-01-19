@@ -17,8 +17,8 @@ Personal AI Infrastructure for Claude Code.
 atlas/
 ├── .claude/              # Installed components
 │   ├── commands/atlas/   # Slash commands (/atlas:*)
-│   ├── skills/           # 12 skill definitions
-│   ├── hooks/            # 13 lifecycle hooks
+│   ├── skills/           # 23 skill definitions
+│   ├── hooks/            # 19 lifecycle hooks
 │   ├── lib/              # Shared utilities
 │   ├── security/         # Protection patterns
 │   ├── voice/            # TTS server
@@ -88,19 +88,56 @@ Each module has a `module.json` manifest. See `exports/MODULE-SPEC.md` for forma
 
 ---
 
-## Skills Quick Index (12 Skills)
+## Skills Quick Index (24 Skills)
+
+### Core Skills
 
 | Skill | Purpose | Path |
 |-------|---------|------|
-| Algorithm | Universal execution engine with ISC, Phases, Capabilities | `.claude/skills/Algorithm/` |
 | CORE | Identity, context, TELOS (auto-loads) | `.claude/skills/CORE/` |
+| Algorithm | Universal execution engine with ISC, Phases, Capabilities | `.claude/skills/Algorithm/` |
 | DeepPlan | Persistent planning system | `.claude/skills/DeepPlan/` |
-| Art | Visual content generation | `.claude/skills/Art/` |
+| GitWorkflow | Intelligent git with conventions, worktrees, voice | `.claude/skills/GitWorkflow/` |
+| Telos | Life OS and project analysis | `.claude/skills/Telos/` |
+| System | System maintenance, integrity checks, documentation | `.claude/skills/System/` |
+
+### Creation & Development
+
+| Skill | Purpose | Path |
+|-------|---------|------|
 | Agents | Custom agent composition | `.claude/skills/Agents/` |
+| Art | Visual content generation | `.claude/skills/Art/` |
 | Browser | Web automation with persistent sessions | `.claude/skills/Browser/` |
-| Prompting | Meta-prompting templates | `.claude/skills/Prompting/` |
 | CreateSkill | Skill creation utility | `.claude/skills/CreateSkill/` |
-| Upgrades | Monitor Anthropic ecosystem (30+ sources), YouTube channels | `.claude/skills/Upgrades/` |
+| CreateCLI | CLI generation | `.claude/skills/CreateCLI/` |
+| Prompting | Meta-prompting templates | `.claude/skills/Prompting/` |
+
+### Research & Intelligence
+
+| Skill | Purpose | Path |
+|-------|---------|------|
+| Research | Comprehensive research and analysis | `.claude/skills/Research/` |
+| OSINT | Open source intelligence gathering | `.claude/skills/OSINT/` |
+| Recon | Security reconnaissance | `.claude/skills/Recon/` |
+| RedTeam | Adversarial analysis with 32 agents | `.claude/skills/RedTeam/` |
+| FirstPrinciples | First principles analysis | `.claude/skills/FirstPrinciples/` |
+| Council | Multi-agent debate system | `.claude/skills/Council/` |
+
+### Specialized Tools
+
+| Skill | Purpose | Path |
+|-------|---------|------|
+| AnnualReports | Annual security report aggregation | `.claude/skills/AnnualReports/` |
+| BrightData | Progressive URL scraping | `.claude/skills/BrightData/` |
+| Upgrades | Monitor Anthropic ecosystem (30+ sources) | `.claude/skills/Upgrades/` |
+
+### Migration Utilities
+
+| Skill | Purpose | Path |
+|-------|---------|------|
+| converting-claude-subagents | Convert subagents to OpenCode format | `.claude/skills/converting-claude-subagents/` |
+| converting-slash-commands | Convert commands to OpenCode format | `.claude/skills/converting-slash-commands/` |
+| creating-claude-skills | Guide for creating Claude Skills | `.claude/skills/creating-claude-skills/` |
 
 ### CORE Skill Structure
 
