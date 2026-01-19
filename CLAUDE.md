@@ -62,6 +62,24 @@ Atlas is fully modular. Install individual components:
 
 Each module has a `module.json` manifest. See `exports/MODULE-SPEC.md` for format.
 
+### Uninstallation
+
+```bash
+# Preview what would be removed
+./exports/uninstall.sh --dry-run
+
+# Uninstall (moves user data to ~/safeToRemoveAtlas/)
+./exports/uninstall.sh
+
+# Uninstall without confirmation
+./exports/uninstall.sh --force
+
+# Full removal including user data
+./exports/uninstall.sh --purge
+```
+
+Detects installation mode (stow, symlink, or file copy) automatically.
+
 ---
 
 ## Reference Documentation
@@ -82,9 +100,18 @@ Each module has a `module.json` manifest. See `exports/MODULE-SPEC.md` for forma
 
 | When Working On | Read This |
 |-----------------|-----------|
+| Git workflow | `.claude/skills/GitWorkflow/SKILL.md` |
 | Git worktrees | `.claude/docs/GIT-WORKTREES.md` |
 | Hooks system | `.claude/docs/HOOKS-SYSTEM.md` |
 | Installation | `.claude/docs/INSTALLATION.md` |
+
+### Git Commands
+
+| Command | Purpose |
+|---------|---------|
+| `/git:commit` | Intelligent commit with convention detection |
+| `/git:commit-push-pr` | Full workflow: commit, push, and create PR |
+| `/git:clean_gone` | Remove branches deleted from remote (including worktrees) |
 
 ---
 
