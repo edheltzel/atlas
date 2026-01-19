@@ -1,0 +1,209 @@
+# Constraint Sets by Framework
+# Loaded by StackDetect.ts based on project analysis
+
+tailwind:
+  name: "Tailwind CSS"
+  detection:
+    - "tailwindcss"
+    - "tailwind.config"
+  rules:
+    css_framework:
+      required: true
+      utility: "cn (clsx + tailwind-merge)"
+    animation:
+      library: "motion/react or tw-animate-css"
+      allowed_properties:
+        - transform
+        - opacity
+      forbidden_properties:
+        - width
+        - height
+        - top
+        - left
+        - margin
+        - padding
+      max_duration_feedback: 200
+      max_duration_entrance: 300
+    viewport:
+      height: "h-dvh"
+      forbidden: "h-screen"
+    typography:
+      headings: "text-balance"
+      body: "text-pretty"
+      data: "tabular-nums"
+    layout:
+      z_index: "fixed scale (z-0 to z-50)"
+      squares: "size-* preferred"
+    design:
+      gradients: "only when requested"
+      accent_colors: "one per view"
+      shadows: "default scale"
+
+vanilla-css:
+  name: "Vanilla CSS"
+  detection:
+    - "no tailwind"
+    - "plain css"
+  rules:
+    css_framework:
+      required: false
+      utility: "CSS custom properties"
+    animation:
+      allowed_properties:
+        - transform
+        - opacity
+      forbidden_properties:
+        - width
+        - height
+        - top
+        - left
+        - margin
+        - padding
+      max_duration_feedback: 200
+      max_duration_entrance: 300
+    viewport:
+      height: "100dvh"
+      forbidden: "100vh"
+    typography:
+      headings: "text-wrap: balance"
+      body: "text-wrap: pretty"
+      data: "font-variant-numeric: tabular-nums"
+    layout:
+      z_index: "CSS custom properties scale"
+      squares: "aspect-ratio: 1"
+    design:
+      gradients: "only when requested"
+      accent_colors: "one per view"
+      shadows: "CSS custom properties"
+
+css-modules:
+  name: "CSS Modules"
+  detection:
+    - "*.module.css"
+    - "*.module.scss"
+  rules:
+    css_framework:
+      required: false
+      utility: "scoped classes"
+    animation:
+      allowed_properties:
+        - transform
+        - opacity
+      forbidden_properties:
+        - width
+        - height
+        - top
+        - left
+        - margin
+        - padding
+      max_duration_feedback: 200
+      max_duration_entrance: 300
+    viewport:
+      height: "100dvh"
+      forbidden: "100vh"
+    typography:
+      headings: "text-wrap: balance"
+      body: "text-wrap: pretty"
+      data: "font-variant-numeric: tabular-nums"
+    layout:
+      z_index: "CSS custom properties or module-scoped"
+      squares: "aspect-ratio: 1"
+    design:
+      gradients: "only when requested"
+      accent_colors: "one per view"
+      shadows: "scoped shadow utilities"
+
+styled-components:
+  name: "Styled Components / Emotion"
+  detection:
+    - "styled-components"
+    - "@emotion/styled"
+    - "@emotion/react"
+  rules:
+    css_framework:
+      required: false
+      utility: "CSS-in-JS"
+    animation:
+      allowed_properties:
+        - transform
+        - opacity
+      forbidden_properties:
+        - width
+        - height
+        - top
+        - left
+        - margin
+        - padding
+      max_duration_feedback: 200
+      max_duration_entrance: 300
+    viewport:
+      height: "100dvh"
+      forbidden: "100vh"
+    typography:
+      headings: "textWrap: 'balance'"
+      body: "textWrap: 'pretty'"
+      data: "fontVariantNumeric: 'tabular-nums'"
+    layout:
+      z_index: "theme.zIndices scale"
+      squares: "aspectRatio: 1"
+    design:
+      gradients: "only when requested"
+      accent_colors: "theme.colors.accent"
+      shadows: "theme.shadows scale"
+
+universal:
+  name: "Universal (Framework-Agnostic)"
+  detection:
+    - "default"
+  rules:
+    css_framework:
+      required: false
+      utility: "any valid approach"
+    animation:
+      allowed_properties:
+        - transform
+        - opacity
+      forbidden_properties:
+        - width
+        - height
+        - top
+        - left
+        - margin
+        - padding
+      max_duration_feedback: 200
+      max_duration_entrance: 300
+    viewport:
+      height: "dynamic viewport height"
+      forbidden: "static viewport height"
+    typography:
+      headings: "balanced wrapping"
+      body: "pretty wrapping"
+      data: "tabular figures"
+    layout:
+      z_index: "consistent scale"
+      squares: "equal width/height"
+    design:
+      gradients: "only when requested"
+      accent_colors: "one per view"
+      shadows: "consistent scale"
+
+# Auto-fix mappings
+auto_fix:
+  safe:
+    - pattern: "h-screen"
+      replacement: "h-dvh"
+      frameworks: ["tailwind"]
+    - pattern: "100vh"
+      replacement: "100dvh"
+      frameworks: ["vanilla-css", "css-modules", "styled-components"]
+    - pattern: "w-(\\d+)\\s+h-\\1"
+      replacement: "size-$1"
+      frameworks: ["tailwind"]
+
+  requires_approval:
+    - pattern: "color contrast"
+      reason: "design decision"
+    - pattern: "heading level"
+      reason: "semantic structure"
+    - pattern: "animation duration"
+      reason: "UX decision"
