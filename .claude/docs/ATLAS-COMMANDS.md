@@ -8,30 +8,30 @@
 
 ## System Overview
 
-**Atlas** is a Personal AI Infrastructure (PAI) built on Claude Code that provides:
+**Atlas** is a Personal AI Infrastructure built on Claude Code that provides:
 - Voice personality management
 - Skill-based delegation
 - Real-time observability
 - Pack-based modularity
 - Stack preference enforcement
 
-The command system exposes 16 slash commands under the `atlas:` namespace.
+The command system exposes 22 slash commands under the `atlas:` namespace.
 
 ## Architecture
 
 ```
-~/.dotfiles/ai/.claude/commands/atlas/    # Source (git-tracked)
+~/.dotfiles/atlas/.claude/commands/atlas/    # Source (git-tracked)
             ↓ (stow)
-~/.claude/commands/atlas/                 # Installed (symlinked)
+~/.claude/commands/atlas/                    # Installed (symlinked)
             ↓ (Claude Code)
-/atlas:<command>                          # Available slash commands
+/atlas:<command>                             # Available slash commands
 ```
 
 **Key Directories:**
 - `~/.claude/hooks/` - Hook scripts (TypeScript, executed by bun)
 - `~/.claude/skills/` - Skill definitions (Markdown)
 - `~/.claude/observability/` - Real-time dashboard server
-- `~/Developer/AI/PAI/` - PAI pack repository
+- `~/.claude/MEMORY/` - History capture and state tracking
 
 **Runtime:** bun (NOT npm/yarn/pnpm)
 **Language:** TypeScript preferred over Python
@@ -229,77 +229,27 @@ PreToolUse:
 
 ---
 
-### Pack Management
+### Bundle Management
 
-Packs are self-contained markdown files that add capabilities to Atlas.
+Bundles are portable configurations for exporting and importing Atlas setups.
 
-#### `/atlas:pack [action] [name]`
-**Purpose:** Unified pack management - list available/installed packs or install new ones
-**Allowed Tools:** Read, Write, Edit, Bash
-**Source:** `~/Developer/AI/PAI/Packs/`
+#### `/atlas:bundle [action] [args]`
+**Purpose:** Manage Atlas bundles for portable configurations
+**Allowed Tools:** Read, Write, Bash
 
 **Subcommands:**
 | Command | Action |
 |---------|--------|
-| `/atlas:pack` | List all packs with installation status |
-| `/atlas:pack list` | Same as above |
-| `/atlas:pack install <name>` | Install a specific pack |
+| `/atlas:bundle list` | List available bundles |
+| `/atlas:bundle export` | Export current configuration |
+| `/atlas:bundle info <name>` | Show bundle details |
 
-**Categories:**
-- Feature Packs: `kai-*-system.md` (architecture systems)
-- Skill Packs: `kai-*-skill.md` (action-oriented capabilities)
-- Core Packs: `kai-core-*.md` (foundational infrastructure)
-
-**Example Output:**
-```
-📦 Atlas Pack System
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Feature Packs:
-  ✅ kai-history-system
-  ✅ kai-hook-system
-     kai-observability-server
-  ✅ kai-voice-system
-
-Skill Packs:
-  ✅ kai-agents-skill
-  ✅ kai-art-skill
-     kai-browser-skill
-  ✅ kai-prompting-skill
-
-Core Packs:
-  ✅ kai-core-install
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ = Installed
-
-Use: /atlas:pack install <pack-name>
-```
-
-**Installation Process:**
-1. Read pack file from `~/Developer/AI/PAI/Packs/<pack-name>.md`
-2. Parse contents (code files, settings, dependencies)
-3. Create required directories
-4. Write all code files
-5. Merge settings.json configuration (don't overwrite existing)
-6. Verify installation
-7. Report status
-
-**Example:**
-```
-/atlas:pack install kai-browser-skill
-```
+**Bundle Location:** `~/.claude/Bundles/`
 
 #### `/atlas:docs [doc]`
-**Purpose:** Access PAI documentation
+**Purpose:** Quick access to Atlas documentation
 **Parameters:**
 - `[doc]` - Optional. One of: readme, packs, platform, security
-
-**Available Docs:**
-- `readme` - PAI project overview
-- `packs` - Pack system documentation
-- `platform` - Platform architecture
-- `security` - Security protocols
 
 **Behavior:**
 - Without parameter: Lists available docs
@@ -311,7 +261,7 @@ Use: /atlas:pack install <pack-name>
 
 #### `/atlas:help`
 **Purpose:** Show complete command reference
-**Output:** Categorized list of all 17 commands with descriptions
+**Output:** Categorized list of all 22 commands with descriptions
 
 #### `/atlas:create-skill <name>`
 **Purpose:** Scaffold a new Atlas skill
@@ -420,11 +370,11 @@ Commands can start/stop the WebSocket server:
 **Required:**
 - `PAI_DIR` - Atlas installation directory (usually `~/.claude`)
 - `DA` - Digital Assistant name (Atlas)
-- `PAI_SOURCE_APP` - Source application (Atlas)
-- `TIME_ZONE` - User timezone (e.g., America/New_York)
+- `TIME_ZONE` - User timezone (e.g., America/Los_Angeles)
 
 **Optional:**
 - `ELEVENLABS_VOICE_*` - Voice IDs for TTS personalities
+- `ELEVENLABS_API_KEY` - API key for voice server
 
 ---
 
@@ -442,7 +392,7 @@ bash: /atlas:foo: No such file or directory
 ```
 ❌ Observability server not installed
 ```
-→ Install required pack: `/atlas:install kai-observability-server`
+→ Check installation: `/atlas:check`
 
 **Runtime Error:**
 ```
@@ -480,7 +430,7 @@ Commands use:
 ### File System Access
 Commands only access:
 - `~/.claude/` - Atlas installation directory
-- `~/Developer/AI/PAI/` - PAI pack repository
+- `~/.dotfiles/atlas/` - Source repository (git-tracked)
 - Current working directory (read-only)
 
 ---
@@ -518,12 +468,11 @@ tail ~/.claude/observability/apps/server/logs/*.log
 
 ## Version Information
 
-- **Command System Version:** 1.0.2
-- **Total Commands:** 18
+- **Command System Version:** 1.1.0
+- **Total Commands:** 22
 - **Namespace:** `atlas:`
 - **Runtime:** bun
 - **Platform:** Claude Code
-- **Compatible With:** PAI Pack System v1.0+
 
 ---
 
@@ -531,7 +480,7 @@ tail ~/.claude/observability/apps/server/logs/*.log
 
 ### Adding New Commands
 
-1. Create `.md` file: `ai/.claude/commands/atlas:<name>.md`
+1. Create `.md` file: `.claude/commands/atlas/<name>.md`
 2. Add frontmatter:
    ```yaml
    ---
@@ -542,23 +491,22 @@ tail ~/.claude/observability/apps/server/logs/*.log
 3. Document usage with `$ARGUMENTS`, `$1`, `$2`
 4. Prefix shell commands with `!`
 5. Update `/atlas:help` command
-6. Update `README.md`
-7. Update this file (ATLAS_COMMANDS.md)
+6. Update this file (ATLAS-COMMANDS.md)
 
 ### Testing Commands
 
 ```bash
 # Test locally (before stowing)
-cat ai/.claude/commands/atlas:test.md
+cat ~/.dotfiles/atlas/.claude/commands/atlas/<name>.md
 
 # Install via stow
-cd ~/.dotfiles && make update
+cd ~/.dotfiles && stow atlas
 
 # Verify installation
-ls ~/.claude/commands/atlas:test.md
+ls ~/.claude/commands/atlas/<name>.md
 
 # Test in Claude Code
-/atlas:test
+/atlas:<name>
 ```
 
 ### Debugging Commands
@@ -578,14 +526,14 @@ bash -x <(sed -n '/^!/p' ~/.claude/commands/atlas:<name>.md | sed 's/^!//')
 
 ## Related Documentation
 
-- **User README:** `ai/.claude/commands/README.md`
-- **PAI Documentation:** `~/Developer/AI/PAI/README.md`
-- **Pack System:** `~/Developer/AI/PAI/PACKS.md`
+- **User README:** `~/.dotfiles/atlas/README.md`
 - **Skills Index:** `~/.claude/skills/skill-index.json`
 - **Hook System:** `~/.claude/settings.json`
+- **Hooks Documentation:** `~/.claude/docs/HOOKS-SYSTEM.md`
+- **Voice System:** `~/.claude/docs/VOICE-SYSTEM.md`
 
 ---
 
-**Last Updated:** 2026-01-07
-**Maintained By:** Ed (Atlas user)
+**Last Updated:** 2026-01-19
+**Maintained By:** Ed
 **For AI Agents:** This document is authoritative for Atlas command system integration
