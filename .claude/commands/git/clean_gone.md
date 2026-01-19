@@ -25,6 +25,7 @@ git branch -vv
 ```
 
 Look for branches with `[gone]` status:
+
 ```
   feature/old-feature abc1234 [origin/feature/old-feature: gone] Last commit message
 * main                def5678 [origin/main] Current commit
