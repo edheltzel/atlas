@@ -1,0 +1,11 @@
+id: "007"
+description: "the counter section should come after the hub card section"
+type: "work"
+effort: "TRIVIAL"
+source: "USER_PROMPT"
+status: "DONE"
+created_at: "2026-01-21T02:42:28-08:00"
+completed_at: "2026-01-21T02:43:41-08:00"
+response_summary: "Moved counters section to render after the child products grid as requested."
+lineage:
+  created_by: "user_request"

@@ -1,0 +1,11 @@
+id: "001"
+description: "can we start over with the Telos?"
+type: "conversational"
+effort: "TRIVIAL"
+source: "USER_PROMPT"
+status: "ACTIVE"
+created_at: "2026-01-20T14:39:52-08:00"
+completed_at: null
+response_summary: null
+lineage:
+  created_by: "user_request"

@@ -1,0 +1,11 @@
+id: "002"
+description: "that's not exactly what I was looking for. I just want the directory name, none of the path info `~/` "
+type: "conversational"
+effort: "TRIVIAL"
+source: "USER_PROMPT"
+status: "DONE"
+created_at: "2026-01-21T00:12:52-08:00"
+completed_at: "2026-01-21T00:13:08-08:00"
+response_summary: "Reload Kitty with ctrl+shift+f5. The basename template should show directory name only."
+lineage:
+  created_by: "user_request"

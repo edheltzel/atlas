@@ -1,0 +1,11 @@
+id: "005"
+description: "use claude in chrome to view the source, https://pfe.inthera.in/products/custom-steel-fabrication/"
+type: "work"
+effort: "TRIVIAL"
+source: "USER_PROMPT"
+status: "ACTIVE"
+created_at: "2026-01-21T05:49:42-08:00"
+completed_at: null
+response_summary: null
+lineage:
+  created_by: "user_request"

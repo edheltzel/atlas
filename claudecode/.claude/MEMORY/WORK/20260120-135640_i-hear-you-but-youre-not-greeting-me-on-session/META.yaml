@@ -1,0 +1,12 @@
+id: "20260120-135640_i-hear-you-but-youre-not-greeting-me-on-session"
+title: "i hear you, but you're not greeting me on session "
+created_at: "2026-01-20T13:56:40-08:00"
+completed_at: "2026-01-20T13:57:25-08:00"
+source: "SESSION"
+status: "COMPLETED"
+session_id: "ab13ebb5-719d-4a0d-853c-c1c983f9ad5d"
+lineage:
+  tools_used: []
+  files_changed: []
+  agents_spawned: []
+parent: null

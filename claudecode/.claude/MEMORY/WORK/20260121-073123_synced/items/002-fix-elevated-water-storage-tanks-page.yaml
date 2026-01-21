@@ -1,0 +1,11 @@
+id: "002"
+description: "confirmed that it works for the specific page, but https://pfe.inthera.in/products/elevated-water-storage-tanks/steel-elevated-tanks/ is not working and has children."
+type: "work"
+effort: "QUICK"
+source: "USER_PROMPT"
+status: "ACTIVE"
+created_at: "2026-01-21T07:35:23-08:00"
+completed_at: null
+response_summary: null
+lineage:
+  created_by: "user_request"

@@ -1,0 +1,2 @@
+{"timestamp":"2026-01-21T07:30:55-08:00","session_id":"a7110e4b-3949-43b7-9dec-71b4f00b270d","message":"Debug code pushed to GitHub. Please sync server to see diagnostic output.","character_count":73,"voice_id":"Ioq2c1GJee5RyqeoBIH3","event_type":"sent","status_code":200}
+{"timestamp":"2026-01-21T07:31:12-08:00","session_id":"16b8f0a1-7c78-46bd-8618-b744770554e1","message":"Private instance has inference not in public repo. Revert to public version or make non-blocking.","character_count":97,"voice_id":"Ioq2c1GJee5RyqeoBIH3","event_type":"sent","status_code":200}

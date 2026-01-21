@@ -1,0 +1,11 @@
+id: "001"
+description: "the bg image was set in ACF but it did not update on the frontend"
+type: "work"
+effort: "QUICK"
+source: "USER_PROMPT"
+status: "DONE"
+created_at: "2026-01-21T03:21:08-08:00"
+completed_at: "2026-01-21T03:22:26-08:00"
+response_summary: "Code changes are local only. Deploy theme files to server to see background image."
+lineage:
+  created_by: "user_request"

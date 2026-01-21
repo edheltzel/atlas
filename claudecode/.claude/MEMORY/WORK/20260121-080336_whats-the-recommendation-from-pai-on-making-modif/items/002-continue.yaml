@@ -1,0 +1,11 @@
+id: "002"
+description: "continue"
+type: "conversational"
+effort: "TRIVIAL"
+source: "USER_PROMPT"
+status: "DONE"
+created_at: "2026-01-21T08:05:01-08:00"
+completed_at: "2026-01-21T08:05:31-08:00"
+response_summary: "PAI uses SYSTEM USER two-tier pattern. Contribute VoiceProsody upstream, accept simpler tab-state."
+lineage:
+  created_by: "user_request"

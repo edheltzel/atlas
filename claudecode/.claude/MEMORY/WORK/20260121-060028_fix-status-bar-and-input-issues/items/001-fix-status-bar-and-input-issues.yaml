@@ -1,0 +1,11 @@
+id: "001"
+description: "There seems to be a bit of an issue with, I'm thinking it's the status bar, but things just get all out of whack after a few chats everything is broken with the input."
+type: "work"
+effort: "STANDARD"
+source: "USER_PROMPT"
+status: "DONE"
+created_at: "2026-01-21T06:00:28-08:00"
+completed_at: "2026-01-21T06:24:07-08:00"
+response_summary: "Disabled status line for testing. Start new session, use it heavily, report if display stays clean."
+lineage:
+  created_by: "user_request"

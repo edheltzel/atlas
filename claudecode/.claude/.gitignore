@@ -1,0 +1,31 @@
+# ============================================
+# EPHEMERAL - NO VALUE IN VERSIONING
+# ============================================
+cache/
+file-history/
+session-env/
+shell-snapshots/
+statsig/
+stats-cache.json
+telemetry/
+todos/
+projects/
+debug/
+ide/
+plans/
+
+# Logs
+*.log
+VoiceServer/logs/*.log
+Observability/*.log
+
+# ============================================
+# OS/EDITOR
+# ============================================
+.DS_Store
+._*
+*.swp
+*.swo
+*~
+.vscode/
+.idea/

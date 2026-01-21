@@ -1,0 +1,11 @@
+id: "001"
+description: "we we added the new section, i mentioned that we did not need the link from /Users/ed/Sites/mintech/home-classic.html but we now need it. do you remember what I am referrencing? "
+type: "question"
+effort: "TRIVIAL"
+source: "USER_PROMPT"
+status: "DONE"
+created_at: "2026-01-21T06:45:14-08:00"
+completed_at: "2026-01-21T06:46:00-08:00"
+response_summary: "Found the missing Read More link on service carousel items from home-classic reference."
+lineage:
+  created_by: "user_request"

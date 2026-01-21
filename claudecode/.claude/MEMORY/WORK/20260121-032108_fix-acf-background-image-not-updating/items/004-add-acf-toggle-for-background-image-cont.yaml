@@ -1,0 +1,11 @@
+id: "004"
+description: "lets add a acf for the background image on or off, including the fallback image, so if i check the box no background image all, if it is unchecked but no custom image is set then use the fallback and so on."
+type: "work"
+effort: "QUICK"
+source: "USER_PROMPT"
+status: "DONE"
+created_at: "2026-01-21T03:35:33-08:00"
+completed_at: "2026-01-21T03:36:47-08:00"
+response_summary: "Added show background toggle with fallback logic. Three states: off, default, or custom image."
+lineage:
+  created_by: "user_request"

@@ -1,0 +1,11 @@
+id: "001"
+description: "so does opencode/.config/opencode sync to ~/.config/opencode?"
+type: "question"
+effort: "TRIVIAL"
+source: "USER_PROMPT"
+status: "DONE"
+created_at: "2026-01-21T08:08:10-08:00"
+completed_at: "2026-01-21T08:08:26-08:00"
+response_summary: "Plan created with three phases: fix blocking, preserve VoiceProsody, then sync upstream."
+lineage:
+  created_by: "user_request"

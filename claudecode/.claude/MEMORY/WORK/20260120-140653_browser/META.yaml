@@ -1,0 +1,12 @@
+id: "20260120-140653_browser"
+title: "Browser"
+created_at: "2026-01-20T14:06:53-08:00"
+completed_at: "2026-01-20T14:07:08-08:00"
+source: "SESSION"
+status: "COMPLETED"
+session_id: "9459cb6d-d635-4941-b7c0-e5c85bb6c862"
+lineage:
+  tools_used: []
+  files_changed: []
+  agents_spawned: []
+parent: null

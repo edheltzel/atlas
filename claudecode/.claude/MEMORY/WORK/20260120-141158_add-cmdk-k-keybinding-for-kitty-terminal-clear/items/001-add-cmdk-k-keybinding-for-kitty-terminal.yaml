@@ -1,0 +1,11 @@
+id: "001"
+description: "can we add `cmd+k k` to clear the terminal session for kitty?"
+type: "work"
+effort: "QUICK"
+source: "USER_PROMPT"
+status: "ACTIVE"
+created_at: "2026-01-20T14:11:58-08:00"
+completed_at: null
+response_summary: null
+lineage:
+  created_by: "user_request"

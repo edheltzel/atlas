@@ -1,0 +1,11 @@
+id: "001"
+description: "For the product pages, we need to include a secondary template that has the about section reversed. Ask me questions before you modify anything."
+type: "work"
+effort: "QUICK"
+source: "USER_PROMPT"
+status: "ACTIVE"
+created_at: "2026-01-21T04:24:37-08:00"
+completed_at: null
+response_summary: null
+lineage:
+  created_by: "user_request"

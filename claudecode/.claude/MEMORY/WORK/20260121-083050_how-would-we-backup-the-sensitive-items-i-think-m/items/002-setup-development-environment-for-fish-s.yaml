@@ -1,0 +1,13 @@
+id: "002"
+description: "i dont want to back up the .env file, its already globally ignored by git.
+I use fish shell not zshrc try and remember that.
+give me the full plan."
+type: "work"
+effort: "QUICK"
+source: "USER_PROMPT"
+status: "DONE"
+created_at: "2026-01-21T08:34:01-08:00"
+completed_at: "2026-01-21T08:36:12-08:00"
+response_summary: "Migration plan complete with eight steps, rollback, and fish shell syntax ready."
+lineage:
+  created_by: "user_request"

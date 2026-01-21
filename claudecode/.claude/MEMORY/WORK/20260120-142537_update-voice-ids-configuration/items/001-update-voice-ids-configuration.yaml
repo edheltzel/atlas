@@ -1,0 +1,19 @@
+id: "001"
+description: "update the voice ids:
+Engineer: Fahco4VZzobUeiPqni1S
+Architect: NNl6r8mD7vthiJatiJt1
+Designer: h8eW5xfRUGVJrZhAFxqK
+Pentester: UZvBfqEdvCFLqsBOo9Zr
+Intern: lcMyyd2HUfFzxdCaC4Ta
+Writer: goT3UYdM9bhm0n2lmKQx
+kia and research are added in my elevenlabs
+"
+type: "work"
+effort: "QUICK"
+source: "USER_PROMPT"
+status: "DONE"
+created_at: "2026-01-20T14:25:37-08:00"
+completed_at: "2026-01-20T14:28:06-08:00"
+response_summary: "Updated six agent voice IDs in markdown files and voices.json. All tested successfully."
+lineage:
+  created_by: "user_request"

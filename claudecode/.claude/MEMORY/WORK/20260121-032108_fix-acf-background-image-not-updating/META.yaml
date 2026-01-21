@@ -1,0 +1,12 @@
+id: "20260121-032108_fix-acf-background-image-not-updating"
+title: "Fix ACF background image not updating"
+created_at: "2026-01-21T03:21:08-08:00"
+completed_at: null
+source: "SESSION"
+status: "ACTIVE"
+session_id: "90f22534-fca1-42d6-9e5e-77fb9627669d"
+lineage:
+  tools_used: []
+  files_changed: []
+  agents_spawned: []
+parent: null

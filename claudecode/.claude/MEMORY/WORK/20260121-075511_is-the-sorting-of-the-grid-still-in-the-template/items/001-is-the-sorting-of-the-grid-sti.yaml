@@ -1,0 +1,11 @@
+id: "001"
+description: "is the sorting of the grid still in the template?"
+type: "question"
+effort: "TRIVIAL"
+source: "USER_PROMPT"
+status: "DONE"
+created_at: "2026-01-21T07:55:11-08:00"
+completed_at: "2026-01-21T07:55:36-08:00"
+response_summary: "Yes, template sorts by menu_order then title. ACF hub_order field not currently used."
+lineage:
+  created_by: "user_request"

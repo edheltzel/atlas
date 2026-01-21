@@ -1,0 +1,12 @@
+id: "001"
+description: "when we set the voice id to Ioq2c1GJee5RyqeoBIH3 does that affect all the agent voices?
+where are these other voices triggered?"
+type: "question"
+effort: "TRIVIAL"
+source: "USER_PROMPT"
+status: "DONE"
+created_at: "2026-01-20T14:01:03-08:00"
+completed_at: "2026-01-20T14:01:55-08:00"
+response_summary: "Settings voiceId is yours. Each agent in ~/.claude/agents has its own voiceId in frontmatter."
+lineage:
+  created_by: "user_request"

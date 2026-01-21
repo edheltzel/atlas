@@ -1,0 +1,11 @@
+id: "002"
+description: "lets update it"
+type: "conversational"
+effort: "TRIVIAL"
+source: "USER_PROMPT"
+status: "ACTIVE"
+created_at: "2026-01-21T03:54:08-08:00"
+completed_at: null
+response_summary: null
+lineage:
+  created_by: "user_request"

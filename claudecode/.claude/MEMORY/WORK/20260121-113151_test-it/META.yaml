@@ -1,0 +1,12 @@
+id: "20260121-113151_test-it"
+title: "Test it"
+created_at: "2026-01-21T11:31:51-08:00"
+completed_at: null
+source: "SESSION"
+status: "ACTIVE"
+session_id: "2ba5ce45-6955-43a0-8f7a-3e67f11cb2dd"
+lineage:
+  tools_used: []
+  files_changed: []
+  agents_spawned: []
+parent: null

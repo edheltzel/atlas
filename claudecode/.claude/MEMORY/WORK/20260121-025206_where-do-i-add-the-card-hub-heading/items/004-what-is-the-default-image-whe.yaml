@@ -1,0 +1,11 @@
+id: "004"
+description: "what is the default image? where is that set/stored?"
+type: "question"
+effort: "TRIVIAL"
+source: "USER_PROMPT"
+status: "DONE"
+created_at: "2026-01-21T03:05:53-08:00"
+completed_at: "2026-01-21T03:06:08-08:00"
+response_summary: "Default is assets/images/backgrounds/6.png, set as fallback in services grid component."
+lineage:
+  created_by: "user_request"

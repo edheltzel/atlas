@@ -1,0 +1,2 @@
+{"timestamp":"2026-01-21T05:41:42-08:00","session_id":"71469812-6bb4-4eff-ab1d-d1584840ac70","message":"Markup matches Mintech original. Need screenshot of current output to identify issue.","character_count":85,"voice_id":"Ioq2c1GJee5RyqeoBIH3","event_type":"sent","status_code":200}
+{"timestamp":"2026-01-21T05:48:38-08:00","session_id":"71469812-6bb4-4eff-ab1d-d1584840ac70","message":"Markup matches Mintech. Need to verify ACF data and actual HTML output from browser view-source.","character_count":96,"voice_id":"Ioq2c1GJee5RyqeoBIH3","event_type":"sent","status_code":200}

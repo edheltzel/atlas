@@ -1,0 +1,12 @@
+id: "003"
+description: "we need to add a section toggle, see image 1, this will toggle off the children products section see image 2/Users/ed/Library/Containers/cc.ffitch.shottr/Data/tmp/cc.ffitch.shottr/SCR-20260121-ivhk.png
+/Users/ed/Library/Containers/cc.ffitch.shottr/Data/tmp/cc.ffitch.shottr/SCR-20260121-ivjo.png"
+type: "work"
+effort: "STANDARD"
+source: "USER_PROMPT"
+status: "DONE"
+created_at: "2026-01-21T06:32:54-08:00"
+completed_at: "2026-01-21T06:34:32-08:00"
+response_summary: "Added Show Children Products toggle to Section Toggles tab. Sync ACF to apply."
+lineage:
+  created_by: "user_request"

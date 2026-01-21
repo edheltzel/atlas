@@ -1,0 +1,11 @@
+id: "003"
+description: "which voice id are you using"
+type: "question"
+effort: "TRIVIAL"
+source: "USER_PROMPT"
+status: "DONE"
+created_at: "2026-01-20T13:39:40-08:00"
+completed_at: "2026-01-20T13:39:53-08:00"
+response_summary: "Using ElevenLabs voice ID EXAVITQu4vr4xnSDxMaL, the Sarah voice, at 1.1x speed."
+lineage:
+  created_by: "user_request"

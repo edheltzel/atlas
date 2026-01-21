@@ -1,0 +1,12 @@
+id: "20260120-140710_local-command-caveatcaveat-the-messages-below-w"
+title: "<local-command-caveat>Caveat: The messages below w"
+created_at: "2026-01-20T14:07:10-08:00"
+completed_at: "2026-01-20T14:07:40-08:00"
+source: "SESSION"
+status: "COMPLETED"
+session_id: "9459cb6d-d635-4941-b7c0-e5c85bb6c862"
+lineage:
+  tools_used: []
+  files_changed: []
+  agents_spawned: []
+parent: null

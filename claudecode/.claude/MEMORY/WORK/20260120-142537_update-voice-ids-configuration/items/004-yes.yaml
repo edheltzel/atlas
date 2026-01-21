@@ -1,0 +1,11 @@
+id: "004"
+description: "yes"
+type: "conversational"
+effort: "TRIVIAL"
+source: "USER_PROMPT"
+status: "ACTIVE"
+created_at: "2026-01-20T14:29:57-08:00"
+completed_at: null
+response_summary: null
+lineage:
+  created_by: "user_request"

@@ -1,0 +1,11 @@
+id: "001"
+description: "/Browser "
+type: "work"
+effort: "QUICK"
+source: "USER_PROMPT"
+status: "DONE"
+created_at: "2026-01-20T14:06:53-08:00"
+completed_at: "2026-01-20T14:07:03-08:00"
+response_summary: "Browser skill ready. What URL or page would you like me to check?"
+lineage:
+  created_by: "user_request"

@@ -1,0 +1,12 @@
+id: "20260121-080810_so-does-opencodeconfigopencode-sync-to-confi"
+title: "so does opencode/.config/opencode sync to ~/.confi"
+created_at: "2026-01-21T08:08:10-08:00"
+completed_at: null
+source: "SESSION"
+status: "ACTIVE"
+session_id: "62f5aa94-a69c-485c-be5b-7465db62281c"
+lineage:
+  tools_used: []
+  files_changed: []
+  agents_spawned: []
+parent: null

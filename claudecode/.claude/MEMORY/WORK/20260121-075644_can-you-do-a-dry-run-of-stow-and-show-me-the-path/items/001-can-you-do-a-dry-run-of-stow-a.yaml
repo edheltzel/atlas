@@ -1,0 +1,11 @@
+id: "001"
+description: "can you do a dry run of stow and show me the path for each directory?"
+type: "question"
+effort: "QUICK"
+source: "USER_PROMPT"
+status: "DONE"
+created_at: "2026-01-21T07:56:44-08:00"
+completed_at: "2026-01-21T07:57:22-08:00"
+response_summary: "Claudecode links to .claude, opencode links to .config. Both target parent directory."
+lineage:
+  created_by: "user_request"

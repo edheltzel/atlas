@@ -1,0 +1,11 @@
+id: "002"
+description: "the .env is in the directory "
+type: "conversational"
+effort: "TRIVIAL"
+source: "USER_PROMPT"
+status: "DONE"
+created_at: "2026-01-21T11:33:58-08:00"
+completed_at: "2026-01-21T11:35:02-08:00"
+response_summary: "Fixed server to load API key from .claude/.env. Voice should be working now."
+lineage:
+  created_by: "user_request"
