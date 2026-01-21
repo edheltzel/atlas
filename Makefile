@@ -24,7 +24,7 @@ install: ## Bootstrap Atlas (symlinks + dependencies)
 .PHONY: run
 run: ## Symlink all packages w/Stow
 	@for pkg in $(STOW_PACKAGES); do \
-		stow $$pkg; \
+		stow -t $$HOME $$pkg; \
 	done
 	@echo "$(GREEN)Atlas packages stowed successfully$(CLR)"
 
@@ -38,7 +38,7 @@ stow: ## Add individual package w/Stow (pkg=claudecode|opencode)
 		echo "Error: Package '${pkg}' not found in STOW_PACKAGES: $(STOW_PACKAGES)"; \
 		exit 1; \
 	fi
-	stow ${pkg}
+	stow -t $$HOME ${pkg}
 	@echo "$(GREEN)${pkg} was added$(CLR)"
 
 .PHONY: unstow remove
@@ -51,20 +51,20 @@ unstow: ## Remove individual package w/Stow (pkg=claudecode|opencode)
 		echo "Error: Package '${pkg}' not found in STOW_PACKAGES: $(STOW_PACKAGES)"; \
 		exit 1; \
 	fi
-	stow --delete ${pkg}
+	stow -t $$HOME --delete ${pkg}
 	@echo "$(WHITE)${pkg} was removed$(CLR)"
 
 .PHONY: update up
 update: ## Update all Atlas packages (restow)
 	@for pkg in $(STOW_PACKAGES); do \
-		stow --restow $$pkg; \
+		stow -t $$HOME --restow $$pkg; \
 	done
 	@echo "$(GREEN)Atlas packages updated successfully$(CLR)"
 
 .PHONY: delete
 delete: ## Delete all symlinks w/Stow
 	@for pkg in $(STOW_PACKAGES); do \
-		stow --delete $$pkg; \
+		stow -t $$HOME --delete $$pkg; \
 	done
 	@echo "$(WHITE)Atlas symlinks removed$(CLR)"
 
