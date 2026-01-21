@@ -18,3 +18,7 @@ dist/
 # Local commands (machine-specific, keep README)
 .claude/commands/local/*
 !.claude/commands/local/README.md
+
+# Memory and history (user-specific)
+**/MEMORY/
+**/history.jsonl
