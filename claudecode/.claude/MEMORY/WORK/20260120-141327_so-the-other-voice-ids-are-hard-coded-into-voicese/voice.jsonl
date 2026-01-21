@@ -1,2 +1,0 @@
-{"timestamp":"2026-01-20T14:13:50-08:00","session_id":"ab13ebb5-719d-4a0d-853c-c1c983f9ad5d","message":"Voice IDs not in server. They're hardcoded in agent markdown files and voices.json.","character_count":83,"voice_id":"Ioq2c1GJee5RyqeoBIH3","event_type":"sent","status_code":200}
-{"timestamp":"2026-01-20T14:14:00-08:00","session_id":"756b4119-1820-4bb7-9add-39021df4bda1","message":"Changed up navigation to arrow key. Cmd+k k now clears terminal without conflict.","character_count":81,"voice_id":"Ioq2c1GJee5RyqeoBIH3","event_type":"sent","status_code":200}

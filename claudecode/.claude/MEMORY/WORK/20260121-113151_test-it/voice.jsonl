@@ -1,2 +1,0 @@
-{"timestamp":"2026-01-21T11:32:26-08:00","session_id":"2ba5ce45-6955-43a0-8f7a-3e67f11cb2dd","message":"Server endpoint works but no audio without ElevenLabs API key configured.","character_count":73,"voice_id":"Ioq2c1GJee5RyqeoBIH3","event_type":"sent","status_code":200}
-{"timestamp":"2026-01-21T11:35:02-08:00","session_id":"2ba5ce45-6955-43a0-8f7a-3e67f11cb2dd","message":"Fixed server to load API key from .claude/.env. Voice should be working now.","character_count":76,"voice_id":"Ioq2c1GJee5RyqeoBIH3","event_type":"sent","status_code":200}

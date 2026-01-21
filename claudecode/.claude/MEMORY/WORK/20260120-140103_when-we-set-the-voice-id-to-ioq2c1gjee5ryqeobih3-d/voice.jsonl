@@ -1,2 +1,0 @@
-{"timestamp":"2026-01-20T14:01:55-08:00","session_id":"ab13ebb5-719d-4a0d-853c-c1c983f9ad5d","message":"Settings voiceId is yours. Each agent in ~/.claude/agents has its own voiceId in frontmatter.","character_count":93,"voice_id":"Ioq2c1GJee5RyqeoBIH3","event_type":"sent","status_code":200}
-{"timestamp":"2026-01-20T14:06:20-08:00","session_id":"ab13ebb5-719d-4a0d-853c-c1c983f9ad5d","message":"Tested all nine agent voices. All ElevenLabs voice IDs working and distinct.","character_count":76,"voice_id":"Ioq2c1GJee5RyqeoBIH3","event_type":"sent","status_code":200}
