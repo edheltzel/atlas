@@ -78,6 +78,43 @@ For full documentation, see `skills/CORE/SKILL.md`.
 
 ---
 
+## CLI Tool Preferences
+
+**Always prefer modern CLI tools over legacy equivalents:**
+
+| Instead of | Use | Why |
+|------------|-----|-----|
+| `grep` | `rg` (ripgrep) | Faster, respects .gitignore, better defaults |
+| `find` | `fd` | Simpler syntax, faster, respects .gitignore |
+| `cat` | `bat` | Syntax highlighting, line numbers, git integration |
+| `ls` | `eza` | Better colors, git status, tree view |
+| `diff` | `delta` | Syntax highlighting, side-by-side, git integration |
+| `du` | `dust` | Visual representation, faster |
+| `df` | `duf` | Better formatting, colors |
+| `ps` | `procs` | Better formatting, tree view |
+| `top` | `btop`/`htop` | Better UI, more information |
+| `man` | `tldr` | Practical examples, concise |
+
+**Examples:**
+```bash
+# Search for pattern in files
+rg "pattern" --type ts
+
+# Find files by name
+fd "*.tsx" src/
+
+# View file with syntax highlighting
+bat config.json
+
+# List with git status
+eza -la --git
+
+# Disk usage visualization
+dust -d 2
+```
+
+---
+
 **PAI** - Magnifying human capabilities through personalized AI infrastructure.
 
 Repository: [github.com/danielmiessler/PAI](https://github.com/danielmiessler/PAI)
