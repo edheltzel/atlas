@@ -2,6 +2,6 @@
   "name": "opencode-config",
   "type": "module",
   "dependencies": {
-    "@opencode-ai/plugin": "latest"
+    "@opencode-ai/plugin": "1.1.29"
   }
 }
