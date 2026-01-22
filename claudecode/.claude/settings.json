@@ -14,8 +14,8 @@
     "voiceId": "Ioq2c1GJee5RyqeoBIH3",
     "voice": {
       "stability": 0.35,
-      "similarity_boost": 0.80,
-      "style": 0.90,
+      "similarity_boost": 0.8,
+      "style": 0.9,
       "speed": 1.1,
       "use_speaker_boost": true,
       "volume": 0.8
@@ -54,7 +54,8 @@
       "ExitPlanMode",
       "Task",
       "Skill",
-      "mcp__*"
+      "mcp__*",
+      "mcp__pencil"
     ],
     "deny": [],
     "ask": [
@@ -96,71 +97,141 @@
     "PreToolUse": [
       {
         "matcher": "Bash",
-        "hooks": [{ "type": "command", "command": "${PAI_DIR}/hooks/SecurityValidator.hook.ts" }]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/SecurityValidator.hook.ts"
+          }
+        ]
       },
       {
         "matcher": "Edit",
-        "hooks": [{ "type": "command", "command": "${PAI_DIR}/hooks/SecurityValidator.hook.ts" }]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/SecurityValidator.hook.ts"
+          }
+        ]
       },
       {
         "matcher": "Write",
-        "hooks": [{ "type": "command", "command": "${PAI_DIR}/hooks/SecurityValidator.hook.ts" }]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/SecurityValidator.hook.ts"
+          }
+        ]
       },
       {
         "matcher": "Read",
-        "hooks": [{ "type": "command", "command": "${PAI_DIR}/hooks/SecurityValidator.hook.ts" }]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/SecurityValidator.hook.ts"
+          }
+        ]
       },
       {
         "matcher": "AskUserQuestion",
-        "hooks": [{ "type": "command", "command": "${PAI_DIR}/hooks/SetQuestionTab.hook.ts" }]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/SetQuestionTab.hook.ts"
+          }
+        ]
       }
     ],
     "PostToolUse": [
       {
         "matcher": "AskUserQuestion",
-        "hooks": [{ "type": "command", "command": "${PAI_DIR}/hooks/QuestionAnswered.hook.ts" }]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/QuestionAnswered.hook.ts"
+          }
+        ]
       }
     ],
     "SessionEnd": [
       {
         "hooks": [
-          { "type": "command", "command": "${PAI_DIR}/hooks/WorkCompletionLearning.hook.ts" },
-          { "type": "command", "command": "${PAI_DIR}/hooks/SessionSummary.hook.ts" }
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/WorkCompletionLearning.hook.ts"
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/SessionSummary.hook.ts"
+          }
         ]
       }
     ],
     "UserPromptSubmit": [
       {
         "hooks": [
-          { "type": "command", "command": "${PAI_DIR}/hooks/FormatEnforcer.hook.ts" },
-          { "type": "command", "command": "${PAI_DIR}/hooks/AutoWorkCreation.hook.ts" },
-          { "type": "command", "command": "${PAI_DIR}/hooks/ExplicitRatingCapture.hook.ts" },
-          { "type": "command", "command": "${PAI_DIR}/hooks/ImplicitSentimentCapture.hook.ts" },
-          { "type": "command", "command": "${PAI_DIR}/hooks/UpdateTabTitle.hook.ts" }
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/FormatEnforcer.hook.ts"
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/AutoWorkCreation.hook.ts"
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/ExplicitRatingCapture.hook.ts"
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/ImplicitSentimentCapture.hook.ts"
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/UpdateTabTitle.hook.ts"
+          }
         ]
       }
     ],
     "SessionStart": [
       {
         "hooks": [
-          { "type": "command", "command": "${PAI_DIR}/hooks/StartupGreeting.hook.ts" },
-          { "type": "command", "command": "${PAI_DIR}/hooks/LoadContext.hook.ts" },
-          { "type": "command", "command": "${PAI_DIR}/hooks/CheckVersion.hook.ts" }
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/StartupGreeting.hook.ts"
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/LoadContext.hook.ts"
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/CheckVersion.hook.ts"
+          }
         ]
       }
     ],
     "Stop": [
       {
-        "hooks": [{ "type": "command", "command": "${PAI_DIR}/hooks/StopOrchestrator.hook.ts" }]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/StopOrchestrator.hook.ts"
+          }
+        ]
       }
     ],
     "SubagentStop": [
       {
-        "hooks": [{ "type": "command", "command": "${PAI_DIR}/hooks/AgentOutputCapture.hook.ts" }]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/AgentOutputCapture.hook.ts"
+          }
+        ]
       }
     ]
   },
-  "_statusLine_disabled_for_testing": {
+  "statusLine": {
     "type": "command",
     "command": "${PAI_DIR}/statusline-command.sh"
   },
