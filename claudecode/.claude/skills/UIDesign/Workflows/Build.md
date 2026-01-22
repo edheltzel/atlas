@@ -13,7 +13,7 @@ Build UI components following UI Skills constraints and Vercel design guidelines
 ### 1. Load Context Files
 
 ```bash
-# Load both constraint systems
+# Load constraint systems
 Read ~/.claude/skills/UIDesign/UISkillsConstraints.md
 Read ~/.claude/skills/UIDesign/VercelGuidelines.md
 ```
@@ -56,7 +56,7 @@ export function Component({ ...props }: ComponentProps) {
   return (
     // Tailwind classes only
     // cn() for conditional logic
-    // motion for animations
+    // motion for JS animations (tw-animate-css for micro-animations)
   );
 }
 ```
@@ -68,7 +68,7 @@ export function Component({ ...props }: ComponentProps) {
   initial={{ opacity: 0, y: 10 }}
   animate={{ opacity: 1, y: 0 }}
   exit={{ opacity: 0, y: -10 }}
-  transition={{ duration: 0.15 }}  // 150ms max
+  transition={{ duration: 0.15 }}  // ≤200ms
 />
 ```
 
@@ -81,11 +81,19 @@ className={cn(
 )}
 ```
 
+**Icon buttons:**
+
+```tsx
+<button aria-label="Close dialog">
+  <XIcon aria-hidden="true" />
+</button>
+```
+
 ### 5. Design All States
 
 Every component must handle:
 
-**Loading State:**
+**Loading State (with minimum duration):**
 ```tsx
 {isLoading && (
   <div className="animate-pulse">
@@ -94,17 +102,19 @@ Every component must handle:
 )}
 ```
 
-**Empty State:**
+**Empty State (with clear action):**
 ```tsx
 {items.length === 0 && (
-  <div className="text-center py-12">
-    <p className="text-gray-500">No items yet</p>
-    <Button>Add First Item</Button>
+  <div className="flex flex-col items-center justify-center py-12">
+    <Icon className="h-12 w-12 text-gray-400" />
+    <h3 className="mt-4 text-lg font-medium">No items yet</h3>
+    <p className="mt-2 text-gray-500">Get started by creating your first item.</p>
+    <Button className="mt-4">Create Item</Button>
   </div>
 )}
 ```
 
-**Error State:**
+**Error State (adjacent to trigger):**
 ```tsx
 {error && (
   <p className="text-red-500 text-sm mt-1">
@@ -117,17 +127,29 @@ Every component must handle:
 
 Before completing:
 - [ ] Keyboard navigable
-- [ ] Focus visible and trapped (for modals)
-- [ ] ARIA labels for icon buttons
-- [ ] Role attributes where needed
-- [ ] Screen reader announcements for dynamic content
+- [ ] Focus visible (`:focus-visible`) and trapped (for modals)
+- [ ] `aria-label` for icon-only buttons
+- [ ] Proper heading hierarchy (no skipped levels)
+- [ ] Form errors linked via `aria-describedby`
+- [ ] Dynamic updates announced with `aria-live`
+- [ ] Respects `prefers-reduced-motion`
 
 ### 7. Responsive Check
 
 - [ ] Works on mobile (44px touch targets)
-- [ ] Font 16px+ on mobile inputs
+- [ ] Font 16px+ on mobile inputs (prevent iOS zoom)
+- [ ] Uses `h-dvh` not `h-screen`
+- [ ] Safe-area insets for fixed elements
 - [ ] No horizontal scroll
 - [ ] Breakpoints make sense
+
+### 8. Performance Check
+
+- [ ] Animations use only `transform` and `opacity`
+- [ ] No `transition: all`
+- [ ] Large lists virtualized (virtua or content-visibility)
+- [ ] Images have explicit dimensions
+- [ ] No layout read/write interleaving
 
 ## Output Requirements
 
@@ -136,3 +158,10 @@ Before completing:
 - All states implemented
 - Follows project conventions
 - Includes usage example
+
+## Related Workflows
+
+After building, consider:
+- **Review**: `Workflows/Review.md` - Verify against all constraints
+- **Accessibility audit**: `Workflows/Accessibility.md` - Deep a11y check
+- **Motion audit**: `Workflows/MotionPerformance.md` - Animation performance

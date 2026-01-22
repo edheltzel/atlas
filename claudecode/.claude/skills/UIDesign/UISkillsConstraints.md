@@ -1,6 +1,6 @@
 # UI Skills Constraints
 
-Source: [ui-skills.com](https://www.ui-skills.com/)
+Source: [ui-skills.com](https://www.ui-skills.com/) | Updated: January 2026
 
 ---
 
@@ -8,12 +8,18 @@ Source: [ui-skills.com](https://www.ui-skills.com/)
 
 UI Skills is a constraint-based system for building consistent, reliable user interfaces. Rather than leaving UI decisions open-ended, it provides opinionated constraints that guide development.
 
+**Modular Skills:**
+- `baseline-ui` - Core opinionated UI baseline (this file)
+- `fixing-accessibility` - Keyboard, labels, focus, semantics
+- `fixing-metadata` - Titles, meta, social cards
+- `fixing-motion-performance` - Safe, performance-first UI motion
+
 ---
 
 ## Stack Constraints
 
 ### CSS Framework
-**Required:** Tailwind CSS
+**Required:** Tailwind CSS defaults unless custom values already exist or are explicitly requested.
 
 ```tsx
 // CORRECT
@@ -24,7 +30,7 @@ UI Skills is a constraint-based system for building consistent, reliable user in
 ```
 
 ### Animation Library
-**Required:** motion/react (formerly Framer Motion)
+**Required:** `motion/react` (formerly Framer Motion) for JavaScript animation.
 
 ```tsx
 import { motion } from 'motion/react';
@@ -36,8 +42,10 @@ import { motion } from 'motion/react';
 />
 ```
 
+**For entrance/micro-animations:** Use `tw-animate-css` instead.
+
 ### Class Logic
-**Required:** `cn` utility for conditional classes
+**Required:** `cn` utility (`clsx` + `tailwind-merge`) for class logic.
 
 ```tsx
 import { cn } from '@/lib/utils';
@@ -54,12 +62,14 @@ import { cn } from '@/lib/utils';
 ## Component Constraints
 
 ### Accessible Primitives
+**Required:** Use accessible component primitives for anything with keyboard or focus behavior.
+
 **Choose ONE system and stick with it:**
-- Base UI
+- Base UI (preferred for new projects)
 - React Aria
 - Radix
 
-**NEVER mix primitive systems** in the same project.
+**NEVER mix primitive systems** within the same interaction surface.
 
 ```tsx
 // CORRECT - Radix throughout
@@ -71,12 +81,28 @@ import { Dialog } from '@headlessui/react';  // Headless UI
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';  // Radix
 ```
 
+### Icon Buttons
+**Required:** Add `aria-label` to icon-only buttons.
+
+```tsx
+// CORRECT
+<button aria-label="Close dialog">
+  <XIcon />
+</button>
+
+// WRONG
+<button><XIcon /></button>
+```
+
+### Keyboard Behavior
+**Never hand-code keyboard/focus behavior** unless explicitly requested. Use primitives.
+
 ---
 
 ## Interaction Constraints
 
 ### Destructive Actions
-**Required:** AlertDialog for destructive actions
+**Required:** Use `AlertDialog` for destructive or irreversible actions.
 
 ```tsx
 // CORRECT
@@ -93,25 +119,49 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';  // Radix
 <button onClick={handleDelete}>Delete</button>
 ```
 
-### Error Messaging
-**Required:** Clear, actionable error messages
+### Loading States
+**Required:** Use structural skeletons that mirror final content.
+
+```tsx
+<div className="animate-pulse">
+  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
+  <div className="h-4 bg-gray-200 rounded w-1/2" />
+</div>
+```
+
+### Viewport Height
+**Required:** Replace `h-screen` with `h-dvh` (dynamic viewport height).
 
 ```tsx
 // CORRECT
-<p className="text-red-500">
-  Email is required. Please enter a valid email address.
-</p>
+<div className="h-dvh">
 
 // WRONG
-<p className="text-red-500">Error</p>
+<div className="h-screen">
 ```
+
+### Safe Areas
+**Required:** Respect safe-area insets for fixed positioning.
+
+```css
+padding-bottom: env(safe-area-inset-bottom);
+```
+
+### Error Display
+**Required:** Display errors adjacent to their triggering action.
+
+### Input Behavior
+**NEVER block paste** in `<input>` or `<textarea>` elements.
 
 ---
 
 ## Animation Constraints
 
+### When to Animate
+**Never animate without explicit request.** Animation should clarify cause/effect or add deliberate delight.
+
 ### Compositor Properties Only
-**Allowed properties:**
+**Allowed:**
 - `transform` (translate, scale, rotate)
 - `opacity`
 
@@ -122,7 +172,7 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';  // Radix
 - `font-size`
 
 ### Duration Cap
-**Maximum:** 200ms for UI interactions
+**Maximum:** 200ms for interaction feedback.
 
 ```tsx
 // CORRECT
@@ -132,27 +182,65 @@ transition={{ duration: 0.15 }}
 transition={{ duration: 0.5 }}
 ```
 
+### Looping Animations
+**Required:** Pause looping animations when off-screen (use IntersectionObserver).
+
+### Reduced Motion
+**Required:** Respect `prefers-reduced-motion` preference.
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+```
+
 ---
 
 ## Typography Constraints
 
-### Text Rendering
+### Text Wrapping
+```tsx
+// Headings
+<h1 className="text-balance">
+
+// Body text
+<p className="text-pretty">
+```
+
+### Numerical Data
+**Required:** Use `tabular-nums` for numerical data alignment.
+
+```tsx
+<span className="tabular-nums">1,234.56</span>
+```
+
+### Dense Layouts
+**Required:** Use `truncate` or `line-clamp` for text in dense layouts.
+
+```tsx
+<p className="truncate">Long text that might overflow...</p>
+<p className="line-clamp-2">Text limited to two lines...</p>
+```
+
+### Letter Spacing
+**Don't modify `letter-spacing`** without explicit request.
+
+### Font Rendering
 ```css
 -webkit-font-smoothing: antialiased;
 -moz-osx-font-smoothing: grayscale;
 ```
-
-### Font Loading
-- Preload critical fonts
-- Use `font-display: swap`
-- Subset via unicode-range when possible
 
 ---
 
 ## Layout Constraints
 
 ### Z-Index Scale
-Use a consistent scale:
+**Required:** Implement fixed z-index scales; no arbitrary values.
+
 ```css
 --z-dropdown: 100;
 --z-modal: 200;
@@ -161,35 +249,45 @@ Use a consistent scale:
 --z-toast: 500;
 ```
 
-### Sizing Convention
-- Use Tailwind spacing scale
-- Avoid arbitrary values when possible
-- When arbitrary values needed, use consistent increments
+### Square Elements
+**Required:** Use `size-*` for square elements.
+
+```tsx
+// CORRECT
+<div className="size-8">
+
+// WRONG
+<div className="w-8 h-8">
+```
+
+### React Patterns
+**Avoid `useEffect` for render logic.** Prefer derived state and proper React patterns.
 
 ---
 
 ## Performance Constraints
 
-### Heavy Effects Avoid
+### Heavy Effects - Avoid
 - Complex gradients
 - Multiple box-shadows
-- Blur effects (`backdrop-filter: blur()`)
+- Large blur/backdrop-filter surfaces
 - Large drop shadows
 
-### Gradients Discourage
-- Use solid colors when possible
+### Gradients
+- Avoid gradients unless explicitly requested
+- **NEVER use purple or multicolor gradients**
 - If gradient needed, keep it simple (2 colors max)
 
-### Glows Avoid
-- No glowing effects
-- No neon-style shadows
+### Glows
+- No glowing effects as primary affordances
+- Leverage Tailwind's default shadow scale instead
 
 ---
 
 ## Design Constraints
 
 ### Empty States
-**Required:** Design clean, helpful empty states
+**Required:** Provide one clear action in empty states.
 
 ```tsx
 <div className="flex flex-col items-center justify-center py-12">
@@ -200,15 +298,8 @@ Use a consistent scale:
 </div>
 ```
 
-### Loading States
-**Required:** Skeleton loaders that match content structure
-
-```tsx
-<div className="animate-pulse">
-  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
-  <div className="h-4 bg-gray-200 rounded w-1/2" />
-</div>
-```
+### Accent Colors
+**Limit accent colors to one per view.**
 
 ---
 
@@ -217,14 +308,23 @@ Use a consistent scale:
 When reviewing UI code, check:
 
 - [ ] Uses Tailwind CSS (no raw CSS or other frameworks)
-- [ ] Uses motion/react for animations
+- [ ] Uses `motion/react` for JS animations, `tw-animate-css` for micro-animations
 - [ ] Uses `cn` utility for class logic
 - [ ] Uses single primitive system (Radix/React Aria/Base UI)
+- [ ] Icon-only buttons have `aria-label`
 - [ ] Destructive actions have AlertDialog confirmation
+- [ ] Uses `h-dvh` not `h-screen`
+- [ ] Respects safe-area insets for fixed elements
+- [ ] Never blocks paste in inputs
 - [ ] Animations use only transform/opacity
-- [ ] Animation duration 200ms
-- [ ] Clear error messages with actionable guidance
-- [ ] Empty states designed
-- [ ] Loading states use skeletons
+- [ ] Animation duration ≤200ms
+- [ ] Looping animations pause off-screen
+- [ ] Respects `prefers-reduced-motion`
+- [ ] Headings use `text-balance`, body uses `text-pretty`
+- [ ] Numerical data uses `tabular-nums`
+- [ ] Uses `size-*` for square elements
 - [ ] Z-index follows consistent scale
 - [ ] No heavy effects (complex gradients, blur, glow)
+- [ ] No purple or multicolor gradients
+- [ ] One accent color per view
+- [ ] Empty states have clear action
