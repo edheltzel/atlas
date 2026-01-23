@@ -9,6 +9,21 @@ Constraint-based UI design system combining [UI Skills](https://www.ui-skills.co
 
 **Updated:** January 2026
 
+## Integration with FrontendDesign
+
+This skill focuses on **constraints and correctness**. For creative direction and distinctive aesthetics, use the **FrontendDesign** skill first.
+
+| Skill | Focus | When to Use |
+|-------|-------|-------------|
+| **FrontendDesign** | Creative direction, bold aesthetics, memorable design | Starting a new UI, need inspiration |
+| **UIDesign** | Constraints, accessibility, performance, stack | Implementing, reviewing, auditing |
+
+**Recommended workflow:**
+1. **FrontendDesign** → Establishes aesthetic direction (typography, color, motion vision)
+2. **UIDesign** → Ensures implementation meets constraints (a11y, performance, stack)
+
+Both skills should be used together for best results: distinctive designs that are also accessible and performant.
+
 ## Customization
 
 **Before executing, check for user customizations at:**
