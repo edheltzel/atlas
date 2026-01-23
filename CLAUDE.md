@@ -78,11 +78,29 @@ Atlas is based on [Personal AI Infrastructure (PAI)](https://github.com/danielmi
 |-----------|---------|
 | `skills/` | 24 skill modules - each has SKILL.md that auto-loads via Skill tool |
 | `hooks/` | TypeScript hooks run via `bun run` at lifecycle events |
+| `Commands/` | Slash commands (/commit, /push, /pr, /observability, etc.) |
+| `Observability/` | Real-time agent monitoring dashboard (Vue 3 + Bun server) |
 | `VoiceServer/` | ElevenLabs/Google TTS server for voice notifications |
 | `MEMORY/` | Persistent state, learnings, and session history |
 | `agents/` | Named agent definitions with voice mappings |
 | `USER/` | User-specific configs (name, preferences) |
 | `PAISECURITYSYSTEM/` | Security patterns and command validation |
+
+### Observability Dashboard
+
+Monitor agent activity in real-time at `http://localhost:5172`:
+
+```bash
+/observability start   # Start dashboard
+/observability open    # Start and open browser
+```
+
+Or install the macOS MenuBarApp for menu bar control:
+```bash
+cd claudecode/.claude/Observability/MenuBarApp && ./build.sh
+```
+
+See `Observability/CLAUDE.md` for full documentation.
 
 ### Stow Behavior
 

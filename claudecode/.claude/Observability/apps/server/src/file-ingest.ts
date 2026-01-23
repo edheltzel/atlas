@@ -33,29 +33,48 @@ const agentSessions = new Map<string, string>();
 // Todo tracking per session (session_id -> current todos)
 const sessionTodos = new Map<string, any[]>();
 
-// Projects directory path - dynamically constructed from username
-const PROJECTS_DIR = join(homedir(), '.claude', 'projects', `-Users-${process.env.USER || 'user'}--claude`);
+// Projects base directory - scan ALL project subdirectories
+const PROJECTS_BASE = join(homedir(), '.claude', 'projects');
 
 /**
- * Get the most recently modified JSONL files in projects/
+ * Get the most recently modified JSONL files across ALL project directories
  */
 function getRecentSessionFiles(limit: number = 50): string[] {
-  if (!existsSync(PROJECTS_DIR)) {
-    console.log('⚠️  Projects directory not found:', PROJECTS_DIR);
+  if (!existsSync(PROJECTS_BASE)) {
+    console.log('⚠️  Projects directory not found:', PROJECTS_BASE);
     return [];
   }
 
-  const files = readdirSync(PROJECTS_DIR)
-    .filter(f => f.endsWith('.jsonl'))
-    .map(f => ({
-      name: f,
-      path: join(PROJECTS_DIR, f),
-      mtime: statSync(join(PROJECTS_DIR, f)).mtime.getTime()
-    }))
-    .sort((a, b) => b.mtime - a.mtime)
-    .slice(0, limit);
+  // Scan all subdirectories in projects/
+  const allFiles: { name: string; path: string; mtime: number }[] = [];
 
-  return files.map(f => f.path);
+  const projectDirs = readdirSync(PROJECTS_BASE)
+    .filter(d => {
+      const fullPath = join(PROJECTS_BASE, d);
+      return statSync(fullPath).isDirectory() && d.startsWith('-');
+    });
+
+  for (const dir of projectDirs) {
+    const projectPath = join(PROJECTS_BASE, dir);
+    try {
+      const files = readdirSync(projectPath)
+        .filter(f => f.endsWith('.jsonl'))
+        .map(f => ({
+          name: f,
+          path: join(projectPath, f),
+          mtime: statSync(join(projectPath, f)).mtime.getTime()
+        }));
+      allFiles.push(...files);
+    } catch (err) {
+      // Skip directories we can't read
+    }
+  }
+
+  // Sort by modification time and return top N
+  return allFiles
+    .sort((a, b) => b.mtime - a.mtime)
+    .slice(0, limit)
+    .map(f => f.path);
 }
 
 /**
@@ -304,12 +323,12 @@ function enrichEventWithAgentName(event: HookEvent): HookEvent {
   if (event.hook_event_type === 'UserPromptSubmit') {
     return {
       ...event,
-      agent_name: 'Daniel'
+      agent_name: 'Mr.Ed'
     };
   }
 
   // Default to DA name for main agent sessions (from settings.json env)
-  const mainAgentName = process.env.DA || 'Kai';
+  const mainAgentName = process.env.DA || 'Atlas';
 
   // If source_app is set to a sub-agent type (not the main agent), respect it
   const subAgentTypes = ['artist', 'intern', 'engineer', 'pentester', 'architect', 'designer', 'qatester', 'researcher'];
@@ -407,29 +426,40 @@ function watchFile(filePath: string): void {
 }
 
 /**
- * Watch the projects directory for new session files
+ * Watch ALL project directories for new session files
  */
 function watchProjectsDirectory(): void {
-  if (!existsSync(PROJECTS_DIR)) {
+  if (!existsSync(PROJECTS_BASE)) {
     console.log('⚠️  Projects directory not found, skipping watch');
     return;
   }
 
-  console.log('👀 Watching projects directory for new sessions');
+  // Get all project subdirectories
+  const projectDirs = readdirSync(PROJECTS_BASE)
+    .filter(d => {
+      const fullPath = join(PROJECTS_BASE, d);
+      return statSync(fullPath).isDirectory() && d.startsWith('-');
+    })
+    .map(d => join(PROJECTS_BASE, d));
 
-  const watcher = watch(PROJECTS_DIR, (eventType, filename) => {
-    if (filename && filename.endsWith('.jsonl')) {
-      const filePath = join(PROJECTS_DIR, filename);
-      if (existsSync(filePath) && !watchedFiles.has(filePath)) {
-        // New session file appeared, start watching it
-        watchFile(filePath);
+  console.log(`👀 Watching ${projectDirs.length} project directories for new sessions`);
+
+  // Watch each project directory
+  for (const projectDir of projectDirs) {
+    const watcher = watch(projectDir, (eventType, filename) => {
+      if (filename && filename.endsWith('.jsonl')) {
+        const filePath = join(projectDir, filename);
+        if (existsSync(filePath) && !watchedFiles.has(filePath)) {
+          // New session file appeared, start watching it
+          watchFile(filePath);
+        }
       }
-    }
-  });
+    });
 
-  watcher.on('error', (error) => {
-    console.error('❌ Error watching projects directory:', error);
-  });
+    watcher.on('error', (error) => {
+      console.error(`❌ Error watching ${projectDir}:`, error);
+    });
+  }
 }
 
 /**
@@ -438,7 +468,7 @@ function watchProjectsDirectory(): void {
  */
 export function startFileIngestion(callback?: (events: HookEvent[]) => void): void {
   console.log('🚀 Starting projects-based event streaming (in-memory only)');
-  console.log(`📂 Reading from ${PROJECTS_DIR}/`);
+  console.log(`📂 Scanning all project directories in ${PROJECTS_BASE}/`);
 
   // Set the callback for event notifications
   if (callback) {
