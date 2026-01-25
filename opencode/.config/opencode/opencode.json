@@ -159,5 +159,16 @@
         "includeUsage": true
       }
     }
+  },
+  "mcp": {
+    "pencil": {
+      "command": [
+        "/Applications/Pencil.app/Contents/Resources/app.asar.unpacked/out/mcp-server-darwin-arm64",
+        "--ws-port",
+        "62487"
+      ],
+      "enabled": true,
+      "type": "local"
+    }
   }
 }

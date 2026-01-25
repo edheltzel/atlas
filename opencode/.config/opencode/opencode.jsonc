@@ -1,6 +1,6 @@
 {
 	"$schema": "https://opencode.ai/config.json",
-	"theme": "eldritch-dark",
+	"theme": "rosepine",
 	"autoupdate": true,
 	"tui": {},
 	"agent": {

@@ -1,4 +1,27 @@
 {
   "version": 2,
-  "plugins": {}
+  "plugins": {
+    "frontend-design@claude-code-plugins": [
+      {
+        "scope": "project",
+        "installPath": "/Users/ed/.claude/plugins/cache/claude-code-plugins/frontend-design/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2026-01-25T18:53:11.350Z",
+        "lastUpdated": "2026-01-25T18:53:11.350Z",
+        "gitCommitSha": "e9a9efc1211bbd0a50ac0128c84526e3e355255a",
+        "projectPath": "/Users/ed/Developer/myChron/peptidewareApps/wiki"
+      }
+    ],
+    "ralph-wiggum@claude-code-plugins": [
+      {
+        "scope": "project",
+        "installPath": "/Users/ed/.claude/plugins/cache/claude-code-plugins/ralph-wiggum/1.0.0",
+        "version": "1.0.0",
+        "installedAt": "2026-01-25T18:53:11.371Z",
+        "lastUpdated": "2026-01-25T18:53:11.371Z",
+        "gitCommitSha": "e9a9efc1211bbd0a50ac0128c84526e3e355255a",
+        "projectPath": "/Users/ed/Developer/myChron/peptidewareApps/wiki"
+      }
+    ]
+  }
 }
