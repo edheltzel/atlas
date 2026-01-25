@@ -95,6 +95,8 @@ const BOX = {
 
 interface SystemStats {
   name: string;
+  catchphrase: string;
+  repoUrl: string;
   skills: number;
   workflows: number;
   hooks: number;
@@ -111,49 +113,42 @@ interface SystemStats {
 function getStats(): SystemStats {
   let name = "PAI";
   let paiVersion = "2.0";
+  let catchphrase = "{name} here, ready to go";
+  let repoUrl = "github.com/danielmiessler/PAI";
   try {
     const settings = JSON.parse(readFileSync(join(CLAUDE_DIR, "settings.json"), "utf-8"));
     name = settings.daidentity?.displayName || settings.daidentity?.name || "PAI";
     paiVersion = settings.pai?.version || "2.0";
+    catchphrase = settings.daidentity?.startupCatchphrase || catchphrase;
+    repoUrl = settings.pai?.repoUrl || repoUrl;
   } catch {}
 
+  // Replace {name} placeholder in catchphrase
+  catchphrase = catchphrase.replace(/\{name\}/gi, name);
+
+  // Use GetCounts.ts as single source of truth for deterministic counts
+  // This ensures banner and statusline show identical numbers
   let skills = 0, workflows = 0, hooks = 0, learnings = 0, userFiles = 0, sessions = 0;
 
   try {
-    for (const e of readdirSync(join(CLAUDE_DIR, "skills"), { withFileTypes: true })) {
-      if (e.isDirectory() && existsSync(join(CLAUDE_DIR, "skills", e.name, "SKILL.md"))) skills++;
+    const getCountsPath = join(CLAUDE_DIR, "skills/CORE/Tools/GetCounts.ts");
+    const result = spawnSync("bun", ["run", getCountsPath], { encoding: "utf-8" });
+    if (result.stdout) {
+      const counts = JSON.parse(result.stdout.trim());
+      skills = counts.skills || 0;
+      workflows = counts.workflows || 0;
+      hooks = counts.hooks || 0;
+      learnings = counts.signals || 0;  // GetCounts uses "signals" for MEMORY/LEARNING
+      userFiles = counts.files || 0;
     }
-  } catch {}
-
-  // Count workflows in skills/CORE/Workflows
-  try {
-    const workflowsDir = join(CLAUDE_DIR, "skills/CORE/Workflows");
-    if (existsSync(workflowsDir)) {
-      for (const e of readdirSync(workflowsDir, { withFileTypes: true })) {
-        if (e.isFile() && e.name.endsWith(".md")) workflows++;
-      }
-    }
-  } catch {}
-
-  try {
-    for (const e of readdirSync(join(CLAUDE_DIR, "hooks"), { withFileTypes: true })) {
-      if (e.isFile() && e.name.endsWith(".ts")) hooks++;
-    }
-  } catch {}
-
-  const countFiles = (dir: string): number => {
-    let c = 0;
-    try {
-      for (const e of readdirSync(dir, { withFileTypes: true })) {
-        if (e.isDirectory()) c += countFiles(join(dir, e.name));
-        else if (e.isFile()) c++;
-      }
-    } catch {}
-    return c;
-  };
-
-  learnings = countFiles(join(CLAUDE_DIR, "MEMORY/LEARNING"));
-  userFiles = countFiles(join(CLAUDE_DIR, "skills/CORE/USER"));
+  } catch {
+    // Fallback to hardcoded defaults if GetCounts fails
+    skills = 65;
+    workflows = 339;
+    hooks = 18;
+    learnings = 3000;
+    userFiles = 172;
+  }
 
   try {
     const historyFile = join(CLAUDE_DIR, "history.jsonl");
@@ -179,12 +174,14 @@ function getStats(): SystemStats {
 
   return {
     name,
-    skills: skills || 66,
-    workflows: workflows || 10,
-    hooks: hooks || 31,
-    learnings: learnings || 500,
-    userFiles: userFiles || 47,
-    sessions: sessions || 0,
+    catchphrase,
+    repoUrl,
+    skills,
+    workflows,
+    hooks,
+    learnings,
+    userFiles,
+    sessions,
     model: "Opus 4.5",
     platform,
     arch,
@@ -281,7 +278,7 @@ function createNavyBanner(stats: SystemStats, width: number): string {
 
   // Info section with Unicode icons - meaningful symbols (10 lines for perfect centering with 10-row logo)
   const infoLines = [
-    `${C.slate}"${RESET}${C.lightBlue}${stats.name}${RESET} ${C.slate}here, ready to go..."${RESET}`,
+    `${C.slate}"${RESET}${C.lightBlue}${stats.catchphrase}${RESET}${C.slate}..."${RESET}`,
     `${C.steel}${BOX.h.repeat(24)}${RESET}`,
     `${C.navy}\u2B22${RESET}  ${C.slate}PAI${RESET}       ${C.silver}v${stats.paiVersion}${RESET}`,                            // ⬢ hexagon (tech/AI)
     `${C.lightBlue}\u2726${RESET}  ${C.slate}Skills${RESET}    ${C.silver}${stats.skills}${RESET}`,            // ✦ four-pointed star (capabilities)
@@ -357,8 +354,8 @@ function createNavyBanner(stats: SystemStats, width: number): string {
   lines.push("");
 
   // Footer: Unicode symbol + URL in medium blue (A color)
-  const urlLine = `${C.steel}\u2192${RESET} ${C.medBlue}github.com/danielmiessler/PAI${RESET}`;
-  const urlLen = 32;
+  const urlLine = `${C.steel}\u2192${RESET} ${C.medBlue}${stats.repoUrl}${RESET}`;
+  const urlLen = stats.repoUrl.length + 3;
   const urlPad = " ".repeat(Math.floor((width - urlLen) / 2));
   lines.push(`${urlPad}${urlLine}`);
   lines.push("");
@@ -413,7 +410,7 @@ function createElectricBanner(stats: SystemStats, width: number): string {
     `${P.neonBlue}${SYM.model}${RESET} ${P.glow}Model${RESET}      ${BOLD}${P.ultraBlue}${stats.model}${RESET}`,
     `${P.plasma}${BOX.h.repeat(32)}${RESET}`,
     `${sparkline(24, [P.plasma, P.neonBlue, P.electricBlue, P.electric, P.ultraBlue])}`,
-    `${P.neonBlue}${SYM.link}${RESET} ${P.midBase}github.com/danielmiessler/PAI${RESET} ${P.midBase}[0x${hex2}]${RESET}`,
+    `${P.neonBlue}${SYM.link}${RESET} ${P.midBase}${stats.repoUrl}${RESET} ${P.midBase}[0x${hex2}]${RESET}`,
   ];
 
   const gap = "   ";
@@ -490,7 +487,7 @@ function createTealBanner(stats: SystemStats, width: number): string {
     `${P.mediumTeal}${SYM.model}${RESET} ${P.paleAqua}Model${RESET}      ${BOLD}${P.aquamarine}${stats.model}${RESET}`,
     `${P.teal}${BOX.h.repeat(28)}${RESET}`,
     `${sparkline(20, [P.logoP, P.teal, P.mediumTeal, P.turquoise, P.aquamarine])}`,
-    `${P.mediumTeal}${SYM.link}${RESET} ${P.midSea}github.com/danielmiessler/PAI${RESET}`,
+    `${P.mediumTeal}${SYM.link}${RESET} ${P.midSea}${stats.repoUrl}${RESET}`,
   ];
 
   const gap = "   ";
@@ -569,7 +566,7 @@ function createIceBanner(stats: SystemStats, width: number): string {
     `${P.iceBlue}${SYM.model}${RESET} ${P.frost}Model${RESET}      ${BOLD}${P.glacierBlue}${stats.model}${RESET}`,
     `${P.deepIce}${BOX.h.repeat(28)}${RESET}`,
     `${sparkline(20, [P.slateBlue, P.deepIce, P.iceBlue, P.frost, P.paleFrost])}`,
-    `${P.iceBlue}${SYM.link}${RESET} ${P.slateBlue}github.com/danielmiessler/PAI${RESET}`,
+    `${P.iceBlue}${SYM.link}${RESET} ${P.slateBlue}${stats.repoUrl}${RESET}`,
   ];
 
   const gap = "   ";
@@ -652,7 +649,7 @@ function createNavyMediumBanner(stats: SystemStats, width: number): string {
   const SEPARATOR = `${C.steel}${BOX.v}${RESET}`;
 
   const infoLines = [
-    `${C.slate}"${RESET}${C.lightBlue}${stats.name}${RESET} ${C.slate}here, ready to go..."${RESET}`,
+    `${C.slate}"${RESET}${C.lightBlue}${stats.catchphrase}${RESET}${C.slate}..."${RESET}`,
     `${C.steel}${BOX.h.repeat(24)}${RESET}`,
     `${C.navy}\u2B22${RESET}  ${C.slate}PAI${RESET}       ${C.silver}v${stats.paiVersion}${RESET}`,
     `${C.lightBlue}\u2726${RESET}  ${C.slate}Skills${RESET}    ${C.silver}${stats.skills}${RESET}`,
@@ -695,8 +692,8 @@ function createNavyMediumBanner(stats: SystemStats, width: number): string {
   }
 
   lines.push("");
-  const urlLine = `${C.steel}\u2192${RESET} ${C.medBlue}github.com/danielmiessler/PAI${RESET}`;
-  const urlPad = " ".repeat(Math.max(0, Math.floor((width - 32) / 2)));
+  const urlLine = `${C.steel}\u2192${RESET} ${C.medBlue}${stats.repoUrl}${RESET}`;
+  const urlPad = " ".repeat(Math.max(0, Math.floor((width - stats.repoUrl.length - 3) / 2)));
   lines.push(`${urlPad}${urlLine}`);
   lines.push("");
 
@@ -711,8 +708,10 @@ function createNavyCompactBanner(stats: SystemStats, width: number): string {
   const SEPARATOR = `${C.steel}${BOX.v}${RESET}`;
 
   // Condensed info (6 lines to match logo height better)
+  // Truncate catchphrase for compact display
+  const shortCatchphrase = stats.catchphrase.length > 20 ? stats.catchphrase.slice(0, 17) + "..." : stats.catchphrase;
   const infoLines = [
-    `${C.slate}"${RESET}${C.lightBlue}${stats.name}${RESET} ${C.slate}ready..."${RESET}`,
+    `${C.slate}"${RESET}${C.lightBlue}${shortCatchphrase}${RESET}${C.slate}"${RESET}`,
     `${C.steel}${BOX.h.repeat(18)}${RESET}`,
     `${C.navy}\u2B22${RESET} ${C.slate}PAI${RESET}    ${C.silver}v${stats.paiVersion}${RESET}`,
     `${C.lightBlue}\u2726${RESET} ${C.slate}Skills${RESET} ${C.silver}${stats.skills}${RESET}  ${C.royalBlue}\u21AA${RESET} ${C.periwinkle}${stats.hooks}${RESET}`,

@@ -1,11 +1,18 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "paiVersion": "2.3",
+  "paiVersion": "2.4",
   "env": {
     "PAI_DIR": "/Users/ed/.claude",
+    "PROJECTS_DIR": "",
     "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "80000",
     "BASH_DEFAULT_TIMEOUT_MS": "600000"
   },
+  "contextFiles": [
+    "skills/CORE/SKILL.md",
+    "skills/CORE/SYSTEM/AISTEERINGRULES.md",
+    "skills/CORE/USER/AISTEERINGRULES.md",
+    "skills/CORE/USER/DAIDENTITY.md"
+  ],
   "daidentity": {
     "name": "Atlas",
     "fullName": "Atlas - Personal AI",
@@ -28,7 +35,7 @@
   },
   "pai": {
     "repoUrl": "github.com/danielmiessler/PAI",
-    "version": "2.3"
+    "version": "2.4"
   },
   "techStack": {
     "terminal": "Kitty",
@@ -171,7 +178,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${PAI_DIR}/hooks/FormatEnforcer.hook.ts"
+            "command": "${PAI_DIR}/hooks/FormatReminder.hook.ts"
           },
           {
             "type": "command",

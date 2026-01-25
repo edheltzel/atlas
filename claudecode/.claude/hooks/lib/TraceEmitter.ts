@@ -34,7 +34,7 @@
 
 import { appendFileSync, existsSync, statSync, renameSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
-import { findActiveWorkDir, type AlgorithmPhase } from './IdealState';
+import { findActiveWorkDir, type AlgorithmPhase } from './work-utils';
 
 // DEBUG flag
 const DEBUG = process.env.DEBUG_HOOKS === 'true';

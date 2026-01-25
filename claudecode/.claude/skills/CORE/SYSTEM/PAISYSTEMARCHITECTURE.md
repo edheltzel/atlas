@@ -402,7 +402,7 @@ Route notifications based on event type and priority. User-specific configuratio
 ### Repository Separation
 
 ```
-PRIVATE: ~/.claude/                    PUBLIC: ~/Projects/PAI/
+PRIVATE: ~/.claude/                    PUBLIC: ${PROJECTS_DIR}/PAI/
 ├── Personal data                      ├── Sanitized examples
 ├── API keys (.env)                    ├── Generic templates
 ├── Session history                    └── Community sharing
@@ -428,12 +428,12 @@ The System skill is the centralized mechanism for PAI self-management. It ensure
 
 | Function | Description | Workflow |
 |----------|-------------|----------|
-| **Integrity Audits** | 16 parallel agents verify broken references across ~/.claude | `PrivateSystemAudit.md` |
+| **Integrity Audits** | Parallel agents verify broken references across ~/.claude | `IntegrityCheck.md` |
 | **Secret Scanning** | TruffleHog credential detection in any directory | `SecretScanning.md` |
 | **Privacy Validation** | Ensures USER/WORK content isolation from regular skills | `PrivacyCheck.md` |
-| **Cross-Repo Validation** | Verifies private/public repository separation | `CrossRepoValidation.md` |
-| **Documentation Updates** | Records system changes to MEMORY/PAISYSTEMUPDATES/ | `DocumentChanges.md` |
-| **Repo Management** | Auto-parses session activity for commits | `UpdateRepo.md` |
+| **Documentation Updates** | Records system changes to MEMORY/PAISYSTEMUPDATES/ | `DocumentSession.md` |
+
+**Note:** Additional private workflows (repo sync, cross-validation) can be added via USER/SKILLCUSTOMIZATIONS/System/.
 
 ### Protected Directories
 

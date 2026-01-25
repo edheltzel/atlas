@@ -591,8 +591,6 @@ AI should orchestrate deterministic tools, not replace them with ad-hoc promptin
 ## Related Documentation
 
 - **Architecture**: `~/.claude/skills/CORE/SYSTEM/PAISYSTEMARCHITECTURE.md`
-- **Testing Philosophy**: `~/.claude/skills/CORE/TESTING.md`
-- **Git Workflow**: `~/.claude/skills/CORE/Workflows/Git-update-repo.md`
 
 ---
 

@@ -139,7 +139,7 @@ export function getNotificationConfig(): NotificationConfig {
 // Session Timing
 // ============================================================================
 
-const SESSION_START_FILE = '/tmp/kai-session-start.txt';
+const SESSION_START_FILE = '/tmp/pai-session-start.txt';
 
 /**
  * Record session start time (call from SessionStart hook)
@@ -345,8 +345,8 @@ export async function sendSMS(message: string): Promise<boolean> {
       console.error('TWILIO_FROM_NUMBER not set in environment');
       return false;
     }
-    const daName = getIdentity().name;
-    const body = `[${daName}] ${message}`.substring(0, 160); // SMS limit
+    const DA_NAME = getIdentity().name;
+    const body = `[${DA_NAME}] ${message}`.substring(0, 160); // SMS limit
 
     // Use curl for reliability
     const proc = Bun.spawn([
@@ -462,13 +462,13 @@ export async function notifyError(message: string, options: NotificationOptions 
 // ============================================================================
 
 function getDefaultTitle(event: NotificationEvent): string {
-  const daName = getIdentity().name;
+  const DA_NAME = getIdentity().name;
   const titles: Record<NotificationEvent, string> = {
-    taskComplete: daName,
-    longTask: `${daName} - Task Complete`,
-    backgroundAgent: `${daName} - Agent Complete`,
-    error: `${daName} - Error`,
-    security: `${daName} - Security Alert`
+    taskComplete: DA_NAME,
+    longTask: `${DA_NAME} - Task Complete`,
+    backgroundAgent: `${DA_NAME} - Agent Complete`,
+    error: `${DA_NAME} - Error`,
+    security: `${DA_NAME} - Security Alert`
   };
   return titles[event];
 }

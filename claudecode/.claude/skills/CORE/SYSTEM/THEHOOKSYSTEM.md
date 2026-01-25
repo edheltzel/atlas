@@ -152,7 +152,7 @@ Claude Code supports the following hook events (from `~/.claude/hooks/lib/observ
 ---
 
 ### 4. **Stop**
-**When:** Main agent ({daidentity.name}) completes a response
+**When:** Main agent ({DAIDENTITY.NAME}) completes a response
 **Use Cases:**
 - Voice notifications for task completion
 - Capture work summaries and learnings
@@ -178,7 +178,7 @@ Claude Code supports the following hook events (from `~/.claude/hooks/lib/observ
 
 **StopOrchestrator.hook.ts** - Unified Stop Event Handler
 - Single orchestrator that delegates to specialized handlers in `${PAI_DIR}/hooks/handlers/`:
-  - `voice.ts` - Voice TTS delivery (extracts `🗣️ {daidentity.name}:` line, POSTs to voice server)
+  - `voice.ts` - Voice TTS delivery (extracts `🗣️ {DAIDENTITY.NAME}:` line, POSTs to voice server)
   - `capture.ts` - Work/learning capture (updates WORK items, writes learnings, sends observability)
   - `tab-state.ts` - Tab color/title state (sets completed/awaiting/error visual state)
 
@@ -190,7 +190,7 @@ Claude Code supports the following hook events (from `~/.claude/hooks/lib/observ
 **Handler Details:**
 
 `handlers/voice.ts` - Voice TTS Delivery
-- Extracts `🗣️ {daidentity.name}:` line from response
+- Extracts `🗣️ {DAIDENTITY.NAME}:` line from response
 - POSTs to `http://localhost:8888/notify` with configured voice ID
 - Voice server handles sanitization and TTS conversion
 
@@ -369,9 +369,9 @@ const identity = getIdentity();    // { name, fullName, displayName, voiceId, co
 const principal = getPrincipal();  // { name, pronunciation, timezone }
 
 // Convenience functions
-const daName = getDAName();        // "PAI"
-const userName = getPrincipalName(); // "{YourName}"
-const voice = getVoiceId();        // "s3TPKV1kjDlVtZbl4Ksh"
+const DA_NAME = getDAName();        // "PAI"
+const USER_NAME = getPrincipalName(); // "{YourName}"
+const VOICE_ID = getVoiceId();        // "s3TPKV1kjDlVtZbl4Ksh"
 ```
 
 **Why settings.json?**

@@ -565,10 +565,10 @@ function createPureASCIIBanner(): string {
   ];
 
   // Stats in ASCII box - dynamically pad DA name to fit
-  const daName = stats.name.substring(0, 10).padEnd(10);
+  const DA_NAME = stats.name.substring(0, 10).padEnd(10);
   const statsBox = [
     "+------------------------+",
-    `| DA.........: ${daName} |`,
+    `| DA.........: ${DA_NAME} |`,
     "| Skills.....: " + String(stats.skills).padEnd(10) + " |",
     "| Hooks......: " + String(stats.hooks).padEnd(10) + " |",
     "| Work Items.: " + (stats.workItems > 100 ? "100+" : String(stats.workItems)).padEnd(10) + " |",

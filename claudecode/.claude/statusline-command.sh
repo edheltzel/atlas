@@ -11,9 +11,9 @@
 #
 # Output order: Greeting → Wielding → Git → Learning → Signal → Context → Quote
 #
-# KNOWN LIMITATION: Context percentage won't match /context exactly.
-# Hook JSON excludes system prompt, tools, MCP tokens. See:
-# github.com/anthropics/claude-code/issues/13783
+# Context percentage scales to compaction threshold if configured in settings.json.
+# When contextDisplay.compactionThreshold is set (e.g., 62), the bar shows 62% as 100%.
+# Set threshold to 100 or remove the setting to show raw 0-100% from Claude Code.
 # ═══════════════════════════════════════════════════════════════════════════════
 
 set -o pipefail
@@ -31,15 +31,261 @@ QUOTE_CACHE="$PAI_DIR/.quote-cache"
 LOCATION_CACHE="$PAI_DIR/MEMORY/STATE/location-cache.json"
 WEATHER_CACHE="$PAI_DIR/MEMORY/STATE/weather-cache.json"
 
-# Context baseline: preloaded tokens not visible to hooks (~22.6k typical)
-CONTEXT_BASELINE=22600
+# NOTE: context_window.used_percentage provides raw context usage from Claude Code.
+# Scaling to compaction threshold is applied if configured in settings.json.
 
 # Cache TTL in seconds
 LOCATION_CACHE_TTL=3600  # 1 hour (IP rarely changes)
 WEATHER_CACHE_TTL=900    # 15 minutes
+GIT_CACHE_TTL=5          # 5 seconds (fast refresh, but avoids repeated scans)
+COUNTS_CACHE_TTL=30      # 30 seconds (file counts rarely change mid-session)
+
+# Additional cache files for expensive operations
+GIT_CACHE="$PAI_DIR/MEMORY/STATE/git-status-cache.sh"
+COUNTS_CACHE="$PAI_DIR/MEMORY/STATE/counts-cache.sh"
 
 # Source .env for API keys
 [ -f "$PAI_DIR/.env" ] && source "$PAI_DIR/.env"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PARSE INPUT (must happen before parallel block consumes stdin)
+# ─────────────────────────────────────────────────────────────────────────────
+
+input=$(cat)
+
+# Get DA name from settings (single source of truth)
+DA_NAME=$(jq -r '.daidentity.name // .daidentity.displayName // .env.DA // "Assistant"' "$SETTINGS_FILE" 2>/dev/null)
+DA_NAME="${DA_NAME:-Assistant}"
+
+# Get PAI version from settings
+PAI_VERSION=$(jq -r '.pai.version // "—"' "$SETTINGS_FILE" 2>/dev/null)
+PAI_VERSION="${PAI_VERSION:-—}"
+
+# Extract all data from JSON in single jq call
+eval "$(echo "$input" | jq -r '
+  "current_dir=" + (.workspace.current_dir // .cwd // "." | @sh) + "\n" +
+  "model_name=" + (.model.display_name // "unknown" | @sh) + "\n" +
+  "cc_version_json=" + (.version // "" | @sh) + "\n" +
+  "duration_ms=" + (.cost.total_duration_ms // 0 | tostring) + "\n" +
+  "context_max=" + (.context_window.context_window_size // 200000 | tostring) + "\n" +
+  "context_pct=" + (.context_window.used_percentage // 0 | tostring) + "\n" +
+  "context_remaining=" + (.context_window.remaining_percentage // 100 | tostring) + "\n" +
+  "total_input=" + (.context_window.total_input_tokens // 0 | tostring) + "\n" +
+  "total_output=" + (.context_window.total_output_tokens // 0 | tostring)
+' 2>/dev/null)"
+
+# Ensure defaults for critical numeric values
+context_pct=${context_pct:-0}
+context_max=${context_max:-200000}
+context_remaining=${context_remaining:-100}
+total_input=${total_input:-0}
+total_output=${total_output:-0}
+
+# If used_percentage is 0 but we have token data, calculate manually
+# This handles cases where statusLine is called before percentage is populated
+if [ "$context_pct" = "0" ] && [ "$total_input" -gt 0 ]; then
+    total_tokens=$((total_input + total_output))
+    context_pct=$((total_tokens * 100 / context_max))
+fi
+
+# Get Claude Code version
+if [ -n "$cc_version_json" ] && [ "$cc_version_json" != "unknown" ]; then
+    cc_version="$cc_version_json"
+else
+    cc_version=$(claude --version 2>/dev/null | head -1 | awk '{print $1}')
+    cc_version="${cc_version:-unknown}"
+fi
+
+# Cache model name for other tools
+mkdir -p "$(dirname "$MODEL_CACHE")" 2>/dev/null
+echo "$model_name" > "$MODEL_CACHE" 2>/dev/null
+
+dir_name=$(basename "$current_dir" 2>/dev/null || echo ".")
+
+# ─────────────────────────────────────────────────────────────────────────────
+# PARALLEL PREFETCH - Launch ALL expensive operations immediately
+# ─────────────────────────────────────────────────────────────────────────────
+# This section launches everything in parallel BEFORE any sequential work.
+# Results are collected via temp files and sourced later.
+
+_parallel_tmp="/tmp/pai-parallel-$$"
+mkdir -p "$_parallel_tmp"
+
+# --- PARALLEL BLOCK START ---
+{
+    # 1. Git status (if in git repo)
+    if git rev-parse --git-dir > /dev/null 2>&1; then
+        git_root=$(git rev-parse --show-toplevel 2>/dev/null | tr '/' '_')
+        GIT_REPO_CACHE="$PAI_DIR/MEMORY/STATE/git-cache${git_root}.sh"
+
+        # Check cache validity
+        if [ -f "$GIT_REPO_CACHE" ]; then
+            git_cache_mtime=$(stat -f %m "$GIT_REPO_CACHE" 2>/dev/null || echo 0)
+            git_cache_age=$(($(date +%s) - git_cache_mtime))
+            [ "$git_cache_age" -lt "$GIT_CACHE_TTL" ] && cp "$GIT_REPO_CACHE" "$_parallel_tmp/git.sh" && exit 0
+        fi
+
+        # Fresh git computation
+        branch=$(git branch --show-current 2>/dev/null)
+        [ -z "$branch" ] && branch="detached"
+        stash_count=$(git stash list 2>/dev/null | wc -l | tr -d ' ')
+        [ -z "$stash_count" ] && stash_count=0
+        sync_info=$(git rev-list --left-right --count HEAD...@{u} 2>/dev/null)
+        last_commit_epoch=$(git log -1 --format='%ct' 2>/dev/null)
+        status_output=$(git status --porcelain 2>/dev/null)
+
+        # grep -c returns 1 on no match, so use || echo 0
+        # tr -d removes any whitespace/newlines from count
+        modified=$(echo "$status_output" | grep -c '^.[MDRC]' | tr -d '[:space:]' || echo 0)
+        staged=$(echo "$status_output" | grep -c '^[MADRC]' | tr -d '[:space:]' || echo 0)
+        untracked=$(echo "$status_output" | grep -c '^??' | tr -d '[:space:]' || echo 0)
+        [ -z "$modified" ] && modified=0
+        [ -z "$staged" ] && staged=0
+        [ -z "$untracked" ] && untracked=0
+        total_changed=$((modified + staged))
+
+        if [ -n "$sync_info" ]; then
+            ahead=$(echo "$sync_info" | awk '{print $1}')
+            behind=$(echo "$sync_info" | awk '{print $2}')
+        else
+            ahead=0
+            behind=0
+        fi
+        [ -z "$ahead" ] && ahead=0
+        [ -z "$behind" ] && behind=0
+
+        cat > "$_parallel_tmp/git.sh" << GITEOF
+branch='$branch'
+stash_count=${stash_count:-0}
+modified=${modified:-0}
+staged=${staged:-0}
+untracked=${untracked:-0}
+total_changed=${total_changed:-0}
+ahead=${ahead:-0}
+behind=${behind:-0}
+last_commit_epoch=${last_commit_epoch:-0}
+is_git_repo=true
+GITEOF
+        cp "$_parallel_tmp/git.sh" "$GIT_REPO_CACHE" 2>/dev/null
+    else
+        echo "is_git_repo=false" > "$_parallel_tmp/git.sh"
+    fi
+} &
+
+{
+    # 2. Location fetch (with caching)
+    cache_age=999999
+    [ -f "$LOCATION_CACHE" ] && cache_age=$(($(date +%s) - $(stat -f %m "$LOCATION_CACHE" 2>/dev/null || echo 0)))
+
+    if [ "$cache_age" -gt "$LOCATION_CACHE_TTL" ]; then
+        loc_data=$(curl -s --max-time 2 "http://ip-api.com/json/?fields=city,regionName,country,lat,lon" 2>/dev/null)
+        if [ -n "$loc_data" ] && echo "$loc_data" | jq -e '.city' >/dev/null 2>&1; then
+            echo "$loc_data" > "$LOCATION_CACHE"
+        fi
+    fi
+
+    if [ -f "$LOCATION_CACHE" ]; then
+        jq -r '"location_city=" + (.city | @sh) + "\nlocation_state=" + (.regionName | @sh)' "$LOCATION_CACHE" > "$_parallel_tmp/location.sh" 2>/dev/null
+    else
+        echo -e "location_city='Unknown'\nlocation_state=''" > "$_parallel_tmp/location.sh"
+    fi
+} &
+
+{
+    # 3. Weather fetch (with caching)
+    cache_age=999999
+    [ -f "$WEATHER_CACHE" ] && cache_age=$(($(date +%s) - $(stat -f %m "$WEATHER_CACHE" 2>/dev/null || echo 0)))
+
+    if [ "$cache_age" -gt "$WEATHER_CACHE_TTL" ]; then
+        lat="" lon=""
+        if [ -f "$LOCATION_CACHE" ]; then
+            lat=$(jq -r '.lat // empty' "$LOCATION_CACHE" 2>/dev/null)
+            lon=$(jq -r '.lon // empty' "$LOCATION_CACHE" 2>/dev/null)
+        fi
+        lat="${lat:-37.7749}"
+        lon="${lon:-122.4194}"
+
+        weather_json=$(curl -s --max-time 3 "https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&temperature_unit=celsius" 2>/dev/null)
+        if [ -n "$weather_json" ] && echo "$weather_json" | jq -e '.current' >/dev/null 2>&1; then
+            temp=$(echo "$weather_json" | jq -r '.current.temperature_2m' 2>/dev/null)
+            code=$(echo "$weather_json" | jq -r '.current.weather_code' 2>/dev/null)
+            condition="Clear"
+            case "$code" in
+                0) condition="Clear" ;; 1|2|3) condition="Cloudy" ;; 45|48) condition="Foggy" ;;
+                51|53|55|56|57) condition="Drizzle" ;; 61|63|65|66|67) condition="Rain" ;;
+                71|73|75|77) condition="Snow" ;; 80|81|82) condition="Showers" ;;
+                85|86) condition="Snow" ;; 95|96|99) condition="Storm" ;;
+            esac
+            echo "${temp}°C ${condition}" > "$WEATHER_CACHE"
+        fi
+    fi
+
+    if [ -f "$WEATHER_CACHE" ]; then
+        echo "weather_str='$(cat "$WEATHER_CACHE" 2>/dev/null)'" > "$_parallel_tmp/weather.sh"
+    else
+        echo "weather_str='—'" > "$_parallel_tmp/weather.sh"
+    fi
+} &
+
+{
+    # 4. File counts (with caching)
+    counts_cache_valid=false
+    if [ -f "$COUNTS_CACHE" ]; then
+        counts_cache_mtime=$(stat -f %m "$COUNTS_CACHE" 2>/dev/null || echo 0)
+        counts_cache_age=$(($(date +%s) - counts_cache_mtime))
+        [ "$counts_cache_age" -lt "$COUNTS_CACHE_TTL" ] && counts_cache_valid=true
+    fi
+
+    if [ "$counts_cache_valid" = true ]; then
+        cp "$COUNTS_CACHE" "$_parallel_tmp/counts.sh"
+    else
+        # Use GetCounts.ts as single source of truth for deterministic counts
+        # This ensures banner and statusline show identical numbers
+        GETCOUNTS_TOOL="$PAI_DIR/skills/CORE/Tools/GetCounts.ts"
+        if [ -f "$GETCOUNTS_TOOL" ]; then
+            bun run "$GETCOUNTS_TOOL" --shell > "$_parallel_tmp/counts.sh" 2>/dev/null
+            # Map signals_count to learnings_count for compatibility
+            sed -i '' 's/signals_count/learnings_count/' "$_parallel_tmp/counts.sh" 2>/dev/null
+            # Add sessions_count (not in GetCounts.ts)
+            sessions_count=$(fd -e jsonl . "$PAI_DIR/MEMORY" 2>/dev/null | wc -l | tr -d ' ')
+            echo "sessions_count=$sessions_count" >> "$_parallel_tmp/counts.sh"
+        else
+            # Fallback if GetCounts.ts doesn't exist
+            skills_count=$(fd -t d -d 1 . "$PAI_DIR/skills" 2>/dev/null | wc -l | tr -d ' ')
+            workflows_count=$(fd --no-ignore -t f -e md . "$PAI_DIR/skills" 2>/dev/null | grep -ci '/[Ww]orkflows/' || echo 0)
+            hooks_count=$(fd -e ts -d 1 . "$PAI_DIR/hooks" 2>/dev/null | wc -l | tr -d ' ')
+            learnings_count=$(fd -e md . "$PAI_DIR/MEMORY/LEARNING" 2>/dev/null | wc -l | tr -d ' ')
+            work_count=$(fd -t d -d 1 . "$PAI_DIR/MEMORY/WORK" 2>/dev/null | wc -l | tr -d ' ')
+            sessions_count=$(fd -e jsonl . "$PAI_DIR/MEMORY" 2>/dev/null | wc -l | tr -d ' ')
+            research_count=$(fd -e md -e json . "$PAI_DIR/MEMORY/RESEARCH" 2>/dev/null | wc -l | tr -d ' ')
+            ratings_count=$([ -f "$RATINGS_FILE" ] && wc -l < "$RATINGS_FILE" 2>/dev/null | tr -d ' ' || echo 0)
+
+            cat > "$_parallel_tmp/counts.sh" << COUNTSEOF
+skills_count=$skills_count
+workflows_count=$workflows_count
+hooks_count=$hooks_count
+learnings_count=$learnings_count
+work_count=$work_count
+sessions_count=$sessions_count
+research_count=$research_count
+ratings_count=$ratings_count
+COUNTSEOF
+        fi
+        cp "$_parallel_tmp/counts.sh" "$COUNTS_CACHE" 2>/dev/null
+    fi
+} &
+
+# --- PARALLEL BLOCK END - wait for all to complete ---
+wait
+
+# Source all parallel results
+[ -f "$_parallel_tmp/git.sh" ] && source "$_parallel_tmp/git.sh"
+[ -f "$_parallel_tmp/location.sh" ] && source "$_parallel_tmp/location.sh"
+[ -f "$_parallel_tmp/weather.sh" ] && source "$_parallel_tmp/weather.sh"
+[ -f "$_parallel_tmp/counts.sh" ] && source "$_parallel_tmp/counts.sh"
+rm -rf "$_parallel_tmp" 2>/dev/null
+
+learning_count="$learnings_count"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # TERMINAL WIDTH DETECTION
@@ -80,31 +326,26 @@ else
     MODE="normal"
 fi
 
-# ─────────────────────────────────────────────────────────────────────────────
-# PARSE INPUT
-# ─────────────────────────────────────────────────────────────────────────────
-
-input=$(cat)
-
 # Get DA name from settings (single source of truth)
 DA_NAME=$(jq -r '.daidentity.name // .daidentity.displayName // .env.DA // "Assistant"' "$SETTINGS_FILE" 2>/dev/null)
 DA_NAME="${DA_NAME:-Assistant}"
 
-# Get PAI version from settings (single source of truth)
-PAI_VERSION=$(jq -r '.pai.version // "2.0"' "$SETTINGS_FILE" 2>/dev/null)
-PAI_VERSION="${PAI_VERSION:-2.0}"
+# Get PAI version from settings
+PAI_VERSION=$(jq -r '.pai.version // "—"' "$SETTINGS_FILE" 2>/dev/null)
+PAI_VERSION="${PAI_VERSION:-—}"
 
 # Extract all data from JSON in single jq call
+# Uses official Claude Code context_window values directly
 eval "$(echo "$input" | jq -r '
   "current_dir=" + (.workspace.current_dir // .cwd | @sh) + "\n" +
   "model_name=" + (.model.display_name | @sh) + "\n" +
   "cc_version_json=" + (.version // "" | @sh) + "\n" +
   "duration_ms=" + (.cost.total_duration_ms // 0 | tostring) + "\n" +
-  "cache_read=" + ((.context_window.current_usage.cache_read_input_tokens // 0) | tostring) + "\n" +
-  "input_tokens=" + ((.context_window.current_usage.input_tokens // 0) | tostring) + "\n" +
-  "cache_creation=" + ((.context_window.current_usage.cache_creation_input_tokens // 0) | tostring) + "\n" +
-  "output_tokens=" + ((.context_window.current_usage.output_tokens // 0) | tostring) + "\n" +
-  "context_max=" + (.context_window.context_window_size // 200000 | tostring)
+  "context_max=" + (.context_window.context_window_size // 200000 | tostring) + "\n" +
+  "context_pct=" + (.context_window.used_percentage // 0 | tostring) + "\n" +
+  "context_remaining=" + (.context_window.remaining_percentage // 100 | tostring) + "\n" +
+  "total_input=" + (.context_window.total_input_tokens // 0 | tostring) + "\n" +
+  "total_output=" + (.context_window.total_output_tokens // 0 | tostring)
 ')"
 
 # Get Claude Code version
@@ -120,23 +361,6 @@ mkdir -p "$(dirname "$MODEL_CACHE")" 2>/dev/null
 echo "$model_name" > "$MODEL_CACHE" 2>/dev/null
 
 dir_name=$(basename "$current_dir")
-
-# ─────────────────────────────────────────────────────────────────────────────
-# COUNT RESOURCES
-# ─────────────────────────────────────────────────────────────────────────────
-
-skills_count=$(ls -d "$PAI_DIR/skills"/*/ 2>/dev/null | wc -l | tr -d ' ')
-workflows_count=$(ls "$PAI_DIR/skills"/*/workflows/*.md 2>/dev/null | wc -l | tr -d ' ')
-hooks_count=$(ls "$PAI_DIR/hooks"/*.ts 2>/dev/null | wc -l | tr -d ' ')
-learnings_count=$(find "$PAI_DIR/MEMORY/LEARNING" -type f -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
-work_count=$(find "$PAI_DIR/MEMORY/WORK" -mindepth 2 -maxdepth 2 -type d 2>/dev/null | wc -l | tr -d ' ')
-
-# Count learning files
-learning_count=$(find "$PAI_DIR/MEMORY/LEARNING" -type f -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
-
-# Count ratings (dynamic learning signal)
-ratings_count=0
-[ -f "$RATINGS_FILE" ] && ratings_count=$(wc -l < "$RATINGS_FILE" 2>/dev/null | tr -d ' ')
 
 # ─────────────────────────────────────────────────────────────────────────────
 # COLOR PALETTE
@@ -195,12 +419,14 @@ LEARN_PRIMARY='\033[38;2;167;139;250m'
 LEARN_SECONDARY='\033[38;2;196;181;253m'
 LEARN_WORK='\033[38;2;192;132;252m'
 LEARN_SIGNALS='\033[38;2;139;92;246m'
-LEARN_RESEARCH='\033[38;2;165;180;252m'
+LEARN_RESEARCH='\033[38;2;129;140;248m'
+LEARN_SESSIONS='\033[38;2;99;102;241m'
 
-# Line 5: Learning Signal (blue theme)
+# Line 5: Learning Signal (green theme for LEARNING label)
 SIGNAL_LABEL='\033[38;2;56;189;248m'
 SIGNAL_COLOR='\033[38;2;96;165;250m'
 SIGNAL_PERIOD='\033[38;2;148;163;184m'
+LEARN_LABEL='\033[38;2;21;128;61m'    # Dark green for LEARNING:
 
 # Line 6: Context (indigo theme)
 CTX_PRIMARY='\033[38;2;129;140;248m'
@@ -268,129 +494,109 @@ get_bucket_color() {
     printf '\033[38;2;%d;%d;%dm' "$r" "$g" "$b"
 }
 
-# Render context bar with specified bucket count
+# Render context bar - gradient progress bar using (potentially scaled) percentage
 render_context_bar() {
     local width=$1 pct=$2
     local output="" last_color=""
 
-    [ "$pct" -gt 100 ] && pct=100
+    # Use percentage (may be scaled to compaction threshold)
     local filled=$((pct * width / 100))
     [ "$filled" -lt 0 ] && filled=0
+
+    # Use spaced buckets only for small widths to improve readability
+    local use_spacing=false
+    [ "$width" -le 20 ] && use_spacing=true
 
     for i in $(seq 1 $width 2>/dev/null); do
         if [ "$i" -le "$filled" ]; then
             local color=$(get_bucket_color $i $width)
             last_color="$color"
             output="${output}${color}⛁${RESET}"
-            [ "$width" -gt 8 ] && output="${output} "
+            [ "$use_spacing" = true ] && output="${output} "
         else
             output="${output}${CTX_BUCKET_EMPTY}⛁${RESET}"
-            [ "$width" -gt 8 ] && output="${output} "
+            [ "$use_spacing" = true ] && output="${output} "
         fi
     done
 
-    # Trim trailing space
     output="${output% }"
     echo "$output"
-
-    # Return last filled color via global
     LAST_BUCKET_COLOR="${last_color:-$EMERALD}"
+}
+
+# Calculate optimal bar width to match statusline content width (72 chars)
+# Returns buckets that fill the same visual width as separator lines
+calc_bar_width() {
+    local mode=$1
+    local content_width=72  # Matches the ──── separator line width
+    local prefix_len suffix_len bucket_size available
+
+    case "$mode" in
+        nano)
+            prefix_len=2    # "◉ "
+            suffix_len=5    # " XX%"
+            bucket_size=2   # char + space
+            ;;
+        micro)
+            prefix_len=2    # "◉ "
+            suffix_len=5    # " XX%"
+            bucket_size=2
+            ;;
+        mini)
+            prefix_len=12   # "◉ CONTEXT: "
+            suffix_len=5    # " XXX%"
+            bucket_size=2
+            ;;
+        normal)
+            prefix_len=12   # "◉ CONTEXT: "
+            suffix_len=5    # " XXX%"
+            bucket_size=1   # no spacing for dense display
+            ;;
+    esac
+
+    available=$((content_width - prefix_len - suffix_len))
+    local buckets=$((available / bucket_size))
+
+    # Minimum floor per mode
+    [ "$mode" = "nano" ] && [ "$buckets" -lt 5 ] && buckets=5
+    [ "$mode" = "micro" ] && [ "$buckets" -lt 6 ] && buckets=6
+    [ "$mode" = "mini" ] && [ "$buckets" -lt 8 ] && buckets=8
+    [ "$mode" = "normal" ] && [ "$buckets" -lt 16 ] && buckets=16
+
+    echo "$buckets"
 }
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # LINE 0: PAI BRANDING (location, time, weather)
 # ═══════════════════════════════════════════════════════════════════════════════
+# NOTE: location_city, location_state, weather_str are populated by PARALLEL PREFETCH
 
-# Get current time in 24hr format
 current_time=$(date +"%H:%M")
-
-# Fetch location from IP (with caching)
-fetch_location() {
-    local cache_age=999999
-    [ -f "$LOCATION_CACHE" ] && cache_age=$(($(date +%s) - $(stat -f %m "$LOCATION_CACHE" 2>/dev/null || echo 0)))
-
-    if [ "$cache_age" -gt "$LOCATION_CACHE_TTL" ]; then
-        # Fetch fresh location data
-        local loc_data=$(curl -s --max-time 2 "http://ip-api.com/json/?fields=city,regionName,country,lat,lon" 2>/dev/null)
-        if [ -n "$loc_data" ] && echo "$loc_data" | jq -e '.city' >/dev/null 2>&1; then
-            echo "$loc_data" > "$LOCATION_CACHE"
-        fi
-    fi
-
-    # Return city|state format for separate coloring
-    if [ -f "$LOCATION_CACHE" ]; then
-        jq -r '"\(.city)|\(.regionName)"' "$LOCATION_CACHE" 2>/dev/null
-    else
-        echo "Unknown|"
-    fi
-}
-
-# Fetch weather (with caching) using Open-Meteo (free, no API key)
-fetch_weather() {
-    local cache_age=999999
-    [ -f "$WEATHER_CACHE" ] && cache_age=$(($(date +%s) - $(stat -f %m "$WEATHER_CACHE" 2>/dev/null || echo 0)))
-
-    if [ "$cache_age" -gt "$WEATHER_CACHE_TTL" ]; then
-        # Get lat/lon from location cache
-        local lat="" lon=""
-        if [ -f "$LOCATION_CACHE" ]; then
-            lat=$(jq -r '.lat // empty' "$LOCATION_CACHE" 2>/dev/null)
-            lon=$(jq -r '.lon // empty' "$LOCATION_CACHE" 2>/dev/null)
-        fi
-        # Default to San Francisco if no location
-        lat="${lat:-37.7749}"
-        lon="${lon:-122.4194}"
-
-        # Fetch from Open-Meteo (free, fast, no API key)
-        local weather_json=$(curl -s --max-time 3 "https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&temperature_unit=celsius" 2>/dev/null)
-        if [ -n "$weather_json" ] && echo "$weather_json" | jq -e '.current' >/dev/null 2>&1; then
-            local temp=$(echo "$weather_json" | jq -r '.current.temperature_2m' 2>/dev/null)
-            local code=$(echo "$weather_json" | jq -r '.current.weather_code' 2>/dev/null)
-            # Map weather codes to conditions
-            local condition="Clear"
-            case "$code" in
-                0) condition="Clear" ;;
-                1|2|3) condition="Cloudy" ;;
-                45|48) condition="Foggy" ;;
-                51|53|55|56|57) condition="Drizzle" ;;
-                61|63|65|66|67) condition="Rain" ;;
-                71|73|75|77) condition="Snow" ;;
-                80|81|82) condition="Showers" ;;
-                85|86) condition="Snow" ;;
-                95|96|99) condition="Storm" ;;
-            esac
-            echo "${temp}°C ${condition}" > "$WEATHER_CACHE"
-        fi
-    fi
-
-    if [ -f "$WEATHER_CACHE" ]; then
-        cat "$WEATHER_CACHE" 2>/dev/null
-    else
-        echo "—"
-    fi
-}
-
-# Fetch data (background-friendly)
-location_raw=$(fetch_location)
-location_city="${location_raw%%|*}"
-location_state="${location_raw##*|}"
-weather_str=$(fetch_weather)
 
 # Output PAI branding line
 case "$MODE" in
     nano)
-        printf "${PAI_P}P${PAI_A}A${PAI_I}I${RESET} ${SLATE_400}v${PAI_VERSION}${RESET} ${PAI_TIME}${current_time}${RESET}\n"
+        printf "${SLATE_600}── │${RESET} ${PAI_P}P${PAI_A}A${PAI_I}I${RESET} ${SLATE_600}│ ────────────${RESET}\n"
+        printf "${PAI_TIME}${current_time}${RESET} ${PAI_WEATHER}${weather_str}${RESET}\n"
+        printf "${SLATE_400}ENV:${RESET} ${SLATE_500}v${PAI_A}${PAI_VERSION}${RESET} ${SLATE_400}S:${SLATE_300}${skills_count}${RESET}\n"
         ;;
     micro)
-        printf "${PAI_P}P${PAI_A}A${PAI_I}I${RESET} ${SLATE_400}v${PAI_VERSION}${RESET} ${SLATE_600}│${RESET} ${PAI_TIME}${current_time}${RESET} ${SLATE_600}│${RESET} ${PAI_WEATHER}${weather_str}${RESET}\n"
+        printf "${SLATE_600}── │${RESET} ${PAI_P}P${PAI_A}A${PAI_I}I${RESET} ${PAI_A}STATUSLINE${RESET} ${SLATE_600}│ ──────────────────${RESET}\n"
+        printf "${PAI_LABEL}LOC:${RESET} ${PAI_CITY}${location_city}${RESET} ${SLATE_600}│${RESET} ${PAI_TIME}${current_time}${RESET} ${SLATE_600}│${RESET} ${PAI_WEATHER}${weather_str}${RESET}\n"
+        printf "${SLATE_400}ENV:${RESET} ${SLATE_400}CC:${RESET} ${PAI_A}${cc_version}${RESET} ${SLATE_600}│${RESET} ${SLATE_500}PAI:${RESET} ${PAI_A}v${PAI_VERSION}${RESET} ${SLATE_600}│${RESET} ${SLATE_400}S:${SLATE_300}${skills_count}${RESET} ${SLATE_400}W:${SLATE_300}${workflows_count}${RESET} ${SLATE_400}H:${SLATE_300}${hooks_count}${RESET}\n"
         ;;
     mini)
-        printf "${PAI_P}P${PAI_A}A${PAI_I}I${RESET} ${SLATE_400}v${PAI_VERSION}${RESET} ${PAI_A}STATUSLINE:${RESET} ${PAI_CITY}${location_city}${RESET}${SLATE_600},${RESET} ${PAI_STATE}${location_state}${RESET} ${SLATE_600}│${RESET} ${PAI_TIME}${current_time}${RESET} ${SLATE_600}│${RESET} ${PAI_WEATHER}${weather_str}${RESET}\n"
+        printf "${SLATE_600}── │${RESET} ${PAI_P}P${PAI_A}A${PAI_I}I${RESET} ${PAI_A}STATUSLINE${RESET} ${SLATE_600}│ ────────────────────────────────────────${RESET}\n"
+        printf "${PAI_LABEL}LOC:${RESET} ${PAI_CITY}${location_city}${RESET}${SLATE_600},${RESET} ${PAI_STATE}${location_state}${RESET} ${SLATE_600}│${RESET} ${PAI_TIME}${current_time}${RESET} ${SLATE_600}│${RESET} ${PAI_WEATHER}${weather_str}${RESET}\n"
+        printf "${SLATE_400}ENV:${RESET} ${SLATE_400}CC:${RESET} ${PAI_A}${cc_version}${RESET} ${SLATE_600}│${RESET} ${SLATE_500}PAI:${RESET} ${PAI_A}v${PAI_VERSION}${RESET} ${SLATE_600}│${RESET} ${WIELD_ACCENT}Skills:${RESET}${SLATE_300}${skills_count}${RESET} ${WIELD_WORKFLOWS}Workflows:${RESET}${SLATE_300}${workflows_count}${RESET} ${WIELD_HOOKS}Hooks:${RESET}${SLATE_300}${hooks_count}${RESET}\n"
         ;;
     normal)
-        printf "${PAI_P}P${PAI_A}A${PAI_I}I${RESET} ${SLATE_400}v${PAI_VERSION}${RESET} ${PAI_A}STATUSLINE:${RESET} ${PAI_CITY}${location_city}${RESET}${SLATE_600},${RESET} ${PAI_STATE}${location_state}${RESET} ${SLATE_600}│${RESET} ${PAI_TIME}${current_time}${RESET} ${SLATE_600}│${RESET} ${PAI_WEATHER}${weather_str}${RESET}\n"
+        printf "${SLATE_600}── │${RESET} ${PAI_P}P${PAI_A}A${PAI_I}I${RESET} ${PAI_A}STATUSLINE${RESET} ${SLATE_600}│ ──────────────────────────────────────────────────${RESET}\n"
+        printf "${PAI_LABEL}LOC:${RESET} ${PAI_CITY}${location_city}${RESET}${SLATE_600},${RESET} ${PAI_STATE}${location_state}${RESET} ${SLATE_600}│${RESET} ${PAI_TIME}${current_time}${RESET} ${SLATE_600}│${RESET} ${PAI_WEATHER}${weather_str}${RESET}\n"
+        printf "${SLATE_400}ENV:${RESET} ${SLATE_400}CC:${RESET} ${PAI_A}${cc_version}${RESET} ${SLATE_600}│${RESET} ${SLATE_500}PAI:${RESET} ${PAI_A}v${PAI_VERSION}${RESET} ${SLATE_600}│${RESET} ${WIELD_ACCENT}Skills:${RESET} ${SLATE_300}${skills_count}${RESET} ${SLATE_600}│${RESET} ${WIELD_WORKFLOWS}Workflows:${RESET} ${SLATE_300}${workflows_count}${RESET} ${SLATE_600}│${RESET} ${WIELD_HOOKS}Hooks:${RESET} ${SLATE_300}${hooks_count}${RESET}\n"
         ;;
 esac
+printf "${SLATE_600}────────────────────────────────────────────────────────────────────────${RESET}\n"
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # LINE 1: CONTEXT
@@ -403,109 +609,110 @@ elif [ "$duration_sec" -ge 60 ];   then time_display="$((duration_sec / 60))m$((
 else time_display="${duration_sec}s"
 fi
 
-# Calculate context usage
-content_tokens=$((cache_read + input_tokens + cache_creation + output_tokens))
-context_used=$((content_tokens + CONTEXT_BASELINE))
+# Context display - scale to compaction threshold if configured
+context_max="${context_max:-200000}"
+max_k=$((context_max / 1000))
 
-if [ "$context_max" -gt 0 ] && [ "$context_used" -gt 0 ]; then
-    context_pct=$((context_used * 100 / context_max))
-    context_k=$((context_used / 1000))
-    max_k=$((context_max / 1000))
+# Read compaction threshold from settings (default 100 = no scaling)
+COMPACTION_THRESHOLD=$(jq -r '.contextDisplay.compactionThreshold // 100' "$SETTINGS_FILE" 2>/dev/null)
+COMPACTION_THRESHOLD="${COMPACTION_THRESHOLD:-100}"
+
+# Get raw percentage from Claude Code
+raw_pct="${context_pct%%.*}"  # Remove decimals
+[ -z "$raw_pct" ] && raw_pct=0
+
+# Scale percentage: if threshold is 62, then 62% raw = 100% displayed
+# Formula: display_pct = (raw_pct * 100) / threshold
+if [ "$COMPACTION_THRESHOLD" -lt 100 ] && [ "$COMPACTION_THRESHOLD" -gt 0 ]; then
+    display_pct=$((raw_pct * 100 / COMPACTION_THRESHOLD))
+    # Cap at 100% (could exceed if past compaction point)
+    [ "$display_pct" -gt 100 ] && display_pct=100
 else
-    context_pct=0; context_k=0; max_k=$((context_max / 1000))
+    display_pct="$raw_pct"
 fi
 
-# Percentage color
-[ "$context_pct" -le 33 ] && pct_color="$EMERALD" || { [ "$context_pct" -le 66 ] && pct_color='\033[38;2;251;191;36m' || pct_color="$ROSE"; }
+# Color based on scaled percentage (same thresholds work for scaled 0-100%)
+if [ "$display_pct" -ge 80 ]; then
+    pct_color="$ROSE"                  # Red: 80%+ - getting full
+elif [ "$display_pct" -ge 60 ]; then
+    pct_color='\033[38;2;251;146;60m'  # Orange: 60-80%
+elif [ "$display_pct" -ge 40 ]; then
+    pct_color='\033[38;2;251;191;36m'  # Yellow: 40-60%
+else
+    pct_color="$EMERALD"               # Green: <40%
+fi
+
+# Calculate bar width to match statusline content width (72 chars)
+bar_width=$(calc_bar_width "$MODE")
 
 case "$MODE" in
     nano)
-        bar=$(render_context_bar 5 $context_pct)
-        printf "${CTX_PRIMARY}◉${RESET} ${bar} ${pct_color}${context_pct}%%${RESET} ${CTX_ACCENT}⏱${RESET} ${SLATE_300}${time_display}${RESET}\n"
+        bar=$(render_context_bar $bar_width $display_pct)
+        printf "${CTX_PRIMARY}◉${RESET} ${bar} ${pct_color}${display_pct}%%${RESET}\n"
         ;;
     micro)
-        bar=$(render_context_bar 6 $context_pct)
-        printf "${CTX_PRIMARY}◉${RESET} ${bar} ${pct_color}${context_pct}%%${RESET} ${SLATE_500}(${context_k}k)${RESET} ${CTX_ACCENT}⏱${RESET} ${SLATE_300}${time_display}${RESET}\n"
+        bar=$(render_context_bar $bar_width $display_pct)
+        printf "${CTX_PRIMARY}◉${RESET} ${bar} ${pct_color}${display_pct}%%${RESET}\n"
         ;;
     mini)
-        bar=$(render_context_bar 8 $context_pct)
-        printf "${CTX_PRIMARY}◉${RESET} ${CTX_SECONDARY}CONTEXT:${RESET} ${bar} "
-        printf "${pct_color}${context_pct}%%${RESET} ${SLATE_500}(${context_k}k/${max_k}k)${RESET} "
-        printf "${CTX_ACCENT}⏱${RESET} ${SLATE_300}${time_display}${RESET}\n"
+        bar=$(render_context_bar $bar_width $display_pct)
+        printf "${CTX_PRIMARY}◉${RESET} ${CTX_SECONDARY}CONTEXT:${RESET} ${bar} ${pct_color}${display_pct}%%${RESET}\n"
         ;;
     normal)
-        bar=$(render_context_bar 16 $context_pct)
-        printf "${CTX_PRIMARY}◉${RESET} ${CTX_SECONDARY}CONTEXT:${RESET} ${bar} "
-        printf "${LAST_BUCKET_COLOR}${context_pct}%%${RESET} ${SLATE_500}(${context_k}k/${max_k}k)${RESET}"
-        printf " ${SLATE_600}│${RESET} ${CTX_ACCENT}⏱${RESET} ${SLATE_300}${time_display}${RESET}\n"
+        bar=$(render_context_bar $bar_width $display_pct)
+        printf "${CTX_PRIMARY}◉${RESET} ${CTX_SECONDARY}CONTEXT:${RESET} ${bar} ${pct_color}${display_pct}%%${RESET}\n"
         ;;
 esac
+printf "${SLATE_600}────────────────────────────────────────────────────────────────────────${RESET}\n"
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# LINE 4: GIT STATUS
+# LINE 4: PWD & GIT STATUS
 # ═══════════════════════════════════════════════════════════════════════════════
+# NOTE: is_git_repo, branch, stash_count, modified, staged, untracked, total_changed,
+#       ahead, behind, last_commit_epoch are populated by PARALLEL PREFETCH
 
-if git rev-parse --git-dir > /dev/null 2>&1; then
-    branch=$(git branch --show-current 2>/dev/null || echo "detached")
-    modified=$(git diff --name-only 2>/dev/null | wc -l | tr -d ' ')
-    staged=$(git diff --cached --name-only 2>/dev/null | wc -l | tr -d ' ')
-    untracked=$(git ls-files --others --exclude-standard 2>/dev/null | wc -l | tr -d ' ')
-    stash_count=$(git stash list 2>/dev/null | wc -l | tr -d ' ')
-    total_changed=$((modified + staged))
+# Calculate age display from prefetched last_commit_epoch
+if [ "$is_git_repo" = "true" ] && [ -n "$last_commit_epoch" ]; then
+    now_epoch=$(date +%s)
+    age_seconds=$((now_epoch - last_commit_epoch))
+    age_minutes=$((age_seconds / 60))
+    age_hours=$((age_seconds / 3600))
+    age_days=$((age_seconds / 86400))
 
-    # Ahead/behind remote
-    ahead_behind=$(git rev-list --left-right --count HEAD...@{u} 2>/dev/null)
-    if [ -n "$ahead_behind" ]; then
-        ahead=$(echo "$ahead_behind" | awk '{print $1}')
-        behind=$(echo "$ahead_behind" | awk '{print $2}')
-    else
-        ahead=0 behind=0
-    fi
-
-    # Commit age with color
-    last_commit_epoch=$(git log -1 --format='%ct' 2>/dev/null)
-    if [ -n "$last_commit_epoch" ]; then
-        now_epoch=$(date +%s)
-        age_seconds=$((now_epoch - last_commit_epoch))
-        age_minutes=$((age_seconds / 60))
-        age_hours=$((age_seconds / 3600))
-        age_days=$((age_seconds / 86400))
-
-        if   [ "$age_minutes" -lt 1 ];  then age_display="now";         age_color="$GIT_AGE_FRESH"
-        elif [ "$age_hours" -lt 1 ];    then age_display="${age_minutes}m"; age_color="$GIT_AGE_FRESH"
-        elif [ "$age_hours" -lt 24 ];   then age_display="${age_hours}h";   age_color="$GIT_AGE_RECENT"
-        elif [ "$age_days" -lt 7 ];     then age_display="${age_days}d";    age_color="$GIT_AGE_STALE"
-        else age_display="${age_days}d"; age_color="$GIT_AGE_OLD"
-        fi
+    if   [ "$age_minutes" -lt 1 ];  then age_display="now";         age_color="$GIT_AGE_FRESH"
+    elif [ "$age_hours" -lt 1 ];    then age_display="${age_minutes}m"; age_color="$GIT_AGE_FRESH"
+    elif [ "$age_hours" -lt 24 ];   then age_display="${age_hours}h";   age_color="$GIT_AGE_RECENT"
+    elif [ "$age_days" -lt 7 ];     then age_display="${age_days}d";    age_color="$GIT_AGE_STALE"
+    else age_display="${age_days}d"; age_color="$GIT_AGE_OLD"
     fi
 
     # Status indicator
     [ "$total_changed" -gt 0 ] || [ "$untracked" -gt 0 ] && git_status_icon="*" || git_status_icon="✓"
+fi
 
-    case "$MODE" in
-        nano)
-            printf "${GIT_PRIMARY}◈${RESET} ${GIT_DIR}${dir_name}${RESET} ${GIT_VALUE}${branch}${RESET} "
-            if [ "$git_status_icon" = "✓" ]; then
-                printf "${GIT_CLEAN}✓${RESET}"
-            else
-                printf "${GIT_MODIFIED}*${total_changed}${RESET}"
-            fi
-            printf "\n"
-            ;;
-        micro)
-            printf "${GIT_PRIMARY}◈${RESET} ${GIT_DIR}${dir_name}${RESET} ${GIT_VALUE}${branch}${RESET}"
+# Always output PWD line, with git info if available
+case "$MODE" in
+    nano)
+        printf "${GIT_PRIMARY}◈${RESET} ${GIT_DIR}${dir_name}${RESET}"
+        [ "$is_git_repo" = true ] && printf " ${GIT_VALUE}${branch}${RESET} " && {
+            [ "$git_status_icon" = "✓" ] && printf "${GIT_CLEAN}✓${RESET}" || printf "${GIT_MODIFIED}*${total_changed}${RESET}"
+        }
+        printf "\n"
+        ;;
+    micro)
+        printf "${GIT_PRIMARY}◈${RESET} ${GIT_DIR}${dir_name}${RESET}"
+        if [ "$is_git_repo" = true ]; then
+            printf " ${GIT_VALUE}${branch}${RESET}"
             [ -n "$age_display" ] && printf " ${age_color}${age_display}${RESET}"
             printf " "
-            if [ "$git_status_icon" = "✓" ]; then
-                printf "${GIT_CLEAN}${git_status_icon}${RESET}"
-            else
-                printf "${GIT_MODIFIED}${git_status_icon}${total_changed}${RESET}"
-            fi
-            printf "\n"
-            ;;
-        mini)
-            printf "${GIT_PRIMARY}◈${RESET} ${GIT_DIR}${dir_name}${RESET} ${SLATE_600}│${RESET} "
-            printf "${GIT_VALUE}${branch}${RESET}"
+            [ "$git_status_icon" = "✓" ] && printf "${GIT_CLEAN}${git_status_icon}${RESET}" || printf "${GIT_MODIFIED}${git_status_icon}${total_changed}${RESET}"
+        fi
+        printf "\n"
+        ;;
+    mini)
+        printf "${GIT_PRIMARY}◈${RESET} ${GIT_DIR}${dir_name}${RESET}"
+        if [ "$is_git_repo" = true ]; then
+            printf " ${SLATE_600}│${RESET} ${GIT_VALUE}${branch}${RESET}"
             [ -n "$age_display" ] && printf " ${SLATE_600}│${RESET} ${age_color}${age_display}${RESET}"
             printf " ${SLATE_600}│${RESET} "
             if [ "$git_status_icon" = "✓" ]; then
@@ -514,11 +721,13 @@ if git rev-parse --git-dir > /dev/null 2>&1; then
                 printf "${GIT_MODIFIED}${git_status_icon}${total_changed}${RESET}"
                 [ "$untracked" -gt 0 ] && printf " ${GIT_ADDED}+${untracked}${RESET}"
             fi
-            printf "\n"
-            ;;
-        normal)
-            printf "${GIT_PRIMARY}◈${RESET} ${GIT_PRIMARY}PWD:${RESET} ${GIT_DIR}${dir_name}${RESET} ${SLATE_600}│${RESET} "
-            printf "${GIT_PRIMARY}Branch:${RESET} ${GIT_VALUE}${branch}${RESET}"
+        fi
+        printf "\n"
+        ;;
+    normal)
+        printf "${GIT_PRIMARY}◈${RESET} ${GIT_PRIMARY}PWD:${RESET} ${GIT_DIR}${dir_name}${RESET}"
+        if [ "$is_git_repo" = true ]; then
+            printf " ${SLATE_600}│${RESET} ${GIT_PRIMARY}Branch:${RESET} ${GIT_VALUE}${branch}${RESET}"
             [ -n "$age_display" ] && printf " ${SLATE_600}│${RESET} ${GIT_PRIMARY}Age:${RESET} ${age_color}${age_display}${RESET}"
             [ "$stash_count" -gt 0 ] && printf " ${SLATE_600}│${RESET} ${GIT_PRIMARY}Stash:${RESET} ${GIT_STASH}${stash_count}${RESET}"
             if [ "$total_changed" -gt 0 ] || [ "$untracked" -gt 0 ]; then
@@ -533,43 +742,68 @@ if git rev-parse --git-dir > /dev/null 2>&1; then
                 [ "$ahead" -gt 0 ] && printf "${GIT_CLEAN}↑${ahead}${RESET}"
                 [ "$behind" -gt 0 ] && printf "${GIT_STASH}↓${behind}${RESET}"
             fi
-            printf "\n"
-            ;;
-    esac
-fi
+        fi
+        printf "\n"
+        ;;
+esac
+printf "${SLATE_600}────────────────────────────────────────────────────────────────────────${RESET}\n"
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# LINE 5: LEARNING
+# LINE 5: MEMORY
 # ═══════════════════════════════════════════════════════════════════════════════
 
 case "$MODE" in
     nano)
-        printf "${LEARN_PRIMARY}◎${RESET} ${LEARN_WORK}📁${RESET}${SLATE_300}${work_count}${RESET} ${LEARN_SIGNALS}✦${RESET}${SLATE_300}${ratings_count}${RESET}\n"
+        printf "${LEARN_PRIMARY}◎${RESET} ${LEARN_WORK}📁${RESET}${SLATE_300}${work_count}${RESET} ${LEARN_SIGNALS}✦${RESET}${SLATE_300}${ratings_count}${RESET} ${LEARN_SESSIONS}⊕${RESET}${SLATE_300}${sessions_count}${RESET} ${LEARN_RESEARCH}◇${RESET}${SLATE_300}${research_count}${RESET}\n"
         ;;
     micro)
-        printf "${LEARN_PRIMARY}◎${RESET} ${LEARN_WORK}📁${RESET}${SLATE_300}${work_count}${RESET} ${LEARN_SIGNALS}✦${RESET}${SLATE_300}${ratings_count}${RESET}\n"
+        printf "${LEARN_PRIMARY}◎${RESET} ${LEARN_WORK}📁${RESET}${SLATE_300}${work_count}${RESET} ${LEARN_SIGNALS}✦${RESET}${SLATE_300}${ratings_count}${RESET} ${LEARN_SESSIONS}⊕${RESET}${SLATE_300}${sessions_count}${RESET} ${LEARN_RESEARCH}◇${RESET}${SLATE_300}${research_count}${RESET}\n"
         ;;
     mini)
-        printf "${LEARN_PRIMARY}◎${RESET} ${LEARN_SECONDARY}LEARNING:${RESET} "
+        printf "${LEARN_PRIMARY}◎${RESET} ${LEARN_SECONDARY}MEMORY:${RESET} "
         printf "${LEARN_WORK}📁${RESET}${SLATE_300}${work_count}${RESET} "
-        printf "${SLATE_600}│${RESET} ${LEARN_SIGNALS}✦${RESET}${SLATE_300}${ratings_count}${RESET}\n"
+        printf "${SLATE_600}│${RESET} ${LEARN_SIGNALS}✦${RESET}${SLATE_300}${ratings_count}${RESET} "
+        printf "${SLATE_600}│${RESET} ${LEARN_SESSIONS}⊕${RESET}${SLATE_300}${sessions_count}${RESET} "
+        printf "${SLATE_600}│${RESET} ${LEARN_RESEARCH}◇${RESET}${SLATE_300}${research_count}${RESET}\n"
         ;;
     normal)
-        printf "${LEARN_PRIMARY}◎${RESET} ${LEARN_SECONDARY}LEARNING:${RESET} "
+        printf "${LEARN_PRIMARY}◎${RESET} ${LEARN_SECONDARY}MEMORY:${RESET} "
         printf "${LEARN_WORK}📁${RESET}${SLATE_300}${work_count}${RESET} ${LEARN_WORK}Work${RESET} "
-        printf "${SLATE_600}│${RESET} ${LEARN_SIGNALS}✦${RESET}${SLATE_300}${ratings_count}${RESET} ${LEARN_SIGNALS}Ratings${RESET}\n"
+        printf "${SLATE_600}│${RESET} ${LEARN_SIGNALS}✦${RESET}${SLATE_300}${ratings_count}${RESET} ${LEARN_SIGNALS}Ratings${RESET} "
+        printf "${SLATE_600}│${RESET} ${LEARN_SESSIONS}⊕${RESET}${SLATE_300}${sessions_count}${RESET} ${LEARN_SESSIONS}Sessions${RESET} "
+        printf "${SLATE_600}│${RESET} ${LEARN_RESEARCH}◇${RESET}${SLATE_300}${research_count}${RESET} ${LEARN_RESEARCH}Research${RESET}\n"
         ;;
 esac
+printf "${SLATE_600}────────────────────────────────────────────────────────────────────────${RESET}\n"
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# LINE 6: LEARNING SIGNAL (with sparklines in normal mode)
+# LINE 6: LEARNING (with sparklines in normal mode)
 # ═══════════════════════════════════════════════════════════════════════════════
+
+LEARNING_CACHE="$PAI_DIR/MEMORY/STATE/learning-cache.sh"
+LEARNING_CACHE_TTL=30  # seconds
 
 if [ -f "$RATINGS_FILE" ] && [ -s "$RATINGS_FILE" ]; then
     now=$(date +%s)
 
-    # Single jq call computes all metrics
-    eval "$(jq -rs --argjson now "$now" '
+    # Check cache validity (by mtime and ratings file mtime)
+    cache_valid=false
+    if [ -f "$LEARNING_CACHE" ]; then
+        cache_mtime=$(stat -f %m "$LEARNING_CACHE" 2>/dev/null || echo 0)
+        ratings_mtime=$(stat -f %m "$RATINGS_FILE" 2>/dev/null || echo 0)
+        cache_age=$((now - cache_mtime))
+        # Cache valid if: cache newer than ratings AND cache age < TTL
+        if [ "$cache_mtime" -gt "$ratings_mtime" ] && [ "$cache_age" -lt "$LEARNING_CACHE_TTL" ]; then
+            cache_valid=true
+        fi
+    fi
+
+    if [ "$cache_valid" = true ]; then
+        # Use cached values
+        source "$LEARNING_CACHE"
+    else
+        # Compute fresh and cache
+        eval "$(jq -rs --argjson now "$now" '
       # Parse ISO timestamp to epoch (handles timezone offsets)
       def to_epoch:
         (capture("(?<sign>[-+])(?<h>[0-9]{2}):(?<m>[0-9]{2})$") // {sign: "+", h: "00", m: "00"}) as $tz |
@@ -672,6 +906,30 @@ if [ -f "$RATINGS_FILE" ] && [ -s "$RATINGS_FILE" ]; then
       "trend=\($trend | @sh)\ntotal_count=\($total)"
     ' "$RATINGS_FILE" 2>/dev/null)"
 
+        # Save to cache for next time
+        cat > "$LEARNING_CACHE" << CACHE_EOF
+latest='$latest'
+latest_source='$latest_source'
+q15_avg='$q15_avg'
+hour_avg='$hour_avg'
+today_avg='$today_avg'
+week_avg='$week_avg'
+month_avg='$month_avg'
+all_avg='$all_avg'
+q15_sparkline='$q15_sparkline'
+hour_sparkline='$hour_sparkline'
+day_sparkline='$day_sparkline'
+week_sparkline='$week_sparkline'
+month_sparkline='$month_sparkline'
+hour_trend='$hour_trend'
+day_trend='$day_trend'
+hour_summary='$hour_summary'
+day_summary='$day_summary'
+trend='$trend'
+total_count=$total_count
+CACHE_EOF
+    fi  # end cache computation
+
     if [ "$total_count" -gt 0 ] 2>/dev/null; then
         # Trend icon/color
         case "$trend" in
@@ -695,20 +953,20 @@ if [ -f "$RATINGS_FILE" ] && [ -s "$RATINGS_FILE" ]; then
 
         case "$MODE" in
             nano)
-                printf "${SIGNAL_LABEL}◆${RESET} ${LATEST_COLOR}${latest}${RESET} ${SIGNAL_PERIOD}1d:${RESET} ${TODAY_COLOR}${today_avg}${RESET}\n"
+                printf "${LEARN_LABEL}✿${RESET} ${LATEST_COLOR}${latest}${RESET} ${SIGNAL_PERIOD}1d:${RESET} ${TODAY_COLOR}${today_avg}${RESET}\n"
                 ;;
             micro)
-                printf "${SIGNAL_LABEL}◆${RESET} ${LATEST_COLOR}${latest}${RESET} ${SIGNAL_PERIOD}1h:${RESET} ${HOUR_COLOR}${hour_avg}${RESET} ${SIGNAL_PERIOD}1d:${RESET} ${TODAY_COLOR}${today_avg}${RESET} ${SIGNAL_PERIOD}1w:${RESET} ${WEEK_COLOR}${week_avg}${RESET}\n"
+                printf "${LEARN_LABEL}✿${RESET} ${LATEST_COLOR}${latest}${RESET} ${SIGNAL_PERIOD}1h:${RESET} ${HOUR_COLOR}${hour_avg}${RESET} ${SIGNAL_PERIOD}1d:${RESET} ${TODAY_COLOR}${today_avg}${RESET} ${SIGNAL_PERIOD}1w:${RESET} ${WEEK_COLOR}${week_avg}${RESET}\n"
                 ;;
             mini)
-                printf "${SIGNAL_LABEL}◆${RESET} ${SIGNAL_COLOR}LEARNING SIGNAL:${RESET} ${SLATE_600}│${RESET} "
+                printf "${LEARN_LABEL}✿${RESET} ${LEARN_LABEL}LEARNING:${RESET} ${SLATE_600}│${RESET} "
                 printf "${LATEST_COLOR}${latest}${RESET} "
                 printf "${SIGNAL_PERIOD}1h:${RESET} ${HOUR_COLOR}${hour_avg}${RESET} "
                 printf "${SIGNAL_PERIOD}1d:${RESET} ${TODAY_COLOR}${today_avg}${RESET} "
                 printf "${SIGNAL_PERIOD}1w:${RESET} ${WEEK_COLOR}${week_avg}${RESET}\n"
                 ;;
             normal)
-                printf "${SIGNAL_LABEL}◆${RESET} ${SIGNAL_COLOR}LEARNING SIGNAL:${RESET} ${SLATE_600}│${RESET} "
+                printf "${LEARN_LABEL}✿${RESET} ${LEARN_LABEL}LEARNING:${RESET} ${SLATE_600}│${RESET} "
                 printf "${LATEST_COLOR}${latest}${RESET}${SLATE_500}${src_label}${RESET} ${SLATE_600}│${RESET} "
                 printf "${SIGNAL_PERIOD}15m:${RESET} ${Q15_COLOR}${q15_avg}${RESET} "
                 printf "${SIGNAL_PERIOD}60m:${RESET} ${HOUR_COLOR}${hour_avg}${RESET} "
@@ -725,11 +983,11 @@ if [ -f "$RATINGS_FILE" ] && [ -s "$RATINGS_FILE" ]; then
                 ;;
         esac
     else
-        printf "${SIGNAL_LABEL}◆${RESET} ${SIGNAL_LABEL}LEARNING SIGNAL:${RESET}\n"
+        printf "${LEARN_LABEL}✿${RESET} ${LEARN_LABEL}LEARNING:${RESET}\n"
         printf "  ${SLATE_500}No ratings yet${RESET}\n"
     fi
 else
-    printf "${SIGNAL_LABEL}◆${RESET} ${SIGNAL_LABEL}LEARNING SIGNAL:${RESET}\n"
+    printf "${LEARN_LABEL}✿${RESET} ${LEARN_LABEL}LEARNING:${RESET}\n"
     printf "  ${SLATE_500}No ratings yet${RESET}\n"
 fi
 
@@ -738,7 +996,7 @@ fi
 # ═══════════════════════════════════════════════════════════════════════════════
 
 if [ "$MODE" = "normal" ]; then
-    echo ""
+    printf "${SLATE_600}────────────────────────────────────────────────────────────────────────${RESET}\n"
 
     # Refresh quote if stale (>30s)
     quote_age=$(($(date +%s) - $(stat -f %m "$QUOTE_CACHE" 2>/dev/null || echo 0)))
@@ -752,6 +1010,59 @@ if [ "$MODE" = "normal" ]; then
 
     if [ -f "$QUOTE_CACHE" ]; then
         IFS='|' read -r quote_text quote_author < "$QUOTE_CACHE"
-        printf "${QUOTE_PRIMARY}✦${RESET} ${SLATE_400}\"${quote_text}\"${RESET} ${QUOTE_AUTHOR}—${quote_author}${RESET}\n"
+        author_suffix="\" —${quote_author}"
+        author_len=${#author_suffix}
+        quote_len=${#quote_text}
+        max_line=72
+
+        # Full display: ✦ "quote text" —Author
+        full_len=$((quote_len + author_len + 4))  # 4 for ✦ "
+
+        if [ "$full_len" -le "$max_line" ]; then
+            # Fits on one line
+            printf "${QUOTE_PRIMARY}✦${RESET} ${SLATE_400}\"${quote_text}\"${RESET} ${QUOTE_AUTHOR}—${quote_author}${RESET}\n"
+        else
+            # Need to wrap - target ~10 words (55-60 chars) on first line
+            # Line 1 gets: "✦ \"" (4) + text
+            line1_text_max=60  # ~10 words worth
+
+            # Only wrap if there's substantial content left for line 2
+            min_line2=12
+
+            # Target: put ~60 chars on line 1
+            target_line1=$line1_text_max
+            [ "$target_line1" -gt "$quote_len" ] && target_line1=$((quote_len - min_line2))
+
+            # Find word boundary near target
+            first_part="${quote_text:0:$target_line1}"
+            remaining="${quote_text:$target_line1}"
+
+            # If we're not at a space, find the last space in first_part
+            if [ -n "$remaining" ] && [ "${remaining:0:1}" != " " ]; then
+                # Find last space position
+                temp="$first_part"
+                last_space_pos=0
+                pos=0
+                while [ $pos -lt ${#temp} ]; do
+                    [ "${temp:$pos:1}" = " " ] && last_space_pos=$pos
+                    pos=$((pos + 1))
+                done
+                if [ $last_space_pos -gt 10 ]; then
+                    first_part="${quote_text:0:$last_space_pos}"
+                fi
+            fi
+
+            second_part="${quote_text:${#first_part}}"
+            second_part="${second_part# }"  # trim leading space
+
+            # Only wrap if second part is substantial (more than just a few words)
+            if [ ${#second_part} -lt 10 ]; then
+                # Too little for line 2, just print on one line (may overflow slightly)
+                printf "${QUOTE_PRIMARY}✦${RESET} ${SLATE_400}\"${quote_text}\"${RESET} ${QUOTE_AUTHOR}—${quote_author}${RESET}\n"
+            else
+                printf "${QUOTE_PRIMARY}✦${RESET} ${SLATE_400}\"${first_part}${RESET}\n"
+                printf "  ${SLATE_400}${second_part}\"${RESET} ${QUOTE_AUTHOR}—${quote_author}${RESET}\n"
+            fi
+        fi
     fi
 fi

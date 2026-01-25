@@ -67,7 +67,7 @@ See `SYSTEM/SKILLSYSTEM.md` for complete documentation.
 - `USER/ASSETMANAGEMENT.md` - Digital assets registry for instant recognition & vulnerability management | ⭐ CRITICAL | Triggers: "my site", "vulnerability", "what uses React", "upgrade path", "tech stack"
 - `USER/CONTACTS.md` - Complete contact directory | Triggers: "who is Angela", "Bunny's email", "show contacts" | Top 7 quick ref below
 - `USER/DEFINITIONS.md` - Canonical definitions | Triggers: "definition of AGI", "how do we define X"
-- `PAISECURITYSYSTEM/` - Security architecture and generic patterns (shareable)
+- `SYSTEM/PAISECURITYSYSTEM/` - Security architecture, patterns, and defense protocols | Triggers: "security system", "security patterns", "prompt injection"
 - `USER/PAISECURITYSYSTEM/` - Personal security policies (private) | See security section below for critical always-active rules
 
 **Workflows:**

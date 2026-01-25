@@ -236,9 +236,9 @@ const PAI_DRIP = [
   "██╔═══╝ ██╔══██║██║",
   "██║     ██║  ██║██║",
   "╚═╝     ╚═╝  ╚═╝╚═╝",
-  " ░    ░ ░    ░  ░ ",
-  "  ▒    ▒      ▒   ",
-  "   ▓       ▓      ",
+  " ░       ░    ░  ░ ",
+  "  ▒       ▒    ▒   ",
+  "   ▓       ▓       ",
 ];
 
 // Compact PAI logo for smaller modes
@@ -619,8 +619,8 @@ function createNormalBanner(stats: SystemStats): string {
   lines.push(rainOverlay(brandLine1.padEnd(width), 0.15));
 
   // PAI dripping effect
-  const paiLines = PAI_DRIP.slice(0, 4);  // Just first 4 lines for compactness
-  for (const paiLine of paiLines) {
+  const paiDripLines = PAI_DRIP.slice(0, 4);  // Just first 4 lines for compactness
+  for (const paiLine of paiDripLines) {
     // Color gradient: bright to dim going down
     const coloredPai = `${g}${BOLD}${paiLine}${RESET}`;
     const centered = " ".repeat(Math.floor((width - paiLine.length) / 2));

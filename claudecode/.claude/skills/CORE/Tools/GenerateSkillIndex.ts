@@ -14,7 +14,7 @@ import { readdir, readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 
-const SKILLS_DIR = join(import.meta.dir, '..', 'Skills');
+const SKILLS_DIR = join(import.meta.dir, '..', '..');
 const OUTPUT_FILE = join(SKILLS_DIR, 'skill-index.json');
 
 interface SkillEntry {

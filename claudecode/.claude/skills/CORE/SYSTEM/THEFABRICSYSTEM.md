@@ -1,58 +1,90 @@
 ---
 name: FabricReference
-description: Native Fabric patterns execution details and CLI usage. Reference material extracted from SKILL.md for on-demand loading.
+description: Reference document for Fabric pattern system. For full functionality, use the Fabric skill directly.
 created: 2025-12-17
-extracted_from: SKILL.md lines 950-991
+updated: 2026-01-18
 ---
 
-# Native Fabric Patterns Reference
+# Fabric Pattern System Reference
 
-**Quick reference in SKILL.md** → For full details, see this file
+**Primary Skill:** `~/.claude/skills/Fabric/SKILL.md`
+
+This document provides a quick reference. For full functionality, invoke the Fabric skill.
 
 ---
 
-## 🧵 Native Fabric Patterns (Always Active)
+## Quick Reference
 
-**Location:** `~/.claude/skills/CORE/Tools/fabric/Patterns/`
+**Patterns Location:** `~/.claude/skills/Fabric/Patterns/` (237 patterns)
 
-PAI maintains 248 Fabric patterns locally for native execution—no CLI spawning needed.
+### Invoke Fabric Skill
 
-### Route Triggers
-- "use extract_wisdom" / "run extract_wisdom" → Native pattern execution
-- "use fabric pattern X" / "apply pattern X" → Native pattern execution
-- Any pattern name (summarize, analyze_claims, create_summary, etc.) → Native execution
+| User Says | Action |
+|-----------|--------|
+| "use fabric to [X]" | Execute pattern matching intent |
+| "run fabric pattern [name]" | Execute specific pattern |
+| "update fabric patterns" | Sync patterns from upstream |
+| "extract wisdom from [content]" | Run extract_wisdom pattern |
+| "summarize with fabric" | Run summarize pattern |
 
-### How Native Patterns Work
+### Native Pattern Execution
 
-Instead of calling `fabric -p pattern_name`, PAI:
-1. Reads `tools/fabric/Patterns/{pattern_name}/system.md`
-2. Applies the pattern instructions directly as a prompt
-3. Returns results without external CLI calls
+PAI executes patterns natively (no CLI spawning):
+1. Reads `Patterns/{pattern_name}/system.md`
+2. Applies pattern instructions directly as prompt
+3. Returns structured output
 
 **Example:**
 ```
-User: "Extract wisdom from this transcript"
-→ PAI reads tools/fabric/Patterns/extract_wisdom/system.md
-→ Applies pattern to content
-→ Returns structured output (IDEAS, INSIGHTS, QUOTES, etc.)
+User: "Use fabric to extract wisdom from this article"
+-> Fabric skill invoked
+-> ExecutePattern workflow selected
+-> Reads Patterns/extract_wisdom/system.md
+-> Applies pattern to content
+-> Returns IDEAS, INSIGHTS, QUOTES, etc.
 ```
 
-### When to Still Use Fabric CLI
+### When to Use Fabric CLI Directly
 
 Only use `fabric` command for:
-- **`-U`** - Update patterns: `fabric -U`
-- **`-y`** - YouTube transcripts: `fabric -y "URL"`
-- **`-l`** - List patterns: `fabric -l`
+- **`-y URL`** - YouTube transcript extraction
+- **`-U`** - Update patterns (or use skill workflow)
 
-### Updating Patterns
+---
 
+## Pattern Categories
+
+| Category | Count | Key Patterns |
+|----------|-------|--------------|
+| **Extraction** | 30+ | extract_wisdom, extract_insights, extract_main_idea |
+| **Summarization** | 20+ | summarize, create_5_sentence_summary |
+| **Analysis** | 35+ | analyze_claims, analyze_code, analyze_threat_report |
+| **Creation** | 50+ | create_threat_model, create_prd, create_mermaid_visualization |
+| **Improvement** | 10+ | improve_writing, improve_prompt, review_code |
+| **Security** | 15 | create_stride_threat_model, create_sigma_rules |
+| **Rating** | 8 | rate_content, judge_output |
+
+---
+
+## Updating Patterns
+
+**Via Skill (Recommended):**
+```
+User: "Update fabric patterns"
+-> Fabric skill > UpdatePatterns workflow
+-> Runs fabric -U
+-> Syncs to ~/.claude/skills/Fabric/Patterns/
+```
+
+**Manual:**
 ```bash
-~/.claude/skills/CORE/Tools/fabric/update-patterns.sh
+fabric -U && rsync -av ~/.config/fabric/patterns/ ~/.claude/skills/Fabric/Patterns/
 ```
 
 ---
 
-**See Also:**
-- SKILL.md > Fabric Patterns - Condensed reference
-- Prompting.md - Native Fabric Patterns section (comprehensive)
-- Tools/fabric/Patterns/ - All 248 pattern definitions
+## See Also
+
+- **Full Skill:** `~/.claude/skills/Fabric/SKILL.md`
+- **Pattern Execution:** `~/.claude/skills/Fabric/Workflows/ExecutePattern.md`
+- **All Patterns:** `~/.claude/skills/Fabric/Patterns/`

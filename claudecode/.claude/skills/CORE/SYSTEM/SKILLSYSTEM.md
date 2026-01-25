@@ -241,13 +241,13 @@ science_cycle_time: meso
    ```bash
    curl -s -X POST http://localhost:8888/notify \
      -H "Content-Type: application/json" \
-     -d '{"message": "Running the WORKFLOWNAME workflow from the SKILLNAME skill"}' \
+     -d '{"message": "Running the WORKFLOWNAME workflow in the SKILLNAME skill to ACTION"}' \
      > /dev/null 2>&1 &
    ```
 
 2. **Output text notification**:
    ```
-   Running the **WorkflowName** workflow from the **SkillName** skill...
+   Running the **WorkflowName** workflow in the **SkillName** skill to ACTION...
    ```
 
 **Full documentation:** `~/.claude/skills/CORE/SYSTEM/THENOTIFICATIONSYSTEM.md`
@@ -600,13 +600,13 @@ Complete blog workflow.
    ```bash
    curl -s -X POST http://localhost:8888/notify \
      -H "Content-Type: application/json" \
-     -d '{"message": "Running the WORKFLOWNAME workflow from the Blogging skill"}' \
+     -d '{"message": "Running WORKFLOWNAME in Blogging"}' \
      > /dev/null 2>&1 &
    ```
 
 2. **Output text notification**:
    ```
-   Running the **WorkflowName** workflow from the **Blogging** skill...
+   Running the **WorkflowName** workflow in the **Blogging** skill to ACTION...
    ```
 
 **Full documentation:** `~/.claude/skills/CORE/SYSTEM/THENOTIFICATIONSYSTEM.md`
@@ -622,7 +622,7 @@ Complete blog workflow.
 **When executing a workflow, also output this text:**
 
 ```
-Running the **WorkflowName** workflow from the **Blogging** skill...
+Running the **WorkflowName** workflow in the **Blogging** skill to ACTION...
 ```
 
 | Workflow | Trigger | File |

@@ -42,18 +42,21 @@ When PAI needs configuration, it follows a cascading lookup:
 ### Security System
 
 ```
-PAISECURITYSYSTEM/                    # SYSTEM tier (base)
-├── patterns.example.yaml             # Default security patterns
-├── ARCHITECTURE.md                   # Security design docs
-└── ...
+skills/CORE/SYSTEM/PAISECURITYSYSTEM/  # SYSTEM tier (base)
+├── README.md                          # Overview
+├── ARCHITECTURE.md                    # Security layers
+├── HOOKS.md                           # Hook documentation
+├── PROMPTINJECTION.md                 # Prompt injection defense
+├── COMMANDINJECTION.md                # Command injection defense
+└── patterns.example.yaml              # Default security patterns
 
-USER/PAISECURITYSYSTEM/               # USER tier (personal)
-├── patterns.yaml                     # Your security rules
-├── QUICKREF.md                       # Your quick reference
+USER/PAISECURITYSYSTEM/                # USER tier (personal)
+├── patterns.yaml                      # Your security rules
+├── QUICKREF.md                        # Your quick reference
 └── ...
 ```
 
-The SecurityValidator hook checks `USER/PAISECURITYSYSTEM/patterns.yaml` first, falling back to `PAISECURITYSYSTEM/patterns.example.yaml`.
+The SecurityValidator hook checks `USER/PAISECURITYSYSTEM/patterns.yaml` first, falling back to `skills/CORE/SYSTEM/PAISECURITYSYSTEM/patterns.example.yaml`.
 
 ### Response Format
 
@@ -194,7 +197,7 @@ To add USER extensibility to an existing component:
 ```typescript
 // From SecurityValidator.hook.ts
 const USER_PATTERNS_PATH = paiPath('USER', 'PAISECURITYSYSTEM', 'patterns.yaml');
-const SYSTEM_PATTERNS_PATH = paiPath('PAISECURITYSYSTEM', 'patterns.example.yaml');
+const SYSTEM_PATTERNS_PATH = paiPath('skills', 'CORE', 'SYSTEM', 'PAISECURITYSYSTEM', 'patterns.example.yaml');
 
 function getPatternsPath(): string | null {
   // USER first
@@ -260,6 +263,6 @@ Currently, no. USER replaces SYSTEM entirely for that component. If you only wan
 
 ## Related Documentation
 
-- `PAISECURITYSYSTEM/README.md` — Security system two-tier implementation
+- `SYSTEM/PAISECURITYSYSTEM/` — Security system architecture and patterns
 - `SYSTEM/SKILLSYSTEM.md` — Skill naming conventions (public vs private)
 - `SYSTEM/PAISYSTEMARCHITECTURE.md` — Overall PAI architecture

@@ -47,8 +47,8 @@ const ALWAYS_GARBAGE_PATTERNS = [
   /appreciate/i,
   /thank/i,
   /welcome/i,
-  /help you/i,
-  /assist you/i,
+  /help(ing)? you/i,   // "help you" or "Helping you"
+  /assist(ing)? you/i, // "assist you" or "Assisting you"
   /reaching out/i,
   /happy to/i,
   /let me know/i,
@@ -115,20 +115,77 @@ export function isValidVoiceCompletion(text: string): boolean {
   return true;
 }
 
+// Words that indicate an incomplete sentence when they appear at the end
+// This is a WHITELIST approach: we define what "incomplete" looks like
+// instead of trying to blacklist every possible fragment pattern
+const INCOMPLETE_ENDINGS = [
+  'the', 'a', 'an',           // articles
+  'to', 'for', 'with', 'of',  // prepositions
+  'in', 'on', 'at', 'by',     // more prepositions
+  'from', 'into', 'about',    // more prepositions
+  'and', 'or', 'but',         // conjunctions
+  'that', 'which',            // relative pronouns
+];
+
+// Prepositions that when followed by a single word make incomplete phrases
+// e.g., "for root" (root what?), "to fix" (to fix what?)
+const PREPOSITIONS = ['to', 'for', 'with', 'from', 'into', 'about', 'of', 'on', 'at', 'by'];
+
 /**
- * Check if a tab summary is valid
- * Tab summaries should start with a gerund (e.g., "Fixing the bug.", "Checking the config.")
+ * Check if a tab summary is valid - validates COMPLETE sentences.
+ *
+ * Requirements:
+ * - Must be 2-6 words (single words are usually garbage)
+ * - Must START with a gerund (-ing verb) - CRITICAL check
+ * - Must end with a period
+ * - No conversational garbage
+ * - No incomplete endings (dangling prepositions, articles)
  */
 export function isValidTabSummary(text: string): boolean {
-  if (!text || text.length < 3) return false;
+  if (!text || text.length < 5) return false;
 
-  // Must start with gerund (capital letter + letters + "ing")
-  const startsWithGerund = /^[A-Z][a-z]*ing\b/.test(text);
-  if (!startsWithGerund) return false;
+  // Must end with a period
+  if (!text.endsWith('.')) return false;
 
-  // Reject conversational filler even if it starts with a gerund
+  // Remove the period for word analysis
+  const content = text.slice(0, -1).trim();
+  const words = content.split(/\s+/);
+
+  // Must be 2-6 words (single words are usually garbage like "Processing.")
+  if (words.length < 2 || words.length > 6) return false;
+
+  // CRITICAL: Must start with a gerund (-ing verb)
+  // This catches garbage like "Fiction Apps Monetization Optimized" where
+  // the model picked up content topics instead of summarizing the task
+  const firstWord = words[0].toLowerCase();
+  if (!firstWord.endsWith('ing')) {
+    return false;
+  }
+
+  // Reject conversational garbage patterns
   for (const pattern of ALWAYS_GARBAGE_PATTERNS) {
     if (pattern.test(text)) return false;
+  }
+
+  // Reject first-person pronouns
+  const lowerContent = content.toLowerCase();
+  if (/\bi\b/.test(lowerContent) || /\bme\b/.test(lowerContent) || /\bmy\b/.test(lowerContent)) {
+    return false;
+  }
+
+  // Check for incomplete endings (dangling prepositions, articles, conjunctions)
+  const lastWord = words[words.length - 1].toLowerCase().replace(/[^a-z]/g, '');
+  if (INCOMPLETE_ENDINGS.includes(lastWord)) {
+    return false;
+  }
+
+  // Check for dangling preposition phrases (e.g., "Fixing issue with" is incomplete)
+  if (words.length >= 2) {
+    const secondToLast = words[words.length - 2].toLowerCase().replace(/[^a-z]/g, '');
+    // If second-to-last is a preposition and last word is short, likely fragment
+    if (PREPOSITIONS.includes(secondToLast) && lastWord.length <= 4) {
+      return false;
+    }
   }
 
   return true;
@@ -145,10 +202,9 @@ export function getVoiceFallback(): string {
 /**
  * Get fallback for tab title based on lifecycle stage
  * @param stage - 'start' for beginning work, 'end' for completion
- * Returns complete sentence starting with gerund
+ * Short and non-generic
  */
 export function getTabFallback(stage: 'start' | 'end' = 'start'): string {
   // NOTE: Do NOT include state symbols (✓, ⚠, ⚙️) here - tab-state.ts adds those based on state
-  // Complete sentence format: "[Gerund] the [object]."
-  return stage === 'end' ? 'Finishing the task.' : 'Processing the request.';
+  return stage === 'end' ? 'Done.' : 'Working.';
 }

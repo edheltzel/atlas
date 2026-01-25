@@ -41,8 +41,7 @@ Harvesting (periodic):
 ├── WORK/                   # PRIMARY work tracking
 │   └── {work_id}/
 │       ├── META.yaml       # Status, session, lineage
-│       ├── IDEAL.md        # Success criteria
-│       ├── IdealState.jsonl
+│       ├── ISC.json        # Ideal State Criteria (auto-captured by hooks)
 │       ├── items/          # Individual work items
 │       ├── agents/         # Sub-agent work
 │       ├── research/       # Research findings
@@ -54,6 +53,13 @@ Harvesting (periodic):
 │   │   └── YYYY-MM/
 │   ├── ALGORITHM/          # Task execution learnings
 │   │   └── YYYY-MM/
+│   ├── FAILURES/           # Full context dumps for low ratings (1-3)
+│   │   └── YYYY-MM/
+│   │       └── {timestamp}_{8-word-description}/
+│   │           ├── CONTEXT.md      # Human-readable analysis
+│   │           ├── transcript.jsonl # Raw conversation
+│   │           ├── sentiment.json  # Sentiment metadata
+│   │           └── tool-calls.json # Tool invocations
 │   ├── SYNTHESIS/          # Aggregated pattern analysis
 │   │   └── YYYY-MM/
 │   │       └── weekly-patterns.md
@@ -84,7 +90,8 @@ Harvesting (periodic):
 
 ### Claude Code projects/ - Native Session Storage
 
-**Location:** `~/.claude/projects/-Users-daniel--claude/`
+**Location:** `~/.claude/projects/-Users-{username}--claude/`
+*(Replace `{username}` with your system username, e.g., `-Users-john--claude`)*
 **What populates it:** Claude Code automatically (every conversation)
 **Content:** Complete session transcripts in JSONL format
 **Format:** `{uuid}.jsonl` - one file per session
@@ -106,8 +113,49 @@ This is the actual "firehose" - every message, tool call, and response. PAI leve
 
 **Work Directory Lifecycle:**
 1. `UserPromptSubmit` → AutoWorkCreation creates work dir + first item
-2. `Stop` → ResponseCapture updates item with response summary
+2. `Stop` → ResponseCapture updates item with response summary + captures ISC
 3. `SessionEnd` → SessionSummary marks work COMPLETED, clears state
+
+**ISC.json - Ideal State Criteria Tracking:**
+
+The `ISC.json` file captures the Ideal State Criteria from PAI Algorithm execution. This enables:
+- Verification against defined success criteria
+- Iteration when criteria are not fully satisfied
+- Post-hoc analysis of requirements evolution
+
+**Effort-Tiered Capture Depth:**
+
+| Effort Level | What's Captured |
+|--------------|-----------------|
+| QUICK/TRIVIAL | Final satisfaction summary only |
+| STANDARD | Initial criteria + final satisfaction |
+| DEEP/COMPREHENSIVE | Full version history with every phase update |
+
+**ISC Document Format (JSON):**
+```json
+{
+  "workId": "20260118-...",
+  "effortTier": "STANDARD",
+  "current": {
+    "criteria": ["Criterion 1", "Criterion 2"],
+    "antiCriteria": ["Anti-criterion 1"],
+    "phase": "BUILD",
+    "timestamp": "2026-01-18T..."
+  },
+  "history": [
+    {"version": 1, "phase": "OBSERVE", "criteria": [...], "anti_criteria": [...], "timestamp": "..."},
+    {"version": 2, "phase": "THINK", "updates": [...], "timestamp": "..."}
+  ],
+  "satisfaction": {"satisfied": 3, "partial": 1, "failed": 0, "total": 4}
+}
+```
+
+**Why JSON over JSONL:** ISC is bounded versioned state (<10KB), not an unbounded log. JSON with `current` + `history` explicitly models what verification tools need (current criteria) vs debugging needs (history).
+
+**Parsing Source:** ResponseCapture extracts ISC from algorithm output patterns:
+- `✅ CRITERIA:` / `❌ ANTI-CRITERIA:` blocks → Initial criteria
+- `♻︎ Updated the ISC…` blocks → Phase updates
+- `📊 ISC Satisfaction:` → Final verification results
 
 ### LEARNING/ - Categorized Learnings
 
@@ -130,7 +178,45 @@ This is the actual "firehose" - every message, tool call, and response. PAI leve
 |-----------|-----------|------------------|
 | `SYSTEM/` | Tooling/infrastructure failures | hook crash, config error, deploy failure |
 | `ALGORITHM/` | Task execution issues | wrong approach, over-engineered, missed the point |
+| `FAILURES/` | Full context for low ratings (1-3) | severe frustration, repeated errors |
 | `SYNTHESIS/` | Pattern aggregation | weekly analysis, recurring issues |
+
+### LEARNING/FAILURES/ - Full Context Failure Analysis
+
+**What populates it:**
+- `ImplicitSentimentCapture.hook.ts` via `FailureCapture.ts` (for ratings 1-3)
+- `ExplicitRatingCapture.hook.ts` via `FailureCapture.ts` (for explicit 1-3 ratings)
+- Manual migration via `bun FailureCapture.ts --migrate`
+
+**Content:** Complete context dumps for low-sentiment events
+**Format:** `FAILURES/YYYY-MM/{timestamp}_{8-word-description}/`
+**Purpose:** Enable retroactive learning system analysis by preserving full context
+
+**Each failure directory contains:**
+| File | Description |
+|------|-------------|
+| `CONTEXT.md` | Human-readable analysis with metadata, root cause notes |
+| `transcript.jsonl` | Full raw conversation up to the failure point |
+| `sentiment.json` | Sentiment analysis output (rating, confidence, detailed analysis) |
+| `tool-calls.json` | Extracted tool calls with inputs and outputs |
+
+**Directory naming:** `YYYY-MM-DD-HHMMSS_eight-word-description-from-inference`
+- Timestamp in PST
+- 8-word description generated by fast inference to capture failure essence
+
+**Rating thresholds:**
+| Rating | Capture Level |
+|--------|--------------|
+| 1 | Full failure capture + learning file |
+| 2 | Full failure capture + learning file |
+| 3 | Full failure capture + learning file |
+| 4-5 | Learning file only (if warranted) |
+| 6-10 | No capture (positive/neutral) |
+
+**Why this exists:** When significant frustration occurs (1-3), a brief summary isn't enough. Full context enables:
+1. Root cause identification - what sequence led to the failure?
+2. Pattern detection - do similar failures share characteristics?
+3. Systemic improvement - what changes would prevent this class of failure?
 
 ### RESEARCH/ - Agent Outputs
 
@@ -178,8 +264,8 @@ This is mutable state that changes during execution - not historical records. If
 | ResponseCapture.hook.ts | Stop | WORK/items, LEARNING/ (if applicable) |
 | WorkCompletionLearning.hook.ts | SessionEnd | LEARNING/ (significant work) |
 | SessionSummary.hook.ts | SessionEnd | WORK/META.yaml (status), clears STATE |
-| ExplicitRatingCapture.hook.ts | UserPromptSubmit | LEARNING/SIGNALS/, LEARNING/ (low ratings) |
-| ImplicitSentimentCapture.hook.ts | UserPromptSubmit | LEARNING/SIGNALS/, LEARNING/ (frustration) |
+| ExplicitRatingCapture.hook.ts | UserPromptSubmit | LEARNING/SIGNALS/, LEARNING/, FAILURES/ (1-3) |
+| ImplicitSentimentCapture.hook.ts | UserPromptSubmit | LEARNING/SIGNALS/, LEARNING/, FAILURES/ (1-3) |
 | AgentOutputCapture.hook.ts | SubagentStop | RESEARCH/ |
 | SecurityValidator.hook.ts | PreToolUse | SECURITY/ |
 
@@ -189,6 +275,7 @@ This is mutable state that changes during execution - not historical records. If
 |------|---------|------------|-----------|
 | SessionHarvester.ts | Extract learnings from transcripts | projects/ | LEARNING/ |
 | LearningPatternSynthesis.ts | Aggregate ratings into patterns | LEARNING/SIGNALS/ | LEARNING/SYNTHESIS/ |
+| FailureCapture.ts | Full context dumps for low ratings | projects/, SIGNALS/ | LEARNING/FAILURES/ |
 | ActivityParser.ts | Parse recent file changes | projects/ | (analysis only) |
 
 ---
@@ -236,10 +323,11 @@ tail ~/.claude/MEMORY/LEARNING/SIGNALS/ratings.jsonl
 ### View session transcripts
 ```bash
 # List recent sessions (newest first)
-ls -lt ~/.claude/projects/-Users-daniel--claude/*.jsonl | head -5
+# Replace {username} with your system username
+ls -lt ~/.claude/projects/-Users-{username}--claude/*.jsonl | head -5
 
 # View last session events
-tail ~/.claude/projects/-Users-daniel--claude/$(ls -t ~/.claude/projects/-Users-daniel--claude/*.jsonl | head -1) | jq .
+tail ~/.claude/projects/-Users-{username}--claude/$(ls -t ~/.claude/projects/-Users-{username}--claude/*.jsonl | head -1) | jq .
 ```
 
 ### Check learnings
@@ -247,6 +335,18 @@ tail ~/.claude/projects/-Users-daniel--claude/$(ls -t ~/.claude/projects/-Users-
 ls ~/.claude/MEMORY/LEARNING/SYSTEM/
 ls ~/.claude/MEMORY/LEARNING/ALGORITHM/
 ls ~/.claude/MEMORY/LEARNING/SYNTHESIS/
+```
+
+### Check failures
+```bash
+# List recent failure captures
+ls -lt ~/.claude/MEMORY/LEARNING/FAILURES/$(date +%Y-%m)/ 2>/dev/null | head -10
+
+# View a specific failure
+cat ~/.claude/MEMORY/LEARNING/FAILURES/2026-01/*/CONTEXT.md | head -100
+
+# Migrate historical low ratings to FAILURES
+bun run ~/.claude/skills/CORE/Tools/FailureCapture.ts --migrate
 ```
 
 ### Check multi-session progress
@@ -266,6 +366,14 @@ bun run ~/.claude/skills/CORE/Tools/LearningPatternSynthesis.ts --week
 ---
 
 ## Migration History
+
+**2026-01-17:** v7.1 - Full Context Failure Analysis
+- Added LEARNING/FAILURES/ directory for comprehensive failure captures
+- Created FailureCapture.ts tool for generating context dumps
+- Updated ImplicitSentimentCapture.hook.ts to create failure captures for ratings 1-3
+- Each failure gets its own directory with transcript, sentiment, tool-calls, and context
+- Directory names use 8-word descriptions generated by fast inference
+- Added migration capability via `bun FailureCapture.ts --migrate`
 
 **2026-01-12:** v7.0 - Projects-native architecture
 - Eliminated RAW/ directory entirely - Claude Code's `projects/` is the source of truth

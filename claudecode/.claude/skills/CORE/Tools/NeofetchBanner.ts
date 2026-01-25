@@ -6,7 +6,7 @@
  * Layout:
  *   LEFT:   Isometric PAI cube logo (ASCII/Braille art)
  *   RIGHT:  System stats as key-value pairs
- *   BOTTOM: PAI header, quote, sentiment histogram, KAI name, GitHub URL
+ *   BOTTOM: PAI header, quote, sentiment histogram, PAI name, GitHub URL
  *
  * Aesthetic: Cyberpunk/hacker with Tokyo Night colors
  *   - Hex addresses (0x7A2F)
@@ -317,7 +317,7 @@ const LETTERS: Record<string, string[]> = {
 // ═══════════════════════════════════════════════════════════════════════
 
 interface SystemStats {
-  daName: string;
+  DA_NAME: string;
   skills: number;
   hooks: number;
   workItems: string;
@@ -406,7 +406,7 @@ function countUserFiles(): number {
 
 function getStats(): SystemStats {
   return {
-    daName: readDAIdentity(),
+    DA_NAME: readDAIdentity(),
     skills: countSkills(),
     hooks: countHooks(),
     workItems: countWorkItems(),
@@ -580,7 +580,7 @@ function createNeofetchBanner(): string {
 
   // Stats formatted as key-value pairs
   const statItems = [
-    { key: "DA Name", value: stats.daName, color: nc },
+    { key: "DA Name", value: stats.DA_NAME, color: nc },
     { key: "Skills", value: String(stats.skills), color: g },
     { key: "Hooks", value: String(stats.hooks), color: c },
     { key: "Work Items", value: stats.workItems, color: o },

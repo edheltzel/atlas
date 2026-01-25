@@ -12,7 +12,7 @@ PAI has three agent systems that serve different purposes. Confusing them causes
 |--------|-----------|-------------|-------------------|
 | **Task Tool Subagent Types** | Pre-built agents in Claude Code (Architect, Designer, Engineer, Intern, Explore, etc.) | Internal workflow use ONLY | No |
 | **Named Agents** | Persistent identities with backstories and ElevenLabs voices (Serena, Marcus, Rook, etc.) | Recurring work, voice output, relationships | Yes |
-| **Custom Agents** | Dynamic agents composed via AgentFactory from traits | When user says "custom agents" | Yes (trait-mapped) |
+| **Custom Agents** | Dynamic agents composed via ComposeAgent from traits | When user says "custom agents" | Yes (trait-mapped) |
 
 ---
 
@@ -29,7 +29,7 @@ Task({ subagent_type: "Engineer", prompt: "..." })
 // ✅ RIGHT - Invoke the Agents skill for custom agents
 Skill("Agents")  // → CreateCustomAgent workflow
 // OR follow the workflow directly:
-// 1. Run AgentFactory with different trait combinations
+// 1. Run ComposeAgent with different trait combinations
 // 2. Launch agents with the generated prompts
 // 3. Each gets unique personality + voice
 ```
@@ -52,16 +52,16 @@ Skill("Agents")  // → CreateCustomAgent workflow
 When user requests custom agents:
 
 1. **Invoke Agents skill** via `Skill("Agents")` or follow CreateCustomAgent workflow
-2. **Run AgentFactory** for EACH agent with DIFFERENT trait combinations
-3. **Extract prompt and voice_id** from AgentFactory output
+2. **Run ComposeAgent** for EACH agent with DIFFERENT trait combinations
+3. **Extract prompt and voice_id** from ComposeAgent output
 4. **Launch agents** with Task tool using the composed prompts
 5. **Voice results** using each agent's unique voice_id
 
 ```bash
 # Example: 3 custom research agents
-bun run ~/.claude/skills/Agents/Tools/AgentFactory.ts --traits "research,enthusiastic,exploratory"
-bun run ~/.claude/skills/Agents/Tools/AgentFactory.ts --traits "research,skeptical,systematic"
-bun run ~/.claude/skills/Agents/Tools/AgentFactory.ts --traits "research,analytical,synthesizing"
+bun run ~/.claude/skills/Agents/Tools/ComposeAgent.ts --traits "research,enthusiastic,exploratory"
+bun run ~/.claude/skills/Agents/Tools/ComposeAgent.ts --traits "research,skeptical,systematic"
+bun run ~/.claude/skills/Agents/Tools/ComposeAgent.ts --traits "research,analytical,synthesizing"
 ```
 
 ---
@@ -84,7 +84,7 @@ These are pre-built agents in the Claude Code Task tool. They are for **internal
 | `GeminiResearcher` | Gemini-based research | Research skill workflows |
 | `GrokResearcher` | Grok-based research | Research skill workflows |
 
-**These do NOT have unique voices or AgentFactory composition.**
+**These do NOT have unique voices or ComposeAgent composition.**
 
 ---
 
@@ -107,7 +107,7 @@ Named agents have rich backstories, personality traits, and mapped ElevenLabs vo
 
 ## Custom Agents (Dynamic Composition)
 
-Custom agents are composed on-the-fly from traits using AgentFactory. Each unique trait combination maps to a different ElevenLabs voice.
+Custom agents are composed on-the-fly from traits using ComposeAgent. Each unique trait combination maps to a different ElevenLabs voice.
 
 ### Trait Categories
 
@@ -167,10 +167,9 @@ Task({
 ## References
 
 - **Agents Skill:** `skills/Agents/SKILL.md` — Custom agent creation, workflows
-- **AgentFactory:** `skills/Agents/Tools/AgentFactory.ts` — Dynamic composition tool
+- **ComposeAgent:** `skills/Agents/Tools/ComposeAgent.ts` — Dynamic composition tool
 - **Traits:** `skills/Agents/Data/Traits.yaml` — Trait definitions and voice mappings
 - **Agent Personalities:** `skills/Agents/AgentPersonalities.md` — Named agent backstories
-- **Delegation Workflow:** `skills/CORE/Workflows/Delegation.md` — Delegation patterns
 
 ---
 

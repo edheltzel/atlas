@@ -548,7 +548,7 @@ function createCompactBanner(): string {
 
   // Compact gradient header
   const paiGradient = `${BOLD}${GRADIENT.blue1}P${RESET}${BOLD}${GRADIENT.purple1}A${RESET}${BOLD}${GRADIENT.cyan1}I${RESET}`;
-  const daGradient = stats.name.split("").map((c, i) => {
+  const kaiGradient = stats.name.split("").map((c, i) => {
     const colors = [GRADIENT.blue1, GRADIENT.purple1, GRADIENT.cyan1];
     return `${BOLD}${colors[i % colors.length]}${c}${RESET}`;
   }).join("");
@@ -556,7 +556,7 @@ function createCompactBanner(): string {
   lines.push("");
   lines.push(`  ${UI.dim}╭──${RESET} ${paiGradient} ${UI.dim}│${RESET} ${UI.subtext}Personal AI Infrastructure${RESET} ${UI.dim}──────╮${RESET}`);
   lines.push(`  ${UI.dim}│${RESET}                                                 ${UI.dim}│${RESET}`);
-  lines.push(`  ${UI.dim}│${RESET}   ${daGradient}  ${GRADIENT.cyan1}⚡${RESET}${UI.text}${stats.skills}${RESET} ${GRADIENT.purple1}⚙${RESET}${UI.text}${stats.hooks}${RESET} ${UI.success}💡${RESET}${UI.text}${stats.learnings}${RESET} ${GRADIENT.magenta}🎯${RESET}${UI.text}${stats.model}${RESET}   ${UI.dim}│${RESET}`);
+  lines.push(`  ${UI.dim}│${RESET}   ${kaiGradient}  ${GRADIENT.cyan1}⚡${RESET}${UI.text}${stats.skills}${RESET} ${GRADIENT.purple1}⚙${RESET}${UI.text}${stats.hooks}${RESET} ${UI.success}💡${RESET}${UI.text}${stats.learnings}${RESET} ${GRADIENT.magenta}🎯${RESET}${UI.text}${stats.model}${RESET}   ${UI.dim}│${RESET}`);
   lines.push(`  ${UI.dim}│${RESET}                                                 ${UI.dim}│${RESET}`);
   lines.push(`  ${UI.dim}│${RESET}   ${sparklineHistogram(28)} ${UI.success}●${RESET} ${UI.subtext}ready${RESET}   ${UI.dim}│${RESET}`);
   lines.push(`  ${UI.dim}╰──────────────────────────────────────────────────╯${RESET}`);
