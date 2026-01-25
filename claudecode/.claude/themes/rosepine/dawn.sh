@@ -20,7 +20,9 @@ THEME_URL="https://rosepinetheme.com"
 # Muted:   #9893a5 (medium gray)
 # Subtle:  #797593 (darker gray)
 # Text:    #464261 (dark purple-gray)
-# Highlight: #dfdad9 (light gray)
+# HLLOW: #f4ede8 (light cream)
+# HLMED: #dfdad9 (light gray)
+# HLHIGH: #cecacd (gray)
 #
 # Love:    #b4637a (muted red)
 # Gold:    #ea9d34 (orange)
@@ -39,8 +41,10 @@ SUBTLE='\033[38;2;121;117;147m' # #797593 - Secondary text
 MUTED='\033[38;2;152;147;165m'  # #9893a5 - Muted text
 
 # Surface tones
-OVERLAY='\033[38;2;242;233;225m'   # #f2e9e1
-HIGHLIGHT='\033[38;2;223;218;217m' # #dfdad9
+OVERLAY='\033[38;2;242;233;225m' # #f2e9e1
+HLLOW='\033[38;2;244;237;232m'   # #f4ede8
+HIMED='\033[38;2;223;218;217m'   # #dfdad9
+HIHIGH='\033[38;2;206;202;205m'  # #cecacd
 
 # Accent colors (all darker/more saturated for light backgrounds)
 LOVE='\033[38;2;180;99;122m'  # #b4637a - Muted red
@@ -83,7 +87,7 @@ SL_WEATHER="$GOLD"
 # Context bar
 SL_CTX_PRIMARY="$IRIS"
 SL_CTX_SECONDARY="$ROSE"
-SL_CTX_EMPTY="$HIGHLIGHT"
+SL_CTX_EMPTY="$HLHIGH"
 SL_CTX_LOW="$FOAM"
 SL_CTX_MED="$GOLD"
 SL_CTX_HIGH='\033[38;2;200;130;60m' # Darker gold/orange
