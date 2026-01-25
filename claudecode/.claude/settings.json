@@ -245,5 +245,9 @@
       "hooks": "Hook configuration for lifecycle events."
     }
   },
-  "max_tokens": 4096
+  "max_tokens": 4096,
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  }
 }
