@@ -47,6 +47,11 @@ COUNTS_CACHE="$PAI_DIR/MEMORY/STATE/counts-cache.sh"
 # Source .env for API keys
 [ -f "$PAI_DIR/.env" ] && source "$PAI_DIR/.env"
 
+# Source theme (configured in settings.json)
+THEME_NAME=$(jq -r '.theme // "default/tailwind"' "$SETTINGS_FILE" 2>/dev/null)
+THEME_FILE="$PAI_DIR/themes/${THEME_NAME}.sh"
+[ -f "$THEME_FILE" ] && source "$THEME_FILE"
+
 # ─────────────────────────────────────────────────────────────────────────────
 # PARSE INPUT (must happen before parallel block consumes stdin)
 # ─────────────────────────────────────────────────────────────────────────────
@@ -363,90 +368,92 @@ echo "$model_name" > "$MODEL_CACHE" 2>/dev/null
 dir_name=$(basename "$current_dir")
 
 # ─────────────────────────────────────────────────────────────────────────────
-# COLOR PALETTE
+# COLOR PALETTE (mapped from theme)
 # ─────────────────────────────────────────────────────────────────────────────
-# Tailwind-inspired colors organized by usage
+# Theme colors loaded from $PAI_DIR/themes/<theme>.sh
+# These variables map SL_* theme variables to statusline-specific names
 
-RESET='\033[0m'
+# Core reset (from theme or fallback)
+RESET="${SL_RESET:-\033[0m}"
 
 # Structural (chrome, labels, separators)
-SLATE_300='\033[38;2;203;213;225m'     # Light text/values
-SLATE_400='\033[38;2;148;163;184m'     # Labels
-SLATE_500='\033[38;2;100;116;139m'     # Muted text
-SLATE_600='\033[38;2;71;85;105m'       # Separators
+SLATE_300="${SL_TEXT:-\033[38;2;203;213;225m}"
+SLATE_400="${SL_SUBTLE:-\033[38;2;148;163;184m}"
+SLATE_500="${SL_MUTED:-\033[38;2;100;116;139m}"
+SLATE_600="${SL_SEPARATOR:-\033[38;2;71;85;105m}"
 
 # Semantic colors
-EMERALD='\033[38;2;74;222;128m'        # Positive/success
-ROSE='\033[38;2;251;113;133m'          # Error/negative
+EMERALD="${SL_SUCCESS:-\033[38;2;74;222;128m}"
+ROSE="${SL_ERROR:-\033[38;2;251;113;133m}"
 
-# Rating gradient (for get_rating_color)
-RATING_10='\033[38;2;74;222;128m'      # 9-10: Emerald
-RATING_8='\033[38;2;163;230;53m'       # 8: Lime
-RATING_7='\033[38;2;250;204;21m'       # 7: Yellow
-RATING_6='\033[38;2;251;191;36m'       # 6: Amber
-RATING_5='\033[38;2;251;146;60m'       # 5: Orange
-RATING_4='\033[38;2;248;113;113m'      # 4: Light red
-RATING_LOW='\033[38;2;239;68;68m'      # 0-3: Red
+# Rating gradient (from theme)
+RATING_10="${SL_RATING_10:-\033[38;2;74;222;128m}"
+RATING_8="${SL_RATING_8:-\033[38;2;163;230;53m}"
+RATING_7="${SL_RATING_7:-\033[38;2;250;204;21m}"
+RATING_6="${SL_RATING_6:-\033[38;2;251;191;36m}"
+RATING_5="${SL_RATING_5:-\033[38;2;251;146;60m}"
+RATING_4="${SL_RATING_4:-\033[38;2;248;113;113m}"
+RATING_LOW="${SL_RATING_LOW:-\033[38;2;239;68;68m}"
 
-# Line 1: Greeting (violet theme)
-GREET_PRIMARY='\033[38;2;167;139;250m'
-GREET_SECONDARY='\033[38;2;139;92;246m'
-GREET_ACCENT='\033[38;2;196;181;253m'
+# Line 1: Greeting (memory/violet theme)
+GREET_PRIMARY="${SL_MEM_PRIMARY:-\033[38;2;167;139;250m}"
+GREET_SECONDARY="${SL_MEM_SIGNALS:-\033[38;2;139;92;246m}"
+GREET_ACCENT="${SL_MEM_SECONDARY:-\033[38;2;196;181;253m}"
 
-# Line 2: Wielding (cyan/teal theme)
-WIELD_PRIMARY='\033[38;2;34;211;238m'
-WIELD_SECONDARY='\033[38;2;45;212;191m'
-WIELD_ACCENT='\033[38;2;103;232;249m'
-WIELD_WORKFLOWS='\033[38;2;94;234;212m'
-WIELD_HOOKS='\033[38;2;6;182;212m'
-WIELD_LEARNINGS='\033[38;2;20;184;166m'
+# Line 2: Wielding (info/cyan theme)
+WIELD_PRIMARY="${SL_INFO:-\033[38;2;34;211;238m}"
+WIELD_SECONDARY="${SL_INFO:-\033[38;2;45;212;191m}"
+WIELD_ACCENT="${SL_INFO:-\033[38;2;103;232;249m}"
+WIELD_WORKFLOWS="${SL_SUCCESS:-\033[38;2;94;234;212m}"
+WIELD_HOOKS="${SL_INFO:-\033[38;2;6;182;212m}"
+WIELD_LEARNINGS="${SL_SUCCESS:-\033[38;2;20;184;166m}"
 
-# Line 3: Git (sky/blue theme)
-GIT_PRIMARY='\033[38;2;56;189;248m'
-GIT_VALUE='\033[38;2;186;230;253m'
-GIT_DIR='\033[38;2;147;197;253m'
-GIT_CLEAN='\033[38;2;125;211;252m'
-GIT_MODIFIED='\033[38;2;96;165;250m'
-GIT_ADDED='\033[38;2;59;130;246m'
-GIT_STASH='\033[38;2;165;180;252m'
-GIT_AGE_FRESH='\033[38;2;125;211;252m'
-GIT_AGE_RECENT='\033[38;2;96;165;250m'
-GIT_AGE_STALE='\033[38;2;59;130;246m'
-GIT_AGE_OLD='\033[38;2;99;102;241m'
+# Line 3: Git (from theme)
+GIT_PRIMARY="${SL_GIT_PRIMARY:-\033[38;2;56;189;248m}"
+GIT_VALUE="${SL_GIT_VALUE:-\033[38;2;186;230;253m}"
+GIT_DIR="${SL_GIT_DIR:-\033[38;2;147;197;253m}"
+GIT_CLEAN="${SL_GIT_CLEAN:-\033[38;2;125;211;252m}"
+GIT_MODIFIED="${SL_GIT_MODIFIED:-\033[38;2;96;165;250m}"
+GIT_ADDED="${SL_GIT_ADDED:-\033[38;2;59;130;246m}"
+GIT_STASH="${SL_GIT_STASH:-\033[38;2;165;180;252m}"
+GIT_AGE_FRESH="${SL_GIT_AGE_FRESH:-\033[38;2;125;211;252m}"
+GIT_AGE_RECENT="${SL_GIT_AGE_RECENT:-\033[38;2;96;165;250m}"
+GIT_AGE_STALE="${SL_GIT_AGE_STALE:-\033[38;2;59;130;246m}"
+GIT_AGE_OLD="${SL_GIT_AGE_OLD:-\033[38;2;99;102;241m}"
 
-# Line 4: Learning (purple theme)
-LEARN_PRIMARY='\033[38;2;167;139;250m'
-LEARN_SECONDARY='\033[38;2;196;181;253m'
-LEARN_WORK='\033[38;2;192;132;252m'
-LEARN_SIGNALS='\033[38;2;139;92;246m'
-LEARN_RESEARCH='\033[38;2;129;140;248m'
-LEARN_SESSIONS='\033[38;2;99;102;241m'
+# Line 4: Memory (from theme)
+LEARN_PRIMARY="${SL_MEM_PRIMARY:-\033[38;2;167;139;250m}"
+LEARN_SECONDARY="${SL_MEM_SECONDARY:-\033[38;2;196;181;253m}"
+LEARN_WORK="${SL_MEM_WORK:-\033[38;2;192;132;252m}"
+LEARN_SIGNALS="${SL_MEM_SIGNALS:-\033[38;2;139;92;246m}"
+LEARN_RESEARCH="${SL_MEM_RESEARCH:-\033[38;2;129;140;248m}"
+LEARN_SESSIONS="${SL_MEM_SESSIONS:-\033[38;2;99;102;241m}"
 
-# Line 5: Learning Signal (green theme for LEARNING label)
-SIGNAL_LABEL='\033[38;2;56;189;248m'
-SIGNAL_COLOR='\033[38;2;96;165;250m'
-SIGNAL_PERIOD='\033[38;2;148;163;184m'
-LEARN_LABEL='\033[38;2;21;128;61m'    # Dark green for LEARNING:
+# Line 5: Learning Signal
+SIGNAL_LABEL="${SL_INFO:-\033[38;2;56;189;248m}"
+SIGNAL_COLOR="${SL_INFO:-\033[38;2;96;165;250m}"
+SIGNAL_PERIOD="${SL_LEARN_PERIOD:-\033[38;2;148;163;184m}"
+LEARN_LABEL="${SL_LEARN_LABEL:-\033[38;2;21;128;61m}"
 
-# Line 6: Context (indigo theme)
-CTX_PRIMARY='\033[38;2;129;140;248m'
-CTX_SECONDARY='\033[38;2;165;180;252m'
-CTX_ACCENT='\033[38;2;139;92;246m'
-CTX_BUCKET_EMPTY='\033[38;2;75;82;95m'
+# Line 6: Context (from theme)
+CTX_PRIMARY="${SL_CTX_PRIMARY:-\033[38;2;129;140;248m}"
+CTX_SECONDARY="${SL_CTX_SECONDARY:-\033[38;2;165;180;252m}"
+CTX_ACCENT="${SL_CTX_SECONDARY:-\033[38;2;139;92;246m}"
+CTX_BUCKET_EMPTY="${SL_CTX_EMPTY:-\033[38;2;75;82;95m}"
 
-# Line 7: Quote (gold theme)
-QUOTE_PRIMARY='\033[38;2;252;211;77m'
-QUOTE_AUTHOR='\033[38;2;180;140;60m'
+# Line 7: Quote (from theme)
+QUOTE_PRIMARY="${SL_QUOTE_PRIMARY:-\033[38;2;252;211;77m}"
+QUOTE_AUTHOR="${SL_QUOTE_AUTHOR:-\033[38;2;180;140;60m}"
 
-# PAI Branding (matches banner colors)
-PAI_P='\033[38;2;30;58;138m'          # Navy
-PAI_A='\033[38;2;59;130;246m'         # Medium blue
-PAI_I='\033[38;2;147;197;253m'        # Light blue
-PAI_LABEL='\033[38;2;100;116;139m'    # Slate for "status line"
-PAI_CITY='\033[38;2;147;197;253m'     # Light blue for city
-PAI_STATE='\033[38;2;100;116;139m'    # Slate for state
-PAI_TIME='\033[38;2;96;165;250m'      # Medium-light blue for time
-PAI_WEATHER='\033[38;2;135;206;235m'  # Sky blue for weather
+# PAI Branding (from theme)
+PAI_P="${SL_PAI_P:-\033[38;2;30;58;138m}"
+PAI_A="${SL_PAI_A:-\033[38;2;59;130;246m}"
+PAI_I="${SL_PAI_I:-\033[38;2;147;197;253m}"
+PAI_LABEL="${SL_HEADER_LABEL:-\033[38;2;100;116;139m}"
+PAI_CITY="${SL_LOCATION:-\033[38;2;147;197;253m}"
+PAI_STATE="${SL_MUTED:-\033[38;2;100;116;139m}"
+PAI_TIME="${SL_TIME:-\033[38;2;96;165;250m}"
+PAI_WEATHER="${SL_WEATHER:-\033[38;2;135;206;235m}"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # HELPER FUNCTIONS
