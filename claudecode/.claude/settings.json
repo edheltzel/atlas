@@ -43,7 +43,7 @@
 		"pythonPackageManager": "uv",
 		"language": "TypeScript"
 	},
-	"theme": "rosepine/dawn",
+	"theme": "eldritch/dark",
 	"permissions": {
 		"allow": [
 			"Bash",
