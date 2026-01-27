@@ -664,7 +664,7 @@ case "$MODE" in
         printf "\n"
         ;;
     normal)
-        printf "${GIT_DIR}◈${RESET} ${GIT_DIR}\xf3\xb0\x9d\xb0${RESET} ${GIT_DIR}${dir_name}${RESET}"
+        printf "${GIT_STASH}◈${RESET} ${GIT_STASH}\xf3\xb0\x9d\xb0${RESET} ${GIT_STASH}${dir_name}${RESET}"
         if [ "$is_git_repo" = true ]; then
             printf " ${SLATE_600}│${RESET} ${GIT_PRIMARY}\xef\x84\xa6${RESET} ${GIT_VALUE}${branch}${RESET}"
             [ -n "$age_display" ] && printf " ${SLATE_600}│${RESET} ${SLATE_400}\xf3\xb0\xa5\x94${RESET} ${age_color}${age_display}${RESET}"

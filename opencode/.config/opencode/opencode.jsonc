@@ -5,10 +5,10 @@
 	"tui": {},
 	"agent": {
 		"plan": {
-			"model": "anthropic/claude-opus-4-5"
+			"model": "google/gemini-3-flash-preview"
 		},
 		"build": {
-			"model": "anthropic/claude-opus-4-5"
+			"model": "google/gemini-3-pro-preview"
 		}
 	},
 	"mcp": {
@@ -137,6 +137,7 @@
 			"less *": "allow",
 			"ll*": "allow",
 			"ls*": "allow",
+			"eza*": "allow",
 			"mkdir *": "allow",
 			"more *": "allow",
 			"mv *": "allow",
