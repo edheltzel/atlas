@@ -115,6 +115,21 @@ dust -d 2
 
 ---
 
+## Upstream Sync Warning
+
+**Before syncing with upstream PAI** (`~/Developer/AI/PAI` or `github.com/danielmiessler/PAI`):
+
+1. **Check `DIVERGED.md`** - Lists files intentionally modified from upstream
+2. **Don't blindly overwrite** - Some files have local improvements (SDK integrations, fallbacks)
+3. **Merge selectively** - Compare diverged files, keep local improvements
+
+```bash
+# See what's diverged
+cat ~/.claude/DIVERGED.md
+```
+
+---
+
 **PAI** - Magnifying human capabilities through personalized AI infrastructure.
 
 Repository: [github.com/danielmiessler/PAI](https://github.com/danielmiessler/PAI)
