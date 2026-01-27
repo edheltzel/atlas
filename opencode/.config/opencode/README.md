@@ -33,12 +33,67 @@ There is no need to register them in `opencode.jsonc`.
 
 See: https://opencode.ai/docs/plugins#location
 
+## Voice Notifications
+
+OpenCode integrates with the shared VoiceServer (same server Claude Code uses) for TTS notifications.
+
+### Features
+
+- **Session start**: Speaks startup catchphrase when OpenCode launches
+- **Task completion**: Announces when agent goes idle
+- **Permission requests**: Alerts when approval is needed
+- **Test results**: Announces pass/fail for test commands
+
+### Configuration
+
+Voice settings are read from `~/.claude/settings.json` (shared with Claude Code):
+
+```json
+{
+  "daidentity": {
+    "voiceId": "your-elevenlabs-voice-id",
+    "startupCatchphrase": "Hello, ready to help.",
+    "voice": {
+      "stability": 0.35,
+      "similarity_boost": 0.8
+    }
+  }
+}
+```
+
+### Manual Voice Command
+
+```bash
+/voice Hello world  # Speak arbitrary text
+```
+
+### Troubleshooting
+
+```bash
+# Check if VoiceServer is running
+curl http://localhost:8888/health
+
+# Start VoiceServer manually
+~/.claude/VoiceServer/start-server.sh
+
+# View server logs
+tail -f /tmp/voice-server.log
+```
+
+### Files
+
+- `plugins/voice-notification.ts` - Main voice plugin (auto-loaded)
+- `command/voice.md` - Manual /voice command
+- `~/.claude/VoiceServer/` - Shared voice server (ElevenLabs + macOS fallback)
+
+---
+
 ## Structure
 
 - `opencode.jsonc` - Main configuration (model, MCP servers, theme)
 - `agent/` - Custom sub-agents for specialized tasks
-- `command/` - Custom slash commands (`/commit`, `/commit-push`, etc.)
-- `plugin/` - Autoloaded plugins (audio feedback notifications, etc.)
+- `command/` - Custom slash commands (`/commit`, `/commit-push`, `/voice`, etc.)
+- `plugins/` - Autoloaded plugins (voice notifications, etc.)
 - `skill/` - Loadable skills (frontend-design, etc.)
 - `themes/` - Custom color themes (Eldritch variants)
 - `tool/` - Custom tools
