@@ -137,7 +137,7 @@
 			"less *": "allow",
 			"ll*": "allow",
 			"ls*": "allow",
-			"eza*": "allow",
+			"eza *": "allow",
 			"mkdir *": "allow",
 			"more *": "allow",
 			"mv *": "allow",
