@@ -94,6 +94,27 @@ const PORT = parseInt(process.env.PORT || "8888");
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
 const ELEVENLABS_TIMEOUT_MS = 10_000; // 10 second timeout
 
+// =============================================================================
+// Load settings.json for fallback voice configuration
+// =============================================================================
+const SETTINGS_PATH = join(homedir(), '.claude', 'settings.json');
+const DEFAULT_MACOS_VOICE = 'Daniel (Enhanced)';
+
+function getMacOSFallbackVoice(): string {
+  try {
+    if (existsSync(SETTINGS_PATH)) {
+      const settings = JSON.parse(readFileSync(SETTINGS_PATH, 'utf-8'));
+      const fallbackVoice = settings?.daidentity?.voice?.fallbackVoice;
+      if (fallbackVoice && typeof fallbackVoice === 'string') {
+        return fallbackVoice;
+      }
+    }
+  } catch (error) {
+    console.warn('⚠️  Failed to read fallback voice from settings.json');
+  }
+  return DEFAULT_MACOS_VOICE;
+}
+
 if (!ELEVENLABS_API_KEY) {
   console.error('⚠️  ELEVENLABS_API_KEY not found in ~/.claude/.env or ~/.env');
   console.error('Add: ELEVENLABS_API_KEY=your_key_here');
@@ -238,12 +259,13 @@ function validateInput(input: any): { valid: boolean; error?: string; sanitized?
 // =============================================================================
 async function speakWithMacOS(text: string): Promise<boolean> {
   try {
-    console.log('🍎 Using macOS say fallback...');
+    const fallbackVoice = getMacOSFallbackVoice();
+    console.log(`🍎 Using macOS say fallback (voice: ${fallbackVoice})...`);
 
     // Speak directly - no file intermediary, simpler and more reliable
     const proc = spawn('/usr/bin/say', [
-      '-v', 'Samantha',  // Natural-sounding default voice
-      '-r', '175',       // Slightly faster rate
+      '-v', fallbackVoice,  // Configurable fallback voice from settings.json
+      '-r', '175',          // Slightly faster rate
       text
     ]);
 
@@ -624,6 +646,7 @@ const server = serve({
           port: PORT,
           voice_system: "ElevenLabs + macOS fallback",
           default_voice_id: DEFAULT_VOICE_ID,
+          macos_fallback_voice: getMacOSFallbackVoice(),
           api_key_configured: !!ELEVENLABS_API_KEY,
           circuit_breaker: {
             open: circuitBreaker.isOpen,
@@ -649,7 +672,7 @@ const server = serve({
 
 console.log(`🚀 Voice Server running on port ${PORT}`);
 console.log(`🎙️  Primary: ElevenLabs TTS (${ELEVENLABS_TIMEOUT_MS / 1000}s timeout)`);
-console.log(`🍎 Fallback: macOS say command`);
+console.log(`🍎 Fallback: macOS say command (voice: ${getMacOSFallbackVoice()})`);
 console.log(`⚡ Circuit breaker: ${CIRCUIT_BREAKER_THRESHOLD} failures → ${CIRCUIT_BREAKER_RESET_MS / 1000}s cooldown`);
 console.log(`📡 POST to http://localhost:${PORT}/notify`);
 console.log(`🔒 Security: CORS restricted to localhost, rate limiting enabled`);
