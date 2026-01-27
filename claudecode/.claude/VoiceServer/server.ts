@@ -1,6 +1,11 @@
 #!/usr/bin/env bun
 /**
  * Voice Server - Personal AI Voice notification server using ElevenLabs TTS
+ *
+ * Features:
+ * - ElevenLabs SDK with 10s timeout (prevents indefinite hangs)
+ * - Circuit breaker pattern (fast fallback after consecutive failures)
+ * - macOS `say` command fallback (local, instant, always available)
  */
 
 import { serve } from "bun";
@@ -8,6 +13,55 @@ import { spawn } from "child_process";
 import { homedir } from "os";
 import { join } from "path";
 import { existsSync, readFileSync } from "fs";
+import { ElevenLabsClient } from "elevenlabs";
+
+// =============================================================================
+// Circuit Breaker - Fast fallback after consecutive failures
+// =============================================================================
+interface CircuitBreakerState {
+  failures: number;
+  lastFailure: number;
+  isOpen: boolean;
+}
+
+const circuitBreaker: CircuitBreakerState = {
+  failures: 0,
+  lastFailure: 0,
+  isOpen: false,
+};
+
+const CIRCUIT_BREAKER_THRESHOLD = 1;      // Open after 1 failure - fast fallback
+const CIRCUIT_BREAKER_RESET_MS = 60_000;  // Try again after 1 minute
+
+function recordSuccess(): void {
+  circuitBreaker.failures = 0;
+  if (circuitBreaker.isOpen) {
+    console.log('🟢 Circuit CLOSED - ElevenLabs recovered');
+    circuitBreaker.isOpen = false;
+  }
+}
+
+function recordFailure(): void {
+  circuitBreaker.failures++;
+  circuitBreaker.lastFailure = Date.now();
+
+  if (circuitBreaker.failures >= CIRCUIT_BREAKER_THRESHOLD && !circuitBreaker.isOpen) {
+    circuitBreaker.isOpen = true;
+    console.warn('🔴 Circuit OPEN - ElevenLabs disabled, using fallback');
+  }
+}
+
+function shouldSkipElevenLabs(): boolean {
+  if (!circuitBreaker.isOpen) return false;
+
+  // Check if we should try again (half-open state)
+  if (Date.now() - circuitBreaker.lastFailure > CIRCUIT_BREAKER_RESET_MS) {
+    console.log('🟡 Circuit HALF-OPEN - testing ElevenLabs');
+    return false;
+  }
+
+  return true;
+}
 
 // Load .env from multiple locations (first found wins for each key)
 const envPaths = [
@@ -38,11 +92,17 @@ for (const envPath of envPaths) {
 
 const PORT = parseInt(process.env.PORT || "8888");
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
+const ELEVENLABS_TIMEOUT_MS = 10_000; // 10 second timeout
 
 if (!ELEVENLABS_API_KEY) {
   console.error('⚠️  ELEVENLABS_API_KEY not found in ~/.claude/.env or ~/.env');
   console.error('Add: ELEVENLABS_API_KEY=your_key_here');
 }
+
+// Initialize ElevenLabs SDK client
+const elevenLabsClient = ELEVENLABS_API_KEY
+  ? new ElevenLabsClient({ apiKey: ELEVENLABS_API_KEY })
+  : null;
 
 // Default voice ID (Kai's voice)
 const DEFAULT_VOICE_ID = process.env.ELEVENLABS_VOICE_ID || "s3TPKV1kjDlVtZbl4Ksh";
@@ -61,8 +121,23 @@ interface VoicesConfig {
   voices: Record<string, VoiceConfig>;
 }
 
-// Default voice settings
-const DEFAULT_VOICE_SETTINGS = { stability: 0.5, similarity_boost: 0.75 };
+// Full voice settings interface matching settings.json
+interface VoiceSettings {
+  stability?: number;
+  similarity_boost?: number;
+  style?: number;
+  speed?: number;
+  use_speaker_boost?: boolean;
+}
+
+// Default voice settings (full ElevenLabs options)
+const DEFAULT_VOICE_SETTINGS: VoiceSettings = {
+  stability: 0.5,
+  similarity_boost: 0.75,
+  style: 0.0,
+  speed: 1.0,
+  use_speaker_boost: true,
+};
 
 // Load voices configuration from CORE skill (canonical source)
 let voicesConfig: VoicesConfig | null = null;
@@ -158,41 +233,139 @@ function validateInput(input: any): { valid: boolean; error?: string; sanitized?
   return { valid: true, sanitized };
 }
 
-// Generate speech using ElevenLabs API
-async function generateSpeech(
+// =============================================================================
+// macOS `say` Fallback - Local TTS when ElevenLabs is unavailable
+// =============================================================================
+async function speakWithMacOS(text: string): Promise<boolean> {
+  try {
+    console.log('🍎 Using macOS say fallback...');
+
+    // Speak directly - no file intermediary, simpler and more reliable
+    const proc = spawn('/usr/bin/say', [
+      '-v', 'Samantha',  // Natural-sounding default voice
+      '-r', '175',       // Slightly faster rate
+      text
+    ]);
+
+    await new Promise<void>((resolve, reject) => {
+      proc.on('exit', (code) => {
+        if (code === 0) resolve();
+        else reject(new Error(`say exited with code ${code}`));
+      });
+      proc.on('error', reject);
+    });
+
+    console.log('🍎 macOS say completed');
+    return true;
+  } catch (error) {
+    console.error('🍎 macOS say fallback failed:', error);
+    return false;
+  }
+}
+
+// =============================================================================
+// ElevenLabs SDK Speech Generation with Timeout
+// =============================================================================
+
+async function generateSpeechWithElevenLabs(
   text: string,
   voiceId: string,
-  voiceSettings?: { stability: number; similarity_boost: number }
+  voiceSettings?: VoiceSettings
 ): Promise<ArrayBuffer> {
-  if (!ELEVENLABS_API_KEY) {
+  if (!elevenLabsClient) {
     throw new Error('ElevenLabs API key not configured');
   }
 
-  const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`;
+  // Apply all voice settings from config
+  const settings = {
+    stability: voiceSettings?.stability ?? 0.5,
+    similarity_boost: voiceSettings?.similarity_boost ?? 0.5,
+    style: voiceSettings?.style ?? 0.0,
+    use_speaker_boost: voiceSettings?.use_speaker_boost ?? true,
+  };
 
-  // Use provided settings or defaults
-  const settings = voiceSettings || { stability: 0.5, similarity_boost: 0.5 };
+  // Create abort controller for timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), ELEVENLABS_TIMEOUT_MS);
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Accept': 'audio/mpeg',
-      'Content-Type': 'application/json',
-      'xi-api-key': ELEVENLABS_API_KEY,
-    },
-    body: JSON.stringify({
-      text: text,
-      model_id: 'eleven_turbo_v2_5',
-      voice_settings: settings,
-    }),
-  });
+  try {
+    const audioStream = await elevenLabsClient.textToSpeech.convert(
+      voiceId,
+      {
+        text: text,
+        model_id: 'eleven_turbo_v2_5',
+        voice_settings: settings,
+      },
+      {
+        timeoutInSeconds: ELEVENLABS_TIMEOUT_MS / 1000,
+        abortSignal: controller.signal,
+      }
+    );
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
+    clearTimeout(timeoutId);
+
+    // Convert stream to ArrayBuffer
+    const chunks: Uint8Array[] = [];
+    for await (const chunk of audioStream) {
+      chunks.push(chunk);
+    }
+
+    const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
+    const result = new Uint8Array(totalLength);
+    let offset = 0;
+    for (const chunk of chunks) {
+      result.set(chunk, offset);
+      offset += chunk.length;
+    }
+
+    return result.buffer;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error;
+  }
+}
+
+// =============================================================================
+// Main Speech Function - ElevenLabs with Direct macOS Fallback
+// =============================================================================
+
+async function speak(
+  text: string,
+  voiceId: string,
+  voiceSettings?: VoiceSettings
+): Promise<{ success: boolean; source: 'elevenlabs' | 'macos' }> {
+  // Check circuit breaker - skip ElevenLabs if it's been failing
+  if (shouldSkipElevenLabs() || !elevenLabsClient) {
+    console.log('⚡ Skipping ElevenLabs, using macOS fallback');
+    const success = await speakWithMacOS(text);
+    return { success, source: 'macos' };
   }
 
-  return await response.arrayBuffer();
+  // Try ElevenLabs first
+  try {
+    const audio = await generateSpeechWithElevenLabs(text, voiceId, voiceSettings);
+    recordSuccess();
+
+    // Play the ElevenLabs audio
+    await playAudio(audio, 'mp3');
+    return { success: true, source: 'elevenlabs' };
+  } catch (error: any) {
+    recordFailure();
+
+    const isTimeout = error.name === 'AbortError' ||
+                      error.message?.includes('timeout') ||
+                      error.message?.includes('Timeout');
+
+    if (isTimeout) {
+      console.warn(`⏱️  ElevenLabs timeout after ${ELEVENLABS_TIMEOUT_MS}ms - using fallback`);
+    } else {
+      console.error('❌ ElevenLabs error:', error.message || error);
+    }
+
+    // Fallback to macOS say (speaks directly)
+    const success = await speakWithMacOS(text);
+    return { success, source: 'macos' };
+  }
 }
 
 // Get volume setting from config (defaults to 1.0 = 100%)
@@ -207,8 +380,9 @@ function getVolumeSetting(): number {
 }
 
 // Play audio using afplay (macOS)
-async function playAudio(audioBuffer: ArrayBuffer): Promise<void> {
-  const tempFile = `/tmp/voice-${Date.now()}.mp3`;
+// Supports both MP3 (ElevenLabs) and AIFF (macOS say fallback)
+async function playAudio(audioBuffer: ArrayBuffer, format: 'mp3' | 'aiff' = 'mp3'): Promise<void> {
+  const tempFile = `/tmp/voice-${Date.now()}.${format}`;
 
   // Write audio to temp file
   await Bun.write(tempFile, audioBuffer);
@@ -221,12 +395,13 @@ async function playAudio(audioBuffer: ArrayBuffer): Promise<void> {
 
     proc.on('error', (error) => {
       console.error('Error playing audio:', error);
+      spawn('/bin/rm', ['-f', tempFile]);
       reject(error);
     });
 
     proc.on('exit', (code) => {
       // Clean up temp file
-      spawn('/bin/rm', [tempFile]);
+      spawn('/bin/rm', ['-f', tempFile]);
 
       if (code === 0) {
         resolve();
@@ -280,29 +455,40 @@ async function sendNotification(
   const safeTitle = titleValidation.sanitized!;
   let safeMessage = stripMarkers(messageValidation.sanitized!);
 
-  // Generate and play voice using ElevenLabs
-  if (voiceEnabled && ELEVENLABS_API_KEY) {
+  // Generate and play voice using ElevenLabs (with fallback to macOS say)
+  if (voiceEnabled) {
     try {
       const voice = voiceId || DEFAULT_VOICE_ID;
 
       // Get voice configuration (personality settings)
       const voiceConfig = getVoiceConfig(voice);
 
-      // Use personality settings if available, else defaults
-      const voiceSettings = voiceConfig
-        ? { stability: voiceConfig.stability, similarity_boost: voiceConfig.similarity_boost }
+      // Build full voice settings from config or defaults
+      const voiceSettings: VoiceSettings = voiceConfig
+        ? {
+            stability: voiceConfig.stability,
+            similarity_boost: voiceConfig.similarity_boost,
+            style: (voiceConfig as any).style ?? DEFAULT_VOICE_SETTINGS.style,
+            speed: (voiceConfig as any).speed ?? DEFAULT_VOICE_SETTINGS.speed,
+            use_speaker_boost: (voiceConfig as any).use_speaker_boost ?? DEFAULT_VOICE_SETTINGS.use_speaker_boost,
+          }
         : DEFAULT_VOICE_SETTINGS;
 
       if (voiceConfig) {
         console.log(`👤 Voice: ${voiceConfig.description}`);
       }
 
-      console.log(`🎙️  Generating speech (voice: ${voice}, stability: ${voiceSettings.stability}, boost: ${voiceSettings.similarity_boost})`);
+      console.log(`🎙️  Speaking...`);
 
-      const audioBuffer = await generateSpeech(safeMessage, voice, voiceSettings);
-      await playAudio(audioBuffer);
+      const result = await speak(safeMessage, voice, voiceSettings);
+
+      if (result.success) {
+        console.log(`✅ Speech via ${result.source}`);
+      } else {
+        console.warn('⚠️  Speech failed');
+      }
     } catch (error) {
-      console.error("Failed to generate/play speech:", error);
+      console.error("Failed to speak:", error);
     }
   }
 
@@ -436,9 +622,16 @@ const server = serve({
         JSON.stringify({
           status: "healthy",
           port: PORT,
-          voice_system: "ElevenLabs",
+          voice_system: "ElevenLabs + macOS fallback",
           default_voice_id: DEFAULT_VOICE_ID,
-          api_key_configured: !!ELEVENLABS_API_KEY
+          api_key_configured: !!ELEVENLABS_API_KEY,
+          circuit_breaker: {
+            open: circuitBreaker.isOpen,
+            failures: circuitBreaker.failures,
+            threshold: CIRCUIT_BREAKER_THRESHOLD,
+            reset_after_ms: CIRCUIT_BREAKER_RESET_MS,
+          },
+          timeout_ms: ELEVENLABS_TIMEOUT_MS,
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -455,7 +648,9 @@ const server = serve({
 });
 
 console.log(`🚀 Voice Server running on port ${PORT}`);
-console.log(`🎙️  Using ElevenLabs TTS (default voice: ${DEFAULT_VOICE_ID})`);
+console.log(`🎙️  Primary: ElevenLabs TTS (${ELEVENLABS_TIMEOUT_MS / 1000}s timeout)`);
+console.log(`🍎 Fallback: macOS say command`);
+console.log(`⚡ Circuit breaker: ${CIRCUIT_BREAKER_THRESHOLD} failures → ${CIRCUIT_BREAKER_RESET_MS / 1000}s cooldown`);
 console.log(`📡 POST to http://localhost:${PORT}/notify`);
 console.log(`🔒 Security: CORS restricted to localhost, rate limiting enabled`);
-console.log(`🔑 API Key: ${ELEVENLABS_API_KEY ? '✅ Configured' : '❌ Missing'}`);
+console.log(`🔑 API Key: ${ELEVENLABS_API_KEY ? '✅ Configured' : '❌ Missing (fallback only)'}`);
