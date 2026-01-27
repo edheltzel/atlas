@@ -23,8 +23,8 @@ Available themes:
 
 1. Copy the template:
    ```bash
-   mkdir -p ~/.claude/themes/mytheme
-   cp ~/.claude/themes/_template.sh ~/.claude/themes/mytheme/dark.sh
+   mkdir -p ~/.claude/skills/CORE/USER/STATUSLINE/themes/mytheme
+   cp ~/.claude/skills/CORE/USER/STATUSLINE/themes/_template.sh ~/.claude/skills/CORE/USER/STATUSLINE/themes/mytheme/dark.sh
    ```
 
 2. Edit the color values in your new theme file

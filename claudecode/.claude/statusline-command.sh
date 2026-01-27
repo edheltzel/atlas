@@ -48,8 +48,9 @@ COUNTS_CACHE="$PAI_DIR/MEMORY/STATE/counts-cache.sh"
 [ -f "$PAI_DIR/.env" ] && source "$PAI_DIR/.env"
 
 # Source theme (configured in settings.json)
+# Themes stored in USER/STATUSLINE per PAI convention
 THEME_NAME=$(jq -r '.theme // "default/tailwind"' "$SETTINGS_FILE" 2>/dev/null)
-THEME_FILE="$PAI_DIR/themes/${THEME_NAME}.sh"
+THEME_FILE="$PAI_DIR/skills/CORE/USER/STATUSLINE/themes/${THEME_NAME}.sh"
 [ -f "$THEME_FILE" ] && source "$THEME_FILE"
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -409,13 +410,14 @@ WIELD_HOOKS="${SL_INFO:-\033[38;2;6;182;212m}"
 WIELD_LEARNINGS="${SL_SUCCESS:-\033[38;2;20;184;166m}"
 
 # Line 3: Git (from theme)
-GIT_PRIMARY="${SL_GIT_PRIMARY:-\033[38;2;56;189;248m}"
-GIT_VALUE="${SL_GIT_VALUE:-\033[38;2;186;230;253m}"
-GIT_DIR="${SL_GIT_DIR:-\033[38;2;147;197;253m}"
-GIT_CLEAN="${SL_GIT_CLEAN:-\033[38;2;125;211;252m}"
-GIT_MODIFIED="${SL_GIT_MODIFIED:-\033[38;2;96;165;250m}"
-GIT_ADDED="${SL_GIT_ADDED:-\033[38;2;59;130;246m}"
-GIT_STASH="${SL_GIT_STASH:-\033[38;2;165;180;252m}"
+# Eldritch theme git colors
+GIT_PRIMARY="${SL_GIT_PRIMARY:-\033[38;2;242;101;181m}"    # branch pink #F265B5
+GIT_VALUE="${SL_GIT_VALUE:-\033[38;2;242;101;181m}"        # branch pink #F265B5
+GIT_DIR="${SL_GIT_DIR:-\033[38;2;4;209;249m}"              # path cyan #04D1F9
+GIT_CLEAN="${SL_GIT_CLEAN:-\033[38;2;55;244;153m}"         # git_added green #37F499
+GIT_MODIFIED="${SL_GIT_MODIFIED:-\033[38;2;241;252;121m}"  # git_modified yellow #F1FC79
+GIT_ADDED="${SL_GIT_ADDED:-\033[38;2;4;209;249m}"          # git_untracked cyan #04D1F9
+GIT_STASH="${SL_GIT_STASH:-\033[38;2;164;140;242m}"        # purple #A48CF2
 GIT_AGE_FRESH="${SL_GIT_AGE_FRESH:-\033[38;2;125;211;252m}"
 GIT_AGE_RECENT="${SL_GIT_AGE_RECENT:-\033[38;2;96;165;250m}"
 GIT_AGE_STALE="${SL_GIT_AGE_STALE:-\033[38;2;59;130;246m}"
@@ -583,97 +585,27 @@ current_time=$(date +"%H:%M")
 # Output PAI branding line
 case "$MODE" in
     nano)
-        printf "${SLATE_600}── │${RESET} ${PAI_P}P${PAI_A}A${PAI_I}I${RESET} ${SLATE_600}│ ────────────${RESET}\n"
+        printf "${SLATE_600}── │${RESET} ${PAI_P}▲${RESET} ${PAI_A}Atlas${RESET} ${SLATE_600}│ ────────────${RESET}\n"
         printf "${PAI_TIME}${current_time}${RESET} ${PAI_WEATHER}${weather_str}${RESET}\n"
-        printf "${SLATE_400}ENV:${RESET} ${SLATE_500}v${PAI_A}${PAI_VERSION}${RESET} ${SLATE_400}S:${SLATE_300}${skills_count}${RESET}\n"
+        printf "${SLATE_400}\xee\x9e\x95${RESET} ${SLATE_500}v${PAI_A}${PAI_VERSION}${RESET} ${SLATE_400}S:${SLATE_300}${skills_count}${RESET}\n"
         ;;
     micro)
-        printf "${SLATE_600}── │${RESET} ${PAI_P}P${PAI_A}A${PAI_I}I${RESET} ${PAI_A}STATUSLINE${RESET} ${SLATE_600}│ ──────────────────${RESET}\n"
-        printf "${PAI_LABEL}LOC:${RESET} ${PAI_CITY}${location_city}${RESET} ${SLATE_600}│${RESET} ${PAI_TIME}${current_time}${RESET} ${SLATE_600}│${RESET} ${PAI_WEATHER}${weather_str}${RESET}\n"
-        printf "${SLATE_400}ENV:${RESET} ${SLATE_400}CC:${RESET} ${PAI_A}${cc_version}${RESET} ${SLATE_600}│${RESET} ${SLATE_500}PAI:${RESET} ${PAI_A}v${PAI_VERSION}${RESET} ${SLATE_600}│${RESET} ${SLATE_400}S:${SLATE_300}${skills_count}${RESET} ${SLATE_400}W:${SLATE_300}${workflows_count}${RESET} ${SLATE_400}H:${SLATE_300}${hooks_count}${RESET}\n"
+        printf "${SLATE_600}── │${RESET} ${PAI_P}▲${RESET} ${PAI_A}Atlas${RESET} ${SLATE_600}│ ──────────────────${RESET}\n"
+        printf "${SLATE_400}\xee\x9e\x95${RESET} ${SLATE_400}\xee\xb8\x8d${RESET} ${PAI_A}${model_name}${RESET} ${SLATE_600}│${RESET} ${SLATE_500}PAI:${RESET} ${PAI_A}v${PAI_VERSION}${RESET} ${SLATE_600}│${RESET} ${SLATE_400}\xee\xb8\x9b${SLATE_300}${skills_count}${RESET} ${SLATE_400}\xef\x94\xae${SLATE_300}${workflows_count}${RESET} ${SLATE_400}\xf3\xb0\x9b\xa2${SLATE_300}${hooks_count}${RESET}\n"
         ;;
     mini)
-        printf "${SLATE_600}── │${RESET} ${PAI_P}P${PAI_A}A${PAI_I}I${RESET} ${PAI_A}STATUSLINE${RESET} ${SLATE_600}│ ────────────────────────────────────────${RESET}\n"
-        printf "${PAI_LABEL}LOC:${RESET} ${PAI_CITY}${location_city}${RESET}${SLATE_600},${RESET} ${PAI_STATE}${location_state}${RESET} ${SLATE_600}│${RESET} ${PAI_TIME}${current_time}${RESET} ${SLATE_600}│${RESET} ${PAI_WEATHER}${weather_str}${RESET}\n"
-        printf "${SLATE_400}ENV:${RESET} ${SLATE_400}CC:${RESET} ${PAI_A}${cc_version}${RESET} ${SLATE_600}│${RESET} ${SLATE_500}PAI:${RESET} ${PAI_A}v${PAI_VERSION}${RESET} ${SLATE_600}│${RESET} ${WIELD_ACCENT}Skills:${RESET}${SLATE_300}${skills_count}${RESET} ${WIELD_WORKFLOWS}Workflows:${RESET}${SLATE_300}${workflows_count}${RESET} ${WIELD_HOOKS}Hooks:${RESET}${SLATE_300}${hooks_count}${RESET}\n"
+        printf "${SLATE_600}── │${RESET} ${PAI_P}▲${RESET} ${PAI_A}Atlas${RESET} ${SLATE_600}│ ────────────────────────────────────────${RESET}\n"
+        printf "${SLATE_400}\xee\x9e\x95${RESET} ${SLATE_400}\xee\xb8\x8d${RESET} ${PAI_A}${model_name}${RESET} ${SLATE_600}│${RESET} ${SLATE_500}PAI:${RESET} ${PAI_A}v${PAI_VERSION}${RESET} ${SLATE_600}│${RESET} ${WIELD_ACCENT}\xee\xb8\x9b${RESET}${SLATE_300}${skills_count}${RESET} ${WIELD_WORKFLOWS}\xef\x94\xae${RESET}${SLATE_300}${workflows_count}${RESET} ${WIELD_HOOKS}\xf3\xb0\x9b\xa2${RESET}${SLATE_300}${hooks_count}${RESET}\n"
         ;;
     normal)
-        printf "${SLATE_600}── │${RESET} ${PAI_P}P${PAI_A}A${PAI_I}I${RESET} ${PAI_A}STATUSLINE${RESET} ${SLATE_600}│ ──────────────────────────────────────────────────${RESET}\n"
-        printf "${PAI_LABEL}LOC:${RESET} ${PAI_CITY}${location_city}${RESET}${SLATE_600},${RESET} ${PAI_STATE}${location_state}${RESET} ${SLATE_600}│${RESET} ${PAI_TIME}${current_time}${RESET} ${SLATE_600}│${RESET} ${PAI_WEATHER}${weather_str}${RESET}\n"
-        printf "${SLATE_400}ENV:${RESET} ${SLATE_400}CC:${RESET} ${PAI_A}${cc_version}${RESET} ${SLATE_600}│${RESET} ${SLATE_500}PAI:${RESET} ${PAI_A}v${PAI_VERSION}${RESET} ${SLATE_600}│${RESET} ${WIELD_ACCENT}Skills:${RESET} ${SLATE_300}${skills_count}${RESET} ${SLATE_600}│${RESET} ${WIELD_WORKFLOWS}Workflows:${RESET} ${SLATE_300}${workflows_count}${RESET} ${SLATE_600}│${RESET} ${WIELD_HOOKS}Hooks:${RESET} ${SLATE_300}${hooks_count}${RESET}\n"
+        printf "${SLATE_600}── │${RESET} ${PAI_P}▲${RESET} ${PAI_A}Atlas${RESET} ${SLATE_600}│ ─────────────────────────────────────────────────────────${RESET}\n"
+        printf "${SLATE_400}\xee\x9e\x95${RESET} ${SLATE_400}\xee\xb8\x8d${RESET} ${PAI_A}${model_name}${RESET} ${SLATE_600}│${RESET} ${SLATE_500}PAI:${RESET} ${PAI_A}v${PAI_VERSION}${RESET} ${SLATE_600}│${RESET} ${WIELD_ACCENT}\xee\xb8\x9b${RESET} ${SLATE_300}${skills_count}${RESET} ${SLATE_600}│${RESET} ${WIELD_WORKFLOWS}\xef\x94\xae${RESET} ${SLATE_300}${workflows_count}${RESET} ${SLATE_600}│${RESET} ${WIELD_HOOKS}\xf3\xb0\x9b\xa2${RESET} ${SLATE_300}${hooks_count}${RESET}\n"
         ;;
 esac
 printf "${SLATE_600}────────────────────────────────────────────────────────────────────────${RESET}\n"
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# LINE 1: CONTEXT
-# ═══════════════════════════════════════════════════════════════════════════════
-
-# Format duration
-duration_sec=$((duration_ms / 1000))
-if   [ "$duration_sec" -ge 3600 ]; then time_display="$((duration_sec / 3600))h$((duration_sec % 3600 / 60))m"
-elif [ "$duration_sec" -ge 60 ];   then time_display="$((duration_sec / 60))m$((duration_sec % 60))s"
-else time_display="${duration_sec}s"
-fi
-
-# Context display - scale to compaction threshold if configured
-context_max="${context_max:-200000}"
-max_k=$((context_max / 1000))
-
-# Read compaction threshold from settings (default 100 = no scaling)
-COMPACTION_THRESHOLD=$(jq -r '.contextDisplay.compactionThreshold // 100' "$SETTINGS_FILE" 2>/dev/null)
-COMPACTION_THRESHOLD="${COMPACTION_THRESHOLD:-100}"
-
-# Get raw percentage from Claude Code
-raw_pct="${context_pct%%.*}"  # Remove decimals
-[ -z "$raw_pct" ] && raw_pct=0
-
-# Scale percentage: if threshold is 62, then 62% raw = 100% displayed
-# Formula: display_pct = (raw_pct * 100) / threshold
-if [ "$COMPACTION_THRESHOLD" -lt 100 ] && [ "$COMPACTION_THRESHOLD" -gt 0 ]; then
-    display_pct=$((raw_pct * 100 / COMPACTION_THRESHOLD))
-    # Cap at 100% (could exceed if past compaction point)
-    [ "$display_pct" -gt 100 ] && display_pct=100
-else
-    display_pct="$raw_pct"
-fi
-
-# Color based on scaled percentage (same thresholds work for scaled 0-100%)
-if [ "$display_pct" -ge 80 ]; then
-    pct_color="$ROSE"                  # Red: 80%+ - getting full
-elif [ "$display_pct" -ge 60 ]; then
-    pct_color='\033[38;2;251;146;60m'  # Orange: 60-80%
-elif [ "$display_pct" -ge 40 ]; then
-    pct_color='\033[38;2;251;191;36m'  # Yellow: 40-60%
-else
-    pct_color="$EMERALD"               # Green: <40%
-fi
-
-# Calculate bar width to match statusline content width (72 chars)
-bar_width=$(calc_bar_width "$MODE")
-
-case "$MODE" in
-    nano)
-        bar=$(render_context_bar $bar_width $display_pct)
-        printf "${CTX_PRIMARY}◉${RESET} ${bar} ${pct_color}${display_pct}%%${RESET}\n"
-        ;;
-    micro)
-        bar=$(render_context_bar $bar_width $display_pct)
-        printf "${CTX_PRIMARY}◉${RESET} ${bar} ${pct_color}${display_pct}%%${RESET}\n"
-        ;;
-    mini)
-        bar=$(render_context_bar $bar_width $display_pct)
-        printf "${CTX_PRIMARY}◉${RESET} ${CTX_SECONDARY}CONTEXT:${RESET} ${bar} ${pct_color}${display_pct}%%${RESET}\n"
-        ;;
-    normal)
-        bar=$(render_context_bar $bar_width $display_pct)
-        printf "${CTX_PRIMARY}◉${RESET} ${CTX_SECONDARY}CONTEXT:${RESET} ${bar} ${pct_color}${display_pct}%%${RESET}\n"
-        ;;
-esac
-printf "${SLATE_600}────────────────────────────────────────────────────────────────────────${RESET}\n"
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# LINE 4: PWD & GIT STATUS
+# LINE 1: PWD & GIT STATUS
 # ═══════════════════════════════════════════════════════════════════════════════
 # NOTE: is_git_repo, branch, stash_count, modified, staged, untracked, total_changed,
 #       ahead, behind, last_commit_epoch are populated by PARALLEL PREFETCH
@@ -732,20 +664,20 @@ case "$MODE" in
         printf "\n"
         ;;
     normal)
-        printf "${GIT_PRIMARY}◈${RESET} ${GIT_PRIMARY}PWD:${RESET} ${GIT_DIR}${dir_name}${RESET}"
+        printf "${GIT_PRIMARY}◈${RESET} ${GIT_PRIMARY}\xf3\xb0\x9d\xb0${RESET} ${GIT_DIR}${dir_name}${RESET}"
         if [ "$is_git_repo" = true ]; then
-            printf " ${SLATE_600}│${RESET} ${GIT_PRIMARY}Branch:${RESET} ${GIT_VALUE}${branch}${RESET}"
-            [ -n "$age_display" ] && printf " ${SLATE_600}│${RESET} ${GIT_PRIMARY}Age:${RESET} ${age_color}${age_display}${RESET}"
-            [ "$stash_count" -gt 0 ] && printf " ${SLATE_600}│${RESET} ${GIT_PRIMARY}Stash:${RESET} ${GIT_STASH}${stash_count}${RESET}"
+            printf " ${SLATE_600}│${RESET} ${GIT_PRIMARY}\xef\x84\xa6${RESET} ${GIT_VALUE}${branch}${RESET}"
+            [ -n "$age_display" ] && printf " ${SLATE_600}│${RESET} ${GIT_PRIMARY}\xf3\xb0\xa5\x94${RESET} ${age_color}${age_display}${RESET}"
+            [ "$stash_count" -gt 0 ] && printf " ${SLATE_600}│${RESET} ${GIT_PRIMARY}\xef\x90\xa0${RESET} ${GIT_STASH}${stash_count}${RESET}"
             if [ "$total_changed" -gt 0 ] || [ "$untracked" -gt 0 ]; then
                 printf " ${SLATE_600}│${RESET} "
-                [ "$total_changed" -gt 0 ] && printf "${GIT_PRIMARY}Mod:${RESET} ${GIT_MODIFIED}${total_changed}${RESET}"
-                [ "$untracked" -gt 0 ] && { [ "$total_changed" -gt 0 ] && printf " "; printf "${GIT_PRIMARY}New:${RESET} ${GIT_ADDED}${untracked}${RESET}"; }
+                [ "$total_changed" -gt 0 ] && printf "${GIT_PRIMARY}\xf3\xb0\x9c\xa5${RESET} ${GIT_MODIFIED}${total_changed}${RESET}"
+                [ "$untracked" -gt 0 ] && { [ "$total_changed" -gt 0 ] && printf " "; printf "${GIT_PRIMARY}\xf3\xb0\x90\x95${RESET} ${GIT_ADDED}${untracked}${RESET}"; }
             else
                 printf " ${SLATE_600}│${RESET} ${GIT_CLEAN}✓ clean${RESET}"
             fi
             if [ "$ahead" -gt 0 ] || [ "$behind" -gt 0 ]; then
-                printf " ${SLATE_600}│${RESET} ${GIT_PRIMARY}Sync:${RESET} "
+                printf " ${SLATE_600}│${RESET} ${GIT_PRIMARY}\xf3\xb1\x8d\xb8${RESET} "
                 [ "$ahead" -gt 0 ] && printf "${GIT_CLEAN}↑${ahead}${RESET}"
                 [ "$behind" -gt 0 ] && printf "${GIT_STASH}↓${behind}${RESET}"
             fi
@@ -756,26 +688,93 @@ esac
 printf "${SLATE_600}────────────────────────────────────────────────────────────────────────${RESET}\n"
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# LINE 2: CONTEXT
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Format duration
+duration_sec=$((duration_ms / 1000))
+if   [ "$duration_sec" -ge 3600 ]; then time_display="$((duration_sec / 3600))h$((duration_sec % 3600 / 60))m"
+elif [ "$duration_sec" -ge 60 ];   then time_display="$((duration_sec / 60))m$((duration_sec % 60))s"
+else time_display="${duration_sec}s"
+fi
+
+# Context display - scale to compaction threshold if configured
+context_max="${context_max:-200000}"
+max_k=$((context_max / 1000))
+
+# Read compaction threshold from settings (default 100 = no scaling)
+COMPACTION_THRESHOLD=$(jq -r '.contextDisplay.compactionThreshold // 100' "$SETTINGS_FILE" 2>/dev/null)
+COMPACTION_THRESHOLD="${COMPACTION_THRESHOLD:-100}"
+
+# Get raw percentage from Claude Code
+raw_pct="${context_pct%%.*}"  # Remove decimals
+[ -z "$raw_pct" ] && raw_pct=0
+
+# Scale percentage: if threshold is 62, then 62% raw = 100% displayed
+# Formula: display_pct = (raw_pct * 100) / threshold
+if [ "$COMPACTION_THRESHOLD" -lt 100 ] && [ "$COMPACTION_THRESHOLD" -gt 0 ]; then
+    display_pct=$((raw_pct * 100 / COMPACTION_THRESHOLD))
+    # Cap at 100% (could exceed if past compaction point)
+    [ "$display_pct" -gt 100 ] && display_pct=100
+else
+    display_pct="$raw_pct"
+fi
+
+# Color based on scaled percentage (same thresholds work for scaled 0-100%)
+if [ "$display_pct" -ge 80 ]; then
+    pct_color="$ROSE"                  # Red: 80%+ - getting full
+elif [ "$display_pct" -ge 60 ]; then
+    pct_color='\033[38;2;251;146;60m'  # Orange: 60-80%
+elif [ "$display_pct" -ge 40 ]; then
+    pct_color='\033[38;2;251;191;36m'  # Yellow: 40-60%
+else
+    pct_color="$EMERALD"               # Green: <40%
+fi
+
+# Calculate bar width to match statusline content width (72 chars)
+bar_width=$(calc_bar_width "$MODE")
+
+case "$MODE" in
+    nano)
+        bar=$(render_context_bar $bar_width $display_pct)
+        printf "${CTX_PRIMARY}◉${RESET} ${bar} ${pct_color}${display_pct}%%${RESET}\n"
+        ;;
+    micro)
+        bar=$(render_context_bar $bar_width $display_pct)
+        printf "${CTX_PRIMARY}◉${RESET} ${bar} ${pct_color}${display_pct}%%${RESET}\n"
+        ;;
+    mini)
+        bar=$(render_context_bar $bar_width $display_pct)
+        printf "${CTX_PRIMARY}\xef\x81\xae${RESET} ${bar} ${pct_color}${display_pct}%%${RESET}\n"
+        ;;
+    normal)
+        bar=$(render_context_bar $bar_width $display_pct)
+        printf "${CTX_PRIMARY}\xef\x81\xae${RESET} ${bar} ${pct_color}${display_pct}%%${RESET}\n"
+        ;;
+esac
+printf "${SLATE_600}────────────────────────────────────────────────────────────────────────${RESET}\n"
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # LINE 5: MEMORY
 # ═══════════════════════════════════════════════════════════════════════════════
 
 case "$MODE" in
     nano)
-        printf "${LEARN_PRIMARY}◎${RESET} ${LEARN_WORK}📁${RESET}${SLATE_300}${work_count}${RESET} ${LEARN_SIGNALS}✦${RESET}${SLATE_300}${ratings_count}${RESET} ${LEARN_SESSIONS}⊕${RESET}${SLATE_300}${sessions_count}${RESET} ${LEARN_RESEARCH}◇${RESET}${SLATE_300}${research_count}${RESET}\n"
+        printf "${LEARN_PRIMARY}◎${RESET} ${LEARN_WORK}\xef\x81\xbc${RESET}${SLATE_300}${work_count}${RESET} ${LEARN_SIGNALS}✦${RESET}${SLATE_300}${ratings_count}${RESET} ${LEARN_SESSIONS}⊕${RESET}${SLATE_300}${sessions_count}${RESET} ${LEARN_RESEARCH}◇${RESET}${SLATE_300}${research_count}${RESET}\n"
         ;;
     micro)
-        printf "${LEARN_PRIMARY}◎${RESET} ${LEARN_WORK}📁${RESET}${SLATE_300}${work_count}${RESET} ${LEARN_SIGNALS}✦${RESET}${SLATE_300}${ratings_count}${RESET} ${LEARN_SESSIONS}⊕${RESET}${SLATE_300}${sessions_count}${RESET} ${LEARN_RESEARCH}◇${RESET}${SLATE_300}${research_count}${RESET}\n"
+        printf "${LEARN_PRIMARY}◎${RESET} ${LEARN_WORK}\xef\x81\xbc${RESET}${SLATE_300}${work_count}${RESET} ${LEARN_SIGNALS}✦${RESET}${SLATE_300}${ratings_count}${RESET} ${LEARN_SESSIONS}⊕${RESET}${SLATE_300}${sessions_count}${RESET} ${LEARN_RESEARCH}◇${RESET}${SLATE_300}${research_count}${RESET}\n"
         ;;
     mini)
-        printf "${LEARN_PRIMARY}◎${RESET} ${LEARN_SECONDARY}MEMORY:${RESET} "
-        printf "${LEARN_WORK}📁${RESET}${SLATE_300}${work_count}${RESET} "
+        printf "${LEARN_PRIMARY}\xee\xba\x9c${RESET} "
+        printf "${LEARN_WORK}\xef\x81\xbc${RESET}${SLATE_300}${work_count}${RESET} "
         printf "${SLATE_600}│${RESET} ${LEARN_SIGNALS}✦${RESET}${SLATE_300}${ratings_count}${RESET} "
         printf "${SLATE_600}│${RESET} ${LEARN_SESSIONS}⊕${RESET}${SLATE_300}${sessions_count}${RESET} "
         printf "${SLATE_600}│${RESET} ${LEARN_RESEARCH}◇${RESET}${SLATE_300}${research_count}${RESET}\n"
         ;;
     normal)
-        printf "${LEARN_PRIMARY}◎${RESET} ${LEARN_SECONDARY}MEMORY:${RESET} "
-        printf "${LEARN_WORK}📁${RESET}${SLATE_300}${work_count}${RESET} ${LEARN_WORK}Work${RESET} "
+        printf "${LEARN_PRIMARY}\xee\xba\x9c${RESET} "
+        printf "${LEARN_WORK}\xef\x81\xbc${RESET}${SLATE_300}${work_count}${RESET} ${LEARN_WORK}Work${RESET} "
         printf "${SLATE_600}│${RESET} ${LEARN_SIGNALS}✦${RESET}${SLATE_300}${ratings_count}${RESET} ${LEARN_SIGNALS}Ratings${RESET} "
         printf "${SLATE_600}│${RESET} ${LEARN_SESSIONS}⊕${RESET}${SLATE_300}${sessions_count}${RESET} ${LEARN_SESSIONS}Sessions${RESET} "
         printf "${SLATE_600}│${RESET} ${LEARN_RESEARCH}◇${RESET}${SLATE_300}${research_count}${RESET} ${LEARN_RESEARCH}Research${RESET}\n"
@@ -966,35 +965,28 @@ CACHE_EOF
                 printf "${LEARN_LABEL}✿${RESET} ${LATEST_COLOR}${latest}${RESET} ${SIGNAL_PERIOD}1h:${RESET} ${HOUR_COLOR}${hour_avg}${RESET} ${SIGNAL_PERIOD}1d:${RESET} ${TODAY_COLOR}${today_avg}${RESET} ${SIGNAL_PERIOD}1w:${RESET} ${WEEK_COLOR}${week_avg}${RESET}\n"
                 ;;
             mini)
-                printf "${LEARN_LABEL}✿${RESET} ${LEARN_LABEL}LEARNING:${RESET} ${SLATE_600}│${RESET} "
+                printf "${LEARN_LABEL}\xf3\xb0\x9b\xa8${RESET} ${SLATE_600}│${RESET} "
                 printf "${LATEST_COLOR}${latest}${RESET} "
                 printf "${SIGNAL_PERIOD}1h:${RESET} ${HOUR_COLOR}${hour_avg}${RESET} "
                 printf "${SIGNAL_PERIOD}1d:${RESET} ${TODAY_COLOR}${today_avg}${RESET} "
                 printf "${SIGNAL_PERIOD}1w:${RESET} ${WEEK_COLOR}${week_avg}${RESET}\n"
                 ;;
             normal)
-                printf "${LEARN_LABEL}✿${RESET} ${LEARN_LABEL}LEARNING:${RESET} ${SLATE_600}│${RESET} "
+                printf "${LEARN_LABEL}\xf3\xb0\x9b\xa8${RESET} ${SLATE_600}│${RESET} "
                 printf "${LATEST_COLOR}${latest}${RESET}${SLATE_500}${src_label}${RESET} ${SLATE_600}│${RESET} "
                 printf "${SIGNAL_PERIOD}15m:${RESET} ${Q15_COLOR}${q15_avg}${RESET} "
                 printf "${SIGNAL_PERIOD}60m:${RESET} ${HOUR_COLOR}${hour_avg}${RESET} "
                 printf "${SIGNAL_PERIOD}1d:${RESET} ${TODAY_COLOR}${today_avg}${RESET} "
                 printf "${SIGNAL_PERIOD}1w:${RESET} ${WEEK_COLOR}${week_avg}${RESET} "
                 printf "${SIGNAL_PERIOD}1mo:${RESET} ${MONTH_COLOR}${month_avg}${RESET}\n"
-
-                # Sparklines (condensed, no blank lines)
-                printf "   ${SLATE_600}├─${RESET} ${SIGNAL_PERIOD}%-5s${RESET} %s\n" "15m:" "$q15_sparkline"
-                printf "   ${SLATE_600}├─${RESET} ${SIGNAL_PERIOD}%-5s${RESET} %s\n" "60m:" "$hour_sparkline"
-                printf "   ${SLATE_600}├─${RESET} ${SIGNAL_PERIOD}%-5s${RESET} %s\n" "1d:" "$day_sparkline"
-                printf "   ${SLATE_600}├─${RESET} ${SIGNAL_PERIOD}%-5s${RESET} %s\n" "1w:" "$week_sparkline"
-                printf "   ${SLATE_600}└─${RESET} ${SIGNAL_PERIOD}%-5s${RESET} %s\n" "1mo:" "$month_sparkline"
                 ;;
         esac
     else
-        printf "${LEARN_LABEL}✿${RESET} ${LEARN_LABEL}LEARNING:${RESET}\n"
+        printf "${LEARN_LABEL}\xf3\xb0\x9b\xa8${RESET}\n"
         printf "  ${SLATE_500}No ratings yet${RESET}\n"
     fi
 else
-    printf "${LEARN_LABEL}✿${RESET} ${LEARN_LABEL}LEARNING:${RESET}\n"
+    printf "${LEARN_LABEL}\xf3\xb0\x9b\xa8${RESET}\n"
     printf "  ${SLATE_500}No ratings yet${RESET}\n"
 fi
 

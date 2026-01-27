@@ -96,4 +96,25 @@ You can include any of these in your status line:
 
 ---
 
-*Place custom scripts in this directory and reference them in settings.json.*
+## Themes
+
+Statusline themes are stored in the `themes/` subdirectory. Change theme in `settings.json`:
+
+```json
+{
+  "theme": "eldritch/dark"
+}
+```
+
+Available themes:
+- `default/tailwind` - Original PAI colors
+- `eldritch/dark` - Vibrant dark with cyan/green/purple
+- `rosepine/main` - Elegant dark with muted pastels
+- `rosepine/moon` - Darker Rosé Pine variant
+- `rosepine/dawn` - Light theme
+
+See `themes/README.md` for creating custom themes.
+
+---
+
+*Place custom scripts and themes in this directory.*
