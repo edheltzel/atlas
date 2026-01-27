@@ -664,20 +664,20 @@ case "$MODE" in
         printf "\n"
         ;;
     normal)
-        printf "${GIT_PRIMARY}◈${RESET} ${GIT_PRIMARY}\xf3\xb0\x9d\xb0${RESET} ${GIT_DIR}${dir_name}${RESET}"
+        printf "${GIT_DIR}◈${RESET} ${GIT_DIR}\xf3\xb0\x9d\xb0${RESET} ${GIT_DIR}${dir_name}${RESET}"
         if [ "$is_git_repo" = true ]; then
             printf " ${SLATE_600}│${RESET} ${GIT_PRIMARY}\xef\x84\xa6${RESET} ${GIT_VALUE}${branch}${RESET}"
-            [ -n "$age_display" ] && printf " ${SLATE_600}│${RESET} ${GIT_PRIMARY}\xf3\xb0\xa5\x94${RESET} ${age_color}${age_display}${RESET}"
-            [ "$stash_count" -gt 0 ] && printf " ${SLATE_600}│${RESET} ${GIT_PRIMARY}\xef\x90\xa0${RESET} ${GIT_STASH}${stash_count}${RESET}"
+            [ -n "$age_display" ] && printf " ${SLATE_600}│${RESET} ${SLATE_400}\xf3\xb0\xa5\x94${RESET} ${age_color}${age_display}${RESET}"
+            [ "$stash_count" -gt 0 ] && printf " ${SLATE_600}│${RESET} ${GIT_STASH}\xef\x90\xa0${RESET} ${GIT_STASH}${stash_count}${RESET}"
             if [ "$total_changed" -gt 0 ] || [ "$untracked" -gt 0 ]; then
                 printf " ${SLATE_600}│${RESET} "
-                [ "$total_changed" -gt 0 ] && printf "${GIT_PRIMARY}\xf3\xb0\x9c\xa5${RESET} ${GIT_MODIFIED}${total_changed}${RESET}"
-                [ "$untracked" -gt 0 ] && { [ "$total_changed" -gt 0 ] && printf " "; printf "${GIT_PRIMARY}\xf3\xb0\x90\x95${RESET} ${GIT_ADDED}${untracked}${RESET}"; }
+                [ "$total_changed" -gt 0 ] && printf "${GIT_MODIFIED}\xf3\xb0\x9c\xa5${RESET} ${GIT_MODIFIED}${total_changed}${RESET}"
+                [ "$untracked" -gt 0 ] && { [ "$total_changed" -gt 0 ] && printf " "; printf "${GIT_ADDED}\xf3\xb0\x90\x95${RESET} ${GIT_ADDED}${untracked}${RESET}"; }
             else
                 printf " ${SLATE_600}│${RESET} ${GIT_CLEAN}✓ clean${RESET}"
             fi
             if [ "$ahead" -gt 0 ] || [ "$behind" -gt 0 ]; then
-                printf " ${SLATE_600}│${RESET} ${GIT_PRIMARY}\xf3\xb1\x8d\xb8${RESET} "
+                printf " ${SLATE_600}│${RESET} ${GIT_CLEAN}\xf3\xb1\x8d\xb8${RESET} "
                 [ "$ahead" -gt 0 ] && printf "${GIT_CLEAN}↑${ahead}${RESET}"
                 [ "$behind" -gt 0 ] && printf "${GIT_STASH}↓${behind}${RESET}"
             fi
@@ -745,11 +745,11 @@ case "$MODE" in
         ;;
     mini)
         bar=$(render_context_bar $bar_width $display_pct)
-        printf "${CTX_PRIMARY}\xef\x81\xae${RESET} ${bar} ${pct_color}${display_pct}%%${RESET}\n"
+        printf "${CTX_PRIMARY}\xf3\xb0\x88\x88${RESET} ${bar} ${pct_color}${display_pct}%%${RESET}\n"
         ;;
     normal)
         bar=$(render_context_bar $bar_width $display_pct)
-        printf "${CTX_PRIMARY}\xef\x81\xae${RESET} ${bar} ${pct_color}${display_pct}%%${RESET}\n"
+        printf "${CTX_PRIMARY}\xf3\xb0\x88\x88${RESET} ${bar} ${pct_color}${display_pct}%%${RESET}\n"
         ;;
 esac
 printf "${SLATE_600}────────────────────────────────────────────────────────────────────────${RESET}\n"
