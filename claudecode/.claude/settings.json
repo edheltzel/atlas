@@ -17,7 +17,7 @@
 		"name": "Atlas",
 		"fullName": "Atlas - Personal AI",
 		"displayName": "Atlas",
-		"color": "#3B82F6",
+		"color": "#a48cf2",
 		"voiceId": "Ioq2c1GJee5RyqeoBIH3",
 		"voice": {
 			"stability": 0.35,
@@ -259,4 +259,3 @@
 		"pr": ""
 	}
 }
-
