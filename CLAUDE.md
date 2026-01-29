@@ -51,7 +51,7 @@ Each top-level directory is a "stow package" that mirrors the target filesystem 
 atlas/
 ├── claudecode/           # Stow package → symlinks to ~/
 │   └── .claude/          # Claude Code config dir
-│       ├── skills/       # 24 skills (CORE, Algorithm, etc.)
+│       ├── skills/       # 35+ skills (PAI core + skills.sh)
 │       ├── hooks/        # Lifecycle event handlers
 │       ├── VoiceServer/  # TTS notification server
 │       ├── MEMORY/       # Persistent memory system
@@ -76,7 +76,7 @@ Atlas is based on [Personal AI Infrastructure (PAI)](https://github.com/danielmi
 
 | Directory | Purpose |
 |-----------|---------|
-| `skills/` | 24 skill modules - each has SKILL.md that auto-loads via Skill tool |
+| `skills/` | 35+ skill modules (PAI + skills.sh) - each has SKILL.md that auto-loads via Skill tool |
 | `hooks/` | TypeScript hooks run via `bun run` at lifecycle events |
 | `Commands/` | Slash commands (/commit, /push, /pr, /observability, etc.) |
 | `Observability/` | Real-time agent monitoring dashboard (Vue 3 + Bun server) |
@@ -102,6 +102,26 @@ cd claudecode/.claude/Observability/MenuBarApp && ./build.sh
 
 See `Observability/CLAUDE.md` for full documentation.
 
+### Skills.sh Integration
+
+Atlas integrates with [skills.sh](https://skills.sh) (Vercel Labs) for community/official agent skills. Two skill types coexist:
+
+- **PAI skills** — Real directories in the Atlas repo, version controlled, managed by Stow
+- **skills.sh skills** — Symlinks in `~/.claude/skills/` → `~/.agents/skills/`, managed by `bunx skills`
+
+The `.gitignore` excludes skills.sh symlinks from the repo.
+
+**Stack installer slash commands:**
+
+| Command | Description |
+|---------|-------------|
+| `/find-skill [query]` | Search skills.sh registry for agent skills |
+| `/install-frontend` | Install 16 curated frontend skills (React, Tailwind, shadcn, web quality) |
+| `/install-backend` | Install 7 curated backend skills (Hono, Cloudflare, Postgres, Better Auth) |
+| `/install-devops` | Install 13 curated DevOps skills (Cloudflare platform, web quality, testing) |
+
+All installers target claude-code, opencode, and gemini-cli simultaneously using `bunx skills add` with `-a` flags.
+
 ### Stow Behavior
 
 - `.stow-local-ignore` controls which files are NOT symlinked (README, .git, node_modules, etc.)
@@ -112,11 +132,12 @@ See `Observability/CLAUDE.md` for full documentation.
 
 **Always use `bun`** - never npm/yarn/pnpm. Hooks and scripts are executed with `bun run`.
 
-## Two-Tool Design
+## Multi-Agent Design
 
-Atlas supports two AI coding assistants simultaneously:
+Atlas supports three AI coding agents:
 
 1. **Claude Code** (`claudecode/`) - Anthropic's official CLI
 2. **OpenCode** (`opencode/`) - Alternative AI coding tool
+3. **Gemini CLI** - Google's CLI (skills.sh managed, not Stow managed)
 
-Both share the same Stow-based management but have separate configuration structures.
+Claude Code and OpenCode use Stow-based management with separate configuration structures. Gemini CLI receives skills via skills.sh symlinks only.
