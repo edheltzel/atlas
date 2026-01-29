@@ -22,3 +22,75 @@ dist/
 # Memory and history (user-specific)
 **/MEMORY/
 **/history.jsonl
+
+# skills.sh managed skills (symlinks to ~/.agents/skills/)
+# These are installed via `bunx skills add` and managed externally.
+# Add new skill names here after installing via skills.sh.
+#
+# Global skills (anthropics/skills)
+claudecode/.claude/skills/pdf
+claudecode/.claude/skills/docx
+claudecode/.claude/skills/pptx
+claudecode/.claude/skills/xlsx
+claudecode/.claude/skills/skill-creator
+claudecode/.claude/skills/mcp-builder
+#
+# Global skills (vercel-labs/skills)
+claudecode/.claude/skills/find-skills
+#
+# Frontend stack (vercel-labs/agent-skills)
+claudecode/.claude/skills/vercel-react-best-practices
+claudecode/.claude/skills/vercel-composition-patterns
+claudecode/.claude/skills/web-design-guidelines
+claudecode/.claude/skills/vercel-react-native-skills
+#
+# Frontend stack (anthropics/skills)
+claudecode/.claude/skills/frontend-design
+claudecode/.claude/skills/web-artifacts-builder
+claudecode/.claude/skills/brand-guidelines
+claudecode/.claude/skills/theme-factory
+claudecode/.claude/skills/canvas-design
+claudecode/.claude/skills/webapp-testing
+#
+# UI quality (ibelick/ui-skills)
+claudecode/.claude/skills/baseline-ui
+claudecode/.claude/skills/fixing-accessibility
+claudecode/.claude/skills/fixing-metadata
+claudecode/.claude/skills/fixing-motion-performance
+#
+# Web quality (addyosmani/web-quality-skills)
+claudecode/.claude/skills/accessibility
+claudecode/.claude/skills/best-practices
+claudecode/.claude/skills/core-web-vitals
+claudecode/.claude/skills/performance
+claudecode/.claude/skills/seo
+claudecode/.claude/skills/web-quality-audit
+#
+# Video (remotion-dev/skills)
+claudecode/.claude/skills/remotion-best-practices
+#
+# Authentication (better-auth/skills)
+claudecode/.claude/skills/better-auth-best-practices
+claudecode/.claude/skills/create-auth-skill
+#
+# Backend stack
+claudecode/.claude/skills/hono
+claudecode/.claude/skills/cloudflare
+claudecode/.claude/skills/wrangler
+claudecode/.claude/skills/durable-objects
+claudecode/.claude/skills/web-perf
+claudecode/.claude/skills/agents-sdk
+claudecode/.claude/skills/building-mcp-server-on-cloudflare
+claudecode/.claude/skills/supabase-postgres-best-practices
+#
+# Marketing stack (coreyhaines31/marketingskills)
+claudecode/.claude/skills/seo-audit
+claudecode/.claude/skills/programmatic-seo
+claudecode/.claude/skills/copywriting
+claudecode/.claude/skills/copy-editing
+claudecode/.claude/skills/social-content
+claudecode/.claude/skills/email-sequence
+claudecode/.claude/skills/page-cro
+claudecode/.claude/skills/analytics-tracking
+claudecode/.claude/skills/content-strategy
+claudecode/.claude/skills/marketing-ideas
