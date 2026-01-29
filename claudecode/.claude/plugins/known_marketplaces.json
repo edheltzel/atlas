@@ -6,5 +6,13 @@
     },
     "installLocation": "/Users/ed/.claude/plugins/marketplaces/claude-code-plugins",
     "lastUpdated": "2026-01-25T18:53:11.350Z"
+  },
+  "superpowers": {
+    "source": {
+      "source": "github",
+      "repo": "obra/superpowers"
+    },
+    "installLocation": "/Users/ed/.claude/plugins/marketplaces/superpowers",
+    "lastUpdated": "2026-01-28T23:13:00.000Z"
   }
 }

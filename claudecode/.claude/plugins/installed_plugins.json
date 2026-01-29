@@ -22,6 +22,16 @@
         "gitCommitSha": "e9a9efc1211bbd0a50ac0128c84526e3e355255a",
         "projectPath": "/Users/ed/Developer/myChron/peptidewareApps/wiki"
       }
+    ],
+    "superpowers@superpowers": [
+      {
+        "scope": "global",
+        "installPath": "/Users/ed/.claude/plugins/cache/superpowers/superpowers/4.1.1",
+        "version": "4.1.1",
+        "installedAt": "2026-01-28T23:13:00.000Z",
+        "lastUpdated": "2026-01-28T23:13:00.000Z",
+        "gitCommitSha": "469a6d81ebb8b827e284d4afb090c6c622d97747"
+      }
     ]
   }
 }
