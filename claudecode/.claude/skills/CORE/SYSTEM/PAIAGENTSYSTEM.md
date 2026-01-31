@@ -133,6 +133,25 @@ Custom agents are composed on-the-fly from traits using ComposeAgent. Each uniqu
 
 ---
 
+## ⚠️ CRITICAL: Inline Context for Subagents
+
+**`@`-references do NOT cross `Task()` boundaries.** Subagents cannot see files referenced with `@path/to/file.md` in the parent context.
+
+When spawning subagents via Task tool, **inline all necessary context**:
+
+```typescript
+// ❌ WRONG - subagent can't read @-references
+Task({ prompt: "Use the spec at @docs/spec.md", subagent_type: "Engineer" })
+
+// ✅ RIGHT - read and inline the content
+const spec = await read("docs/spec.md");
+Task({ prompt: `Implement this:\n\n${spec}`, subagent_type: "Engineer" })
+```
+
+**What to inline:** ISC criteria, file contents, config values, success criteria. Heavy work in fresh subagent contexts = quality output.
+
+---
+
 ## Model Selection
 
 Always specify the appropriate model for agent work:

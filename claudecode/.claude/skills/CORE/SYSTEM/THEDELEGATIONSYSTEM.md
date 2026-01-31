@@ -52,6 +52,31 @@ Task({ prompt: "Design the distributed caching strategy", subagent_type: "Archit
 
 **Parallel tasks especially benefit from haiku** - launching 5 haiku agents is faster AND cheaper than 1 Opus agent doing sequential work.
 
+### Model Profiles (Cost/Quality Tradeoff)
+
+Three named profiles for consistent model selection across agents:
+
+| Profile | Planning | Execution | Verification | When to Use |
+|---------|----------|-----------|--------------|-------------|
+| **quality** | opus | opus | sonnet | Critical work, production deployments |
+| **balanced** | opus | sonnet | sonnet | Default for most work |
+| **budget** | sonnet | sonnet | haiku | Exploration, prototyping, high parallelism |
+
+**Usage:** Set profile at algorithm start, agents inherit. Override per-agent if needed.
+
+### Context Window Quality Thresholds
+
+Context window usage directly affects output quality. Monitor and act on these thresholds:
+
+| Context Usage | Quality Level | Action |
+|---------------|---------------|--------|
+| **0–30%** | **Peak** | Best work happens here. Tackle hard problems now. |
+| **30–50%** | **Good** | Standard work quality. Plans should target this range. |
+| **50–70%** | **Degrading** | Quality declining. Delegate remaining work to fresh subagents. |
+| **70%+** | **Poor** | Stop. Spawn fresh subagent for any remaining work. |
+
+**Auto-Delegation Rule:** When context exceeds 50%, remaining ISC criteria should be delegated to fresh subagents with their own 200K token windows. The orchestrator stays lean.
+
 ### Agent Types
 
 The Intern Agent is your high-agency genius generalist - perfect for parallel execution:
@@ -101,6 +126,43 @@ When delegating, ALWAYS include:
 2. WHAT the current state is (existing implementation)
 3. EXACTLY what to do (precise actions, file paths, patterns)
 4. SUCCESS CRITERIA (what output should look like)
+
+### ⚠️ CRITICAL: Inline Context Pattern
+
+**`@path/to/file.md` references do NOT work across `Task()` boundaries.**
+
+Subagents spawned via the Task tool cannot see `@`-references from the parent context. All necessary context must be **inlined into the subagent prompt**.
+
+**WRONG:**
+```typescript
+Task({
+  prompt: "Implement the feature described in @docs/spec.md",
+  subagent_type: "Engineer"
+})
+// Subagent cannot read @docs/spec.md — it sees literal text "@docs/spec.md"
+```
+
+**RIGHT:**
+```typescript
+const spec = await read("docs/spec.md");
+Task({
+  prompt: `Implement this feature:
+
+${spec}
+
+Create the component in src/components/Feature.tsx`,
+  subagent_type: "Engineer"
+})
+// Subagent receives the actual content
+```
+
+**What to inline:**
+- ISC criteria the subagent is working on
+- Relevant file contents (read first, paste into prompt)
+- Configuration values (don't reference, include them)
+- Success criteria (explicit in the prompt)
+
+**This is why orchestrators stay lean** — they read context, inline it into subagent prompts, and delegate. Heavy work happens in fresh subagent contexts.
 
 ---
 

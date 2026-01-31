@@ -13,6 +13,43 @@ Supports three AI coding agents: **Claude Code**, **OpenCode**, and **Gemini CLI
 
 Based on [PAI (Personal AI Infrastructure)](https://github.com/danielmiessler/Personal_AI_Infrastructure) by Daniel Miessler.
 
+## Integrated Frameworks
+
+Atlas integrates patterns from three complementary systems:
+
+| Layer | Framework | What It Provides |
+|-------|-----------|-----------------|
+| **Infrastructure** | Atlas/PAI | ISC hill-climbing algorithm, voice notifications, observability, 38 skills |
+| **Engineering Discipline** | [Superpowers](https://github.com/obra/superpowers) | TDD enforcement, two-stage code review, anti-rationalization guards |
+| **Project Management** | [GSD](https://github.com/glittercowboy/get-shit-done) | Context quality thresholds, model profiles, goal-backward derivation (patterns only, no runtime) |
+
+### Superpowers Plugin (v4.1.1)
+
+Installed as a Claude Code plugin at `~/.claude/plugins/cache/superpowers/`. Provides 14 engineering discipline skills:
+
+- **TDD** — Iron Law test-driven development with rationalization counters
+- **Systematic Debugging** — 4-phase root cause analysis with find-polluter.sh
+- **Verification Before Completion** — No claims without fresh evidence
+- **Two-Stage Code Review** — Spec compliance THEN code quality
+- **Brainstorming** — Socratic one-question-at-a-time design refinement
+- **Writing/Executing Plans** — Bite-sized tasks with exact file paths
+- **Git Worktrees** — Isolated workspace creation
+- **Subagent-Driven Development** — Fresh context per task
+
+### GSD Patterns (Native Implementation)
+
+Seven patterns cherry-picked and implemented natively in Atlas (no GSD runtime dependency):
+
+| Pattern | Location | Purpose |
+|---------|----------|---------|
+| Context Quality Thresholds | `THEDELEGATIONSYSTEM.md` | 0-30% peak, 50%+ delegate to subagents |
+| Model Profiles | `THEDELEGATIONSYSTEM.md` | quality/balanced/budget per-agent models |
+| Deviation Rules | `Engineer.md`, `THEALGORITHM` | Auto-fix bugs, escalate architecture |
+| Gray Area Scanning | `THEALGORITHM` | Identify ambiguous decisions by domain |
+| Goal-Backward Derivation | `THEALGORITHM` | Observable → Artifact → Wiring → Link |
+| Confirmation Gates | `THEALGORITHM` | Approval checkpoints by effort level |
+| Inline Context Pattern | `THEDELEGATIONSYSTEM.md` | @-refs don't cross Task() boundaries |
+
 ## Quick Start
 
 ```bash
@@ -30,8 +67,10 @@ make stow pkg=opencode
 atlas/
 ├── claudecode/               # Claude Code package
 │   └── .claude/
-│       ├── skills/           # 35+ skill modules (PAI + skills.sh)
-│       ├── hooks/            # Lifecycle event handlers
+│       ├── skills/           # 38 PAI skills + skills.sh integrations
+│       ├── plugins/          # Superpowers v4.1.1 (14 skills)
+│       ├── hooks/            # 16 lifecycle event handlers
+│       ├── agents/           # 12 named agent definitions
 │       ├── Commands/         # Slash commands (/commit, /push, etc.)
 │       ├── Observability/    # Agent monitoring dashboard
 │       ├── VoiceServer/      # TTS notification server

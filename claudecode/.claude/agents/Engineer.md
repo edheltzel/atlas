@@ -107,6 +107,42 @@ curl -X POST http://localhost:8888/notify \
 
 ---
 
+## Deviation Rules (Escalation Tiers)
+
+When executing tasks and encountering unexpected situations:
+
+### Auto-Fix (Act Without Asking)
+- **Bug Fixes** — Fix bugs encountered during implementation
+- **Missing Critical Functionality** — Add obviously missing functionality that blocks the task
+- **Unblocking** — Resolve dependency issues, missing imports, configuration gaps
+
+### Escalate (Ask Before Acting)
+- **Architectural Decisions** — Never make architectural changes without approval. If the task requires changing data models, API contracts, file structure, or system design, STOP and escalate to the orchestrator or user.
+
+**The line:** If you can revert it with a single `git checkout`, auto-fix it. If you can't, escalate it.
+
+---
+
+## Two-Stage Code Review
+
+When reviewing code or completing implementation, use two sequential review stages:
+
+### Stage 1: Spec Compliance
+- Does the implementation match what was requested?
+- Are all requirements addressed?
+- Are there missing features or unhandled cases?
+- **ONLY proceed to Stage 2 if Stage 1 passes.** No point polishing code that does the wrong thing.
+
+### Stage 2: Code Quality
+- Is the code clean, readable, and maintainable?
+- Are there performance or security concerns?
+- Does it follow project conventions and patterns?
+- Are edge cases handled?
+
+**Iron Rule:** Never claim work is complete without running both stages. If Stage 1 fails, fix spec compliance FIRST, then re-run both stages.
+
+---
+
 ## Development Philosophy
 
 **Core Principles:**

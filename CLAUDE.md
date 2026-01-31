@@ -51,8 +51,10 @@ Each top-level directory is a "stow package" that mirrors the target filesystem 
 atlas/
 ├── claudecode/           # Stow package → symlinks to ~/
 │   └── .claude/          # Claude Code config dir
-│       ├── skills/       # 35+ skills (PAI core + skills.sh)
-│       ├── hooks/        # Lifecycle event handlers
+│       ├── skills/       # 38 PAI skills
+│       ├── plugins/      # Superpowers + marketplace plugins
+│       ├── agents/       # 12 named agent definitions
+│       ├── hooks/        # 16 lifecycle event handlers
 │       ├── VoiceServer/  # TTS notification server
 │       ├── MEMORY/       # Persistent memory system
 │       └── settings.json # Configuration
@@ -65,6 +67,34 @@ atlas/
         └── opencode.json # Configuration
 ```
 
+## Integrated Frameworks
+
+Atlas combines patterns from three complementary systems forming a "three-layer stack":
+
+| Layer | Framework | Purpose |
+|-------|-----------|---------|
+| **Infrastructure** | Atlas/PAI | ISC algorithm, voice, observability, 38 skills |
+| **Engineering Discipline** | Superpowers (plugin) | TDD, two-stage review, anti-rationalization |
+| **Project Management** | GSD (patterns only) | Context thresholds, model profiles, gates |
+
+### Superpowers Plugin (v4.1.1)
+
+Installed at `~/.claude/plugins/cache/superpowers/`. Provides 14 engineering skills including TDD, systematic debugging, verification-before-completion, and brainstorming.
+
+**Invoke with:** `"use superpowers"`, `"use TDD"`, `"help me debug"`
+
+### GSD Patterns (Native)
+
+Seven patterns implemented natively (no GSD runtime):
+
+- **Context Quality Thresholds** — 0-30% peak, 50%+ triggers delegation
+- **Model Profiles** — quality/balanced/budget per-agent model selection
+- **Deviation Rules** — Auto-fix bugs, escalate architectural decisions
+- **Gray Area Scanning** — Identify ambiguous decisions before planning
+- **Goal-Backward Derivation** — Observable → Artifact → Wiring → Link
+- **Confirmation Gates** — Approval checkpoints at phase transitions
+- **Inline Context Pattern** — @-refs don't cross Task() boundaries
+
 ## PAI Reference
 
 Atlas is based on [Personal AI Infrastructure (PAI)](https://github.com/danielmiessler/Personal_AI_Infrastructure) by Daniel Miessler. For coding standards, architecture patterns, and system design reference:
@@ -76,13 +106,14 @@ Atlas is based on [Personal AI Infrastructure (PAI)](https://github.com/danielmi
 
 | Directory | Purpose |
 |-----------|---------|
-| `skills/` | 35+ skill modules (PAI + skills.sh) - each has SKILL.md that auto-loads via Skill tool |
-| `hooks/` | TypeScript hooks run via `bun run` at lifecycle events |
+| `skills/` | 38 PAI skill modules - each has SKILL.md with "USE WHEN" triggers |
+| `plugins/` | Superpowers v4.1.1 (14 engineering skills) + marketplace plugins |
+| `hooks/` | 16 TypeScript hooks run via `bun run` at lifecycle events |
+| `agents/` | 12 named agent definitions with voice mappings |
 | `Commands/` | Slash commands (/commit, /push, /pr, /observability, etc.) |
 | `Observability/` | Real-time agent monitoring dashboard (Vue 3 + Bun server) |
 | `VoiceServer/` | ElevenLabs/Google TTS server for voice notifications |
 | `MEMORY/` | Persistent state, learnings, and session history |
-| `agents/` | Named agent definitions with voice mappings |
 | `USER/` | User-specific configs (name, preferences) |
 | `PAISECURITYSYSTEM/` | Security patterns and command validation |
 

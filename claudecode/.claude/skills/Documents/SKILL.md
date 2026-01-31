@@ -1,298 +1,175 @@
 ---
 name: Documents
-description: Document processing. USE WHEN document, process file. SkillSearch('documents') for docs.
+description: USE WHEN document, process file.
 ---
+
+# Documents
+
+Documentation creation and management skill. Handles both agent-context documentation (CLAUDE.md) and human-readable documentation (README.md), plus document file processing.
 
 ## Customization
 
 **Before executing, check for user customizations at:**
 `~/.claude/skills/CORE/USER/SKILLCUSTOMIZATIONS/Documents/`
 
-If this directory exists, load and apply any PREFERENCES.md, configurations, or resources found there. These override default behavior. If the directory does not exist, proceed with skill defaults.
+If this directory exists, load and apply any PREFERENCES.md, configurations, or resources found there. These override default behavior.
 
+## Workflow Routing
 
-## 🚨 MANDATORY: Voice Notification (REQUIRED BEFORE ANY ACTION)
+| Trigger | Workflow |
+|---------|----------|
+| "update docs", "document changes" | Auto-detect and update |
+| "update README", "readme" | README.md workflow |
+| "update CLAUDE.md", "claude docs" | CLAUDE.md workflow |
+| "document this skill" | Skill documentation workflow |
+| "docx", "Word document" | `Docx/SKILL.md` |
+| "pdf", "PDF file" | `Pdf/SKILL.md` |
+| "pptx", "PowerPoint" | `Pptx/SKILL.md` |
+| "xlsx", "Excel", "spreadsheet" | `Xlsx/SKILL.md` |
 
-**You MUST send this notification BEFORE doing anything else when this skill is invoked.**
+## Auto-Detection Workflow
 
-1. **Send voice notification**:
+When triggered without specific target:
+
+1. **Analyze recent changes:**
    ```bash
-   curl -s -X POST http://localhost:8888/notify \
-     -H "Content-Type: application/json" \
-     -d '{"message": "Running the WORKFLOWNAME workflow in the Documents skill to ACTION"}' \
-     > /dev/null 2>&1 &
+   git diff --name-only HEAD~5 2>/dev/null || git diff --name-only
    ```
 
-2. **Output text notification**:
-   ```
-   Running the **WorkflowName** workflow in the **Documents** skill to ACTION...
-   ```
+2. **Categorize changes:**
+   - Skills modified → Update CLAUDE.md + skill SKILL.md
+   - Commands added → Update CLAUDE.md
+   - Configuration changed → Update both
+   - Architecture changes → Update both
+   - New integrations → Update both
 
-**This is not optional. Execute this curl command immediately upon skill invocation.**
+3. **Update in order:**
+   - CLAUDE.md first (agent context)
+   - README.md second (human docs)
+   - Specific SKILL.md files as needed
 
-# Documents Skill
+## CLAUDE.md Workflow
 
-## 🎯 Load Full CORE Context
+**Purpose:** Agent context — what AI needs to work with this codebase.
 
-**Before starting any task with this skill, load complete CORE context:**
+**Structure:**
+```markdown
+# CLAUDE.md
 
-`read ~/.claude/skills/CORE/SKILL.md`
+## Overview
+[Brief description of the project]
 
+## Architecture
+[Directory structure, key patterns]
 
-## When to Activate This Skill
+## Key Files
+[Important files and their purposes]
 
-### Word Documents (DOCX)
-- User wants to create, edit, or analyze Word documents
-- User mentions "tracked changes", "redlining", "document review"
-- User needs to convert documents to other formats
-- User wants to work with document structure, comments, or formatting
+## Commands
+[Available commands and how to use them]
 
-### PDF Files
-- User wants to create, merge, split, or manipulate PDFs
-- User mentions "extract text from PDF", "PDF tables", "fill PDF form"
-- User needs to convert PDFs to/from other formats
-- User wants to add watermarks, passwords, or extract images
+## Conventions
+[Coding patterns, naming conventions, gotchas]
 
-### PowerPoint Presentations (PPTX)
-- User wants to create or edit presentations
-- User mentions "slides", "presentation template", "speaker notes"
-- User needs to convert presentations to other formats
-- User wants to work with slide layouts or design elements
+## Integrations
+[External systems, APIs, dependencies]
+```
 
-### Excel Spreadsheets (XLSX)
-- User wants to create or edit spreadsheets
-- User mentions "formulas", "financial model", "data analysis"
-- User needs to work with Excel tables, charts, or pivot tables
-- User wants to convert spreadsheets to/from other formats
+**Content guidelines:**
+- Focus on what AI needs to know to work effectively
+- Include file paths, patterns, and relationships
+- Document gotchas and non-obvious behaviors
+- Keep concise but comprehensive
 
-## 🔀 Document Type Routing
+## README.md Workflow
 
-This skill organizes document processing across 4 document types:
+**Purpose:** Human documentation — setup, usage, getting started.
 
-### Word Documents (DOCX)
+**Structure:**
+```markdown
+# Project Name
 
-**Reference Documentation:**
-- `docx/SKILL.md` - Complete DOCX processing guide
-- `docx/docx-js.md` - Creating new documents with JavaScript
-- `docx/ooxml.md` - Editing existing documents with OOXML
+## Overview
+[What this project does]
 
-**Routing Logic:**
-- "Create Word document", "new docx" → Create workflow (docx-js)
-- "Edit Word document", "tracked changes", "redlining" → Edit workflow (OOXML)
-- "Read Word document", "extract text from docx" → Read workflow (pandoc)
-- "Document review", "track changes" → Redlining workflow
+## Quick Start
+[Fastest path to running/using]
 
-**Supporting Resources:**
-- Scripts: `~/.claude/skills/documents/docx/Scripts/`
-- OOXML tools: `~/.claude/skills/documents/docx/ooxml/`
-- License: `~/.claude/skills/documents/docx/LICENSE.txt`
+## Installation
+[Detailed setup instructions]
 
-**Key Capabilities:**
-- Create professional documents with docx-js
-- Edit with tracked changes (redlining workflow)
-- Extract text/comments with pandoc
-- Convert to images for visual inspection
-- Work with raw OOXML for advanced features
+## Usage
+[How to use the project]
 
-### PDF Processing
+## Architecture
+[High-level system design]
 
-**Reference Documentation:**
-- `pdf/SKILL.md` - Complete PDF processing guide
-- `pdf/forms.md` - Filling PDF forms
-- `pdf/reference.md` - Advanced features and troubleshooting
+## Contributing
+[How to contribute]
+```
 
-**Routing Logic:**
-- "Create PDF" → Creation workflow (reportlab)
-- "Merge PDFs", "split PDF" → Manipulation workflow (pypdf)
-- "Extract text from PDF" → Extraction workflow (pdfplumber)
-- "Fill PDF form" → Forms workflow (pdf-lib or pypdf)
-- "Extract tables from PDF" → Table extraction (pdfplumber + pandas)
+**Content guidelines:**
+- Prioritize getting started quickly
+- Include code examples
+- Explain the "why" not just the "what"
+- Use tables for quick reference
 
-**Supporting Resources:**
-- Scripts: `~/.claude/skills/documents/pdf/Scripts/`
-- License: `~/.claude/skills/documents/pdf/LICENSE.txt`
+## Skill Documentation Workflow
 
-**Key Capabilities:**
-- Create PDFs with reportlab
-- Extract text/tables with pdfplumber
-- Merge/split with pypdf or qpdf
-- Fill forms programmatically
-- Add watermarks and password protection
-- Extract images from PDFs
+For documenting a specific skill:
 
-### PowerPoint Presentations (PPTX)
+1. **Read existing SKILL.md** if present
+2. **Analyze skill structure:**
+   - Workflows/ directory
+   - Tools/ directory
+   - Context files
+3. **Update SKILL.md with:**
+   - Accurate workflow routing table
+   - USE WHEN triggers (no workflow summaries!)
+   - Examples section
+   - Quick reference
 
-**Reference Documentation:**
-- `pptx/SKILL.md` - Complete PPTX processing guide
-- `pptx/html2pptx.md` - Creating presentations from HTML
-- `pptx/ooxml.md` - Editing existing presentations
+## Document Format Reference
 
-**Routing Logic:**
-- "Create presentation", "new slides" → Creation workflow (html2pptx)
-- "Edit presentation", "modify slides" → Edit workflow (OOXML)
-- "Use presentation template" → Template workflow
-- "Extract slide text" → Read workflow (markitdown)
-- "Create thumbnail grid" → Thumbnail workflow
+For processing document files (not code documentation):
+- **DOCX:** See `Docx/SKILL.md`
+- **PDF:** See `Pdf/SKILL.md`
+- **PPTX:** See `Pptx/SKILL.md`
+- **XLSX:** See `Xlsx/SKILL.md`
 
-**Supporting Resources:**
-- Scripts: `~/.claude/skills/documents/pptx/Scripts/`
-- OOXML tools: `~/.claude/skills/documents/pptx/ooxml/`
-- License: `~/.claude/skills/documents/pptx/LICENSE.txt`
+## Documentation Principles
 
-**Key Capabilities:**
-- Create presentations with html2pptx (HTML → PPTX)
-- Professional design with color palettes and layouts
-- Edit with OOXML for advanced features
-- Work with templates (rearrange, inventory, replace)
-- Generate thumbnail grids for visual analysis
-- Convert to images for inspection
-
-### Excel Spreadsheets (XLSX)
-
-**Reference Documentation:**
-- `xlsx/SKILL.md` - Complete XLSX processing guide
-- `xlsx/recalc.py` - Formula recalculation script
-
-**Routing Logic:**
-- "Create spreadsheet", "new Excel file" → Creation workflow (openpyxl)
-- "Edit spreadsheet", "modify Excel" → Edit workflow (openpyxl)
-- "Analyze data", "read Excel" → Analysis workflow (pandas)
-- "Financial model", "formulas" → Financial modeling workflow
-- "Recalculate formulas" → Recalculation workflow (recalc.py)
-
-**Supporting Resources:**
-- Recalc script: `~/.claude/skills/documents/xlsx/recalc.py`
-- License: `~/.claude/skills/documents/xlsx/LICENSE.txt`
-
-**Key Capabilities:**
-- Create spreadsheets with formulas (openpyxl)
-- Data analysis with pandas
-- Financial modeling with color coding standards
-- Formula recalculation with LibreOffice
-- Error detection and validation
-- Preserve formatting and formulas when editing
-
-## 📋 Document Processing Principles
-
-### DOCX Best Practices
-1. **Tracked Changes** - Use redlining workflow for professional document review
-2. **Minimal Edits** - Only mark text that actually changes, preserve original RSIDs
-3. **Batch Changes** - Group related edits (3-10 changes) for efficient processing
-4. **Verification** - Always convert to markdown to verify changes applied correctly
-
-### PDF Best Practices
-1. **Library Selection** - pypdf for basic ops, pdfplumber for text/tables, reportlab for creation
-2. **OCR for Scanned** - Use pytesseract + pdf2image for scanned documents
-3. **Form Filling** - Follow forms.md for programmatic form completion
-4. **Command Line** - Use qpdf/pdftotext for simple operations
-
-### PPTX Best Practices
-1. **Design First** - Analyze content and choose appropriate colors/layouts before coding
-2. **Web-Safe Fonts** - Only use web-safe fonts (Arial, Helvetica, Times, etc.)
-3. **Visual Verification** - Always generate thumbnails to inspect layout issues
-4. **Template Analysis** - Create inventory before using templates to understand structure
-
-### XLSX Best Practices
-1. **Use Formulas** - ALWAYS use Excel formulas, NEVER hardcode calculated values
-2. **Zero Errors** - Deliver with zero formula errors (#REF!, #DIV/0!, etc.)
-3. **Recalculate** - Run recalc.py after creating/editing to update formula values
-4. **Financial Standards** - Follow color coding (blue inputs, black formulas, green links)
+1. **Agent vs Human:** CLAUDE.md for AI context, README.md for humans
+2. **Level of detail:** Comprehensive but not overwhelming
+3. **Don't duplicate:** Reference other docs, don't copy
+4. **Keep current:** Documentation should reflect actual state
+5. **Examples:** Show don't just tell
 
 ## Examples
 
-**Example 1: Create proposal with tracked changes**
+**Example 1: Auto-update after feature work**
 ```
-User: "Create a consulting proposal doc with redlining"
-→ Routes to DOCX workflows
-→ Creates document with docx-js
-→ Enables tracked changes for review workflow
-→ Outputs professional .docx with revision marks
-```
-
-**Example 2: Fill a PDF form programmatically**
-```
-User: "Fill out this NDA PDF with my info"
-→ Routes to PDF workflows
-→ Reads form fields from PDF
-→ Fills fields programmatically with pdf-lib
-→ Outputs completed, flattened PDF
+User: "/docs"
+→ Analyzes git diff
+→ Sees new skill added, commands modified
+→ Updates CLAUDE.md with skill location and patterns
+→ Updates README.md with new command usage
 ```
 
-**Example 3: Build financial model spreadsheet**
+**Example 2: Focus on README only**
 ```
-User: "Create a revenue projection spreadsheet"
-→ Routes to XLSX workflows
-→ Creates workbook with openpyxl
-→ Adds formulas (never hardcoded values)
-→ Runs recalc.py to update calculations
+User: "/docs readme"
+→ Reads current README.md
+→ Checks for outdated sections
+→ Updates with current state
+→ Adds any missing sections
 ```
 
-## 🔗 Integration with Other Skills
-
-### Feeds Into:
-- **writing** skill - Creating documents for blog posts and newsletters
-- **business** skill - Creating consulting proposals and financial models
-- **research** skill - Extracting data from research documents
-
-### Uses:
-- **media** skill - Creating images for document illustrations
-- **development** skill - Building document processing automation
-- **system** skill - Command-line tools and scripting
-
-## 🎯 Key Principles
-
-### Document Creation
-1. **Quality First** - Professional formatting and structure from the start
-2. **Template Reuse** - Leverage existing templates when available
-3. **Validation** - Always verify output (visual inspection, error checking)
-4. **Automation** - Use scripts for repetitive tasks
-
-### Document Editing
-1. **Preserve Intent** - Maintain original formatting and structure
-2. **Track Changes** - Use proper workflows for document review
-3. **Batch Processing** - Group related operations for efficiency
-4. **Error Prevention** - Validate before finalizing
-
-### Document Analysis
-1. **Right Tool** - Choose appropriate library/tool for the task
-2. **Data Integrity** - Preserve original data when extracting/converting
-3. **Format Awareness** - Understand document structure (OOXML, PDF structure, etc.)
-4. **Performance** - Use efficient methods for large documents
-
-## 📚 Full Reference Documentation
-
-**Word Documents (DOCX):**
-- Main Guide: `~/.claude/skills/documents/docx/SKILL.md`
-- Creation Reference: `~/.claude/skills/documents/docx/docx-js.md`
-- Editing Reference: `~/.claude/skills/documents/docx/ooxml.md`
-
-**PDF Processing:**
-- Main Guide: `~/.claude/skills/documents/pdf/SKILL.md`
-- Forms Guide: `~/.claude/skills/documents/pdf/forms.md`
-- Advanced Reference: `~/.claude/skills/documents/pdf/reference.md`
-
-**PowerPoint Presentations (PPTX):**
-- Main Guide: `~/.claude/skills/documents/pptx/SKILL.md`
-- Creation Reference: `~/.claude/skills/documents/pptx/html2pptx.md`
-- Editing Reference: `~/.claude/skills/documents/pptx/ooxml.md`
-
-**Excel Spreadsheets (XLSX):**
-- Main Guide: `~/.claude/skills/documents/xlsx/SKILL.md`
-- Recalc Script: `~/.claude/skills/documents/xlsx/recalc.py`
-
----
-
-## Summary
-
-**The documents skill provides comprehensive document processing:**
-
-- **DOCX** - Create, edit, analyze Word documents with tracked changes support
-- **PDF** - Create, manipulate, extract from PDFs with form filling capabilities
-- **PPTX** - Create, edit presentations with professional design and templates
-- **XLSX** - Create, edit spreadsheets with formulas and financial modeling
-
-**Reference-based organization** - Each document type has complete guides and tooling
-
-**Routing is automatic** - Analyzes user intent and activates appropriate document type workflow
-
-**Professional quality** - Standards and best practices for production-ready documents
+**Example 3: Document a skill**
+```
+User: "/docs ~/.claude/skills/Research"
+→ Reads skill directory structure
+→ Analyzes workflows and tools
+→ Updates SKILL.md with accurate routing
+→ Ensures USE WHEN triggers are correct
+```

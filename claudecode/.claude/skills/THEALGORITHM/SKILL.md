@@ -1,6 +1,6 @@
 ---
 name: THEALGORITHM
-description: Universal execution engine using scientific method to achieve ideal state. USE WHEN complex tasks, multi-step work, "run the algorithm", "use the algorithm", OR any non-trivial request that benefits from structured execution with ISC (Ideal State Criteria) tracking.
+description: USE WHEN complex tasks, multi-step work, run the algorithm, use the algorithm, non-trivial request, structured execution, ISC tracking.
 ---
 
 ## Customization
@@ -124,6 +124,25 @@ bun run ~/.claude/skills/THEALGORITHM/Tools/ISCManager.ts show
 
 **Higher effort = larger, higher quality ISC.** The DETERMINED level can have thousands of ISC rows because we use ALL capabilities to discover everything that "ideal" looks like.
 
+### Goal-Backward Derivation (RECOMMENDED for ISC Creation)
+
+When creating ISC rows, derive BACKWARD from the ideal outcome, not forward from the task description:
+
+1. **Observable Truths** — What will the user see/experience when this is done? (User-perspective behaviors)
+2. **Required Artifacts** — What specific files, components, or outputs must exist?
+3. **Required Wiring** — What connections between components must be in place? (imports, API calls, data flow)
+4. **Key Links** — What are the critical break points where failure would cascade?
+
+**Example:** User asks "Add dark mode"
+- ❌ Forward: "Implement dark mode toggle" (vague, not verifiable)
+- ✅ Backward:
+  - Observable: "User sees toggle in settings, theme changes instantly"
+  - Artifact: "ThemeProvider component exists in src/providers/"
+  - Wiring: "All components consume theme context, no hardcoded colors"
+  - Key Link: "Theme persists across page reload via localStorage"
+
+Each derivation level becomes ISC rows with built-in verification criteria.
+
 ## The 7 Phases
 
 Execute IN ORDER. Each phase mutates the ISC:
@@ -139,6 +158,27 @@ Execute IN ORDER. Each phase mutates the ISC:
 | **LEARN** | Output for user to rate | OUTPUT results | User rates for memory system |
 
 **CRITICAL:** The LEARN phase does NOT self-rate. User rates outputs for the memory system.
+
+### THINK Phase: Gray Area Scanning
+
+Before creating ISC rows in PLAN, the THINK phase must identify **ambiguous implementation decisions** that need user input. Scan by domain:
+
+| Domain | Gray Areas to Surface |
+|--------|----------------------|
+| **Visual/UI** | Layout, density, spacing, responsive breakpoints, animation |
+| **API/Backend** | Response format, error handling, auth strategy, rate limits |
+| **Data/Schema** | Field types, validation rules, migration strategy, indexing |
+| **Integration** | Which service, auth method, retry policy, fallback behavior |
+| **UX Flow** | Multi-step vs single page, confirmation dialogs, error recovery |
+
+**Process:**
+1. Classify the request domain(s)
+2. Check applicable gray areas
+3. For each unresolved gray area: add to ISC as a `BLOCKED` row requiring user input
+4. Ask user via AskUserQuestion BEFORE proceeding to PLAN
+5. Convert resolved gray areas into concrete ISC rows
+
+**Why:** Prevents building the wrong thing. An hour of wrong-direction work is worse than 2 minutes of clarification.
 
 ## The ISC Table (FRONT AND CENTER)
 
@@ -289,6 +329,73 @@ Iteration count bounded by effort level:
 - THOROUGH: 3-5 iterations
 - DETERMINED: Unlimited until success
 ```
+
+## Phase Transition Gates
+
+Explicit approval checkpoints prevent wasted work. Gates scale with effort level:
+
+| Gate | Transition | QUICK | STANDARD | THOROUGH+ |
+|------|-----------|-------|----------|-----------|
+| **Approach Gate** | PLAN → BUILD | Skip | Auto | **User approval required** |
+| **Implementation Gate** | BUILD → EXECUTE | Skip | Auto | **User approval required** |
+| **Completeness Gate** | EXECUTE → VERIFY | Auto | Auto | Auto |
+| **Destructive Action Gate** | Any phase | **Always require** | **Always require** | **Always require** |
+| **External Service Gate** | Any phase | **Always require** | **Always require** | **Always require** |
+
+**Gate Rules:**
+- **Auto** gates proceed without asking unless red flags are detected
+- **User approval** gates use AskUserQuestion with the proposed approach
+- **Destructive** and **External** gates ALWAYS require confirmation regardless of effort level
+- Destructive = file deletion, database changes, git force operations
+- External = API calls to third-party services, deployments, publishes
+
+## Anti-Rationalization Guards (VERIFY Phase)
+
+AI agents — including you — systematically rationalize skipping verification steps. These guards are non-negotiable:
+
+### Iron Laws of Verification
+
+1. **No completion without fresh evidence.** "I already checked" is not evidence. Re-verify with actual tool output.
+2. **Delete means delete.** If something was removed, confirm it's actually gone. Don't assume.
+3. **Claiming done without verification is dishonesty, not efficiency.** Every DONE status requires proof.
+4. **The implementer finished suspiciously quickly.** Be skeptical of fast completions — verify actual output, not claims.
+5. **Tests passing ≠ feature working.** Tests can be wrong. Browser/manual verification is the ground truth.
+
+### Rationalization Red Flags
+
+When you catch yourself thinking any of these, STOP and verify instead:
+
+| Rationalization | Reality |
+|----------------|---------|
+| "This is straightforward, no need to verify" | Straightforward things fail all the time |
+| "I just wrote this, I know it works" | You know what you *intended*. Verify what *happened*. |
+| "The tests pass, so it's done" | Tests verify what you tested. Verify the actual requirement. |
+| "I'll verify at the end" | You'll forget or run out of context. Verify NOW. |
+| "The previous step guarantees this works" | Nothing is guaranteed. Check it. |
+| "It's just a small change" | Small changes cause big failures |
+
+### Verification Protocol
+
+For every ISC row marked DONE:
+1. State the **evidence** (tool output, file content, test result, screenshot)
+2. Evidence must be from **this session** (not cached or remembered)
+3. If evidence cannot be produced, status reverts to ACTIVE
+
+## Deviation Rules (EXECUTE Phase)
+
+When subagents encounter unexpected situations during execution:
+
+### Auto-Fix (Act Autonomously)
+- **Bug Fixes** — Fix bugs that block the current ISC row
+- **Missing Critical Functionality** — Add obviously missing code that the ISC row requires
+- **Unblocking** — Resolve imports, dependencies, configuration gaps
+
+### Escalate (Return to Orchestrator)
+- **Architectural Decisions** — Changing data models, API contracts, file structure, system design
+- **Scope Expansion** — The task requires more than the ISC row specified
+- **Conflicting Requirements** — Two ISC rows contradict each other
+
+**The line:** If you can revert it with `git checkout`, auto-fix. If you can't, escalate.
 
 ## Integration
 

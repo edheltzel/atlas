@@ -1,6 +1,6 @@
 ---
 name: install-frontend
-description: Install the curated frontend skill stack for a project. React, Next.js, Tailwind, shadcn, design systems, and Anthropic frontend-design. USE WHEN install frontend skills, frontend stack, setup frontend, new frontend project, react project setup.
+description: USE WHEN install frontend skills, frontend stack, setup frontend, new frontend project, react project setup.
 ---
 
 # Install Frontend Stack
@@ -10,11 +10,25 @@ Installs the curated frontend development skill stack into the current project f
 ## Curated Skill List
 
 ### Core Frontend (vercel-labs/agent-skills)
+
+**Reference:** [Vercel Design Guidelines](https://vercel.com/design/guidelines) — the authoritative source for web interface standards.
+
 | Skill | Purpose |
 |-------|---------|
 | `vercel-react-best-practices` | 40+ React/Next.js performance rules across 8 categories |
 | `vercel-composition-patterns` | Compound components, state lifting, scalable architecture |
-| `web-design-guidelines` | 100+ rules for accessibility, performance, and UX |
+| `web-design-guidelines` | 100+ rules covering the 7 guideline categories below |
+
+#### Vercel Guidelines Categories
+| Category | Key Rules |
+|----------|-----------|
+| **Interactions** | Keyboard accessibility, focus management, 44px touch targets, semantic links |
+| **Animations** | Respect `prefers-reduced-motion`, GPU-accelerated properties, interruptible |
+| **Layout** | Alignment, responsiveness, intrinsic sizing, scrollbar handling |
+| **Content** | Skeletons, empty states, typography, help text, content resilience |
+| **Forms** | Input behavior, validation, autofill, password manager compatibility |
+| **Performance** | <500ms network, virtualization for lists, font optimization |
+| **Design** | Shadows, borders, contrast ratios, color schemes, gradients |
 
 ### Design & Implementation (anthropics/skills)
 | Skill | Purpose |
@@ -128,7 +142,33 @@ bunx skills find heroui
 
 Present any results found and offer to install them.
 
-### Step 5: Verify
+### Step 5: Create AGENTS.md (if not present)
+
+Per [Vercel guidelines](https://vercel.com/design/guidelines), projects should include an `AGENTS.md` to enable design guideline checks during AI code generation.
+
+Check if `AGENTS.md` exists in project root. If not, create it:
+
+```markdown
+# AGENTS.md
+
+## Web Interface Guidelines
+
+This project follows the [Vercel Design Guidelines](https://vercel.com/design/guidelines).
+
+When generating or reviewing UI code, apply these standards:
+
+- **Interactions**: All flows keyboard-operable, 44px mobile touch targets, semantic `<a>`/`<Link>` elements
+- **Animations**: Respect `prefers-reduced-motion`, use `transform`/`opacity` for GPU acceleration
+- **Layout**: Responsive, handle variable content lengths, proper scrollbar styling
+- **Content**: Skeleton loaders, meaningful empty states, accessible typography
+- **Forms**: Proper labels, validation feedback, autofill/password manager support
+- **Performance**: Network requests <500ms, virtualize large lists, optimize fonts
+- **Design**: Proper contrast ratios, consistent shadows/borders, dark mode support
+
+Use `/web-design-guidelines` skill for code review.
+```
+
+### Step 6: Verify
 
 Run `bunx skills list` to confirm all skills were installed. Report the final state.
 
