@@ -1,35 +1,13 @@
 {
   "version": 2,
   "plugins": {
-    "frontend-design@claude-code-plugins": [
-      {
-        "scope": "project",
-        "installPath": "/Users/ed/.claude/plugins/cache/claude-code-plugins/frontend-design/1.0.0",
-        "version": "1.0.0",
-        "installedAt": "2026-01-25T18:53:11.350Z",
-        "lastUpdated": "2026-01-25T18:53:11.350Z",
-        "gitCommitSha": "e9a9efc1211bbd0a50ac0128c84526e3e355255a",
-        "projectPath": "/Users/ed/Developer/myChron/peptidewareApps/wiki"
-      }
-    ],
-    "ralph-wiggum@claude-code-plugins": [
-      {
-        "scope": "project",
-        "installPath": "/Users/ed/.claude/plugins/cache/claude-code-plugins/ralph-wiggum/1.0.0",
-        "version": "1.0.0",
-        "installedAt": "2026-01-25T18:53:11.371Z",
-        "lastUpdated": "2026-01-25T18:53:11.371Z",
-        "gitCommitSha": "e9a9efc1211bbd0a50ac0128c84526e3e355255a",
-        "projectPath": "/Users/ed/Developer/myChron/peptidewareApps/wiki"
-      }
-    ],
     "superpowers@superpowers": [
       {
-        "scope": "global",
+        "scope": "user",
         "installPath": "/Users/ed/.claude/plugins/cache/superpowers/superpowers/4.1.1",
         "version": "4.1.1",
-        "installedAt": "2026-01-28T23:13:00.000Z",
-        "lastUpdated": "2026-01-28T23:13:00.000Z",
+        "installedAt": "2026-01-29T14:32:49.845Z",
+        "lastUpdated": "2026-01-29T14:32:49.845Z",
         "gitCommitSha": "469a6d81ebb8b827e284d4afb090c6c622d97747"
       }
     ]

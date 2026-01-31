@@ -1,261 +1,264 @@
 {
-	"$schema": "https://json.schemastore.org/claude-code-settings.json",
-	"paiVersion": "2.4",
-	"env": {
-		"PAI_DIR": "/Users/ed/.claude",
-		"PROJECTS_DIR": "",
-		"CLAUDE_CODE_MAX_OUTPUT_TOKENS": "80000",
-		"BASH_DEFAULT_TIMEOUT_MS": "600000"
-	},
-	"contextFiles": [
-		"skills/CORE/SKILL.md",
-		"skills/CORE/SYSTEM/AISTEERINGRULES.md",
-		"skills/CORE/USER/AISTEERINGRULES.md",
-		"skills/CORE/USER/DAIDENTITY.md"
-	],
-	"daidentity": {
-		"name": "Atlas",
-		"fullName": "Atlas - Personal AI",
-		"displayName": "Atlas",
-		"color": "#a48cf2",
-		"voiceId": "Ioq2c1GJee5RyqeoBIH3",
-		"voice": {
-			"stability": 0.35,
-			"similarity_boost": 0.8,
-			"style": 0.9,
-			"speed": 1.1,
-			"use_speaker_boost": true,
-			"volume": 0.8,
-			"fallbackVoice": "Daniel (Enhanced)"
-		},
-		"startupCatchphrase": "Hello Ed. Atlas standing by."
-	},
-	"principal": {
-		"name": "Ed",
-		"timezone": "America/New_York"
-	},
-	"pai": {
-		"repoUrl": "github.com/danielmiessler/PAI",
-		"version": "2.4"
-	},
-	"techStack": {
-		"terminal": "Kitty",
-		"packageManager": "bun",
-		"pythonPackageManager": "uv",
-		"language": "TypeScript"
-	},
-	"theme": "eldritch/dark",
-	"permissions": {
-		"allow": [
-			"Bash",
-			"Read",
-			"Write",
-			"Edit",
-			"MultiEdit",
-			"Glob",
-			"Grep",
-			"LS",
-			"WebFetch",
-			"WebSearch",
-			"NotebookRead",
-			"NotebookEdit",
-			"TodoWrite",
-			"ExitPlanMode",
-			"Task",
-			"Skill",
-			"mcp__*"
-		],
-		"deny": [],
-		"ask": [
-			"Bash(rm -rf /)",
-			"Bash(rm -rf /:*)",
-			"Bash(sudo rm -rf /)",
-			"Bash(sudo rm -rf /:*)",
-			"Bash(rm -rf ~)",
-			"Bash(rm -rf ~:*)",
-			"Bash(rm -rf ~/.claude)",
-			"Bash(rm -rf ~/.claude:*)",
-			"Bash(diskutil eraseDisk:*)",
-			"Bash(diskutil zeroDisk:*)",
-			"Bash(diskutil partitionDisk:*)",
-			"Bash(diskutil apfs deleteContainer:*)",
-			"Bash(diskutil apfs eraseVolume:*)",
-			"Bash(dd if=/dev/zero:*)",
-			"Bash(mkfs:*)",
-			"Bash(gh repo delete:*)",
-			"Bash(gh repo edit --visibility public:*)",
-			"Bash(git push --force:*)",
-			"Bash(git push -f:*)",
-			"Bash(git push origin --force:*)",
-			"Bash(git push origin -f:*)",
-			"Read(~/.ssh/id_*)",
-			"Read(~/.ssh/*.pem)",
-			"Read(~/.aws/credentials)",
-			"Read(~/.gnupg/private*)",
-			"Write(~/.claude/settings.json)",
-			"Edit(~/.claude/settings.json)",
-			"Write(~/.ssh/*)",
-			"Edit(~/.ssh/*)"
-		],
-		"defaultMode": "default"
-	},
-	"enableAllProjectMcpServers": true,
-	"enabledMcpjsonServers": [],
-	"hooks": {
-		"PreToolUse": [
-			{
-				"matcher": "Bash",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "${PAI_DIR}/hooks/SecurityValidator.hook.ts"
-					}
-				]
-			},
-			{
-				"matcher": "Edit",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "${PAI_DIR}/hooks/SecurityValidator.hook.ts"
-					}
-				]
-			},
-			{
-				"matcher": "Write",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "${PAI_DIR}/hooks/SecurityValidator.hook.ts"
-					}
-				]
-			},
-			{
-				"matcher": "Read",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "${PAI_DIR}/hooks/SecurityValidator.hook.ts"
-					}
-				]
-			},
-			{
-				"matcher": "AskUserQuestion",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "${PAI_DIR}/hooks/SetQuestionTab.hook.ts"
-					}
-				]
-			}
-		],
-		"PostToolUse": [
-			{
-				"matcher": "AskUserQuestion",
-				"hooks": [
-					{
-						"type": "command",
-						"command": "${PAI_DIR}/hooks/QuestionAnswered.hook.ts"
-					}
-				]
-			}
-		],
-		"SessionEnd": [
-			{
-				"hooks": [
-					{
-						"type": "command",
-						"command": "${PAI_DIR}/hooks/WorkCompletionLearning.hook.ts"
-					},
-					{
-						"type": "command",
-						"command": "${PAI_DIR}/hooks/SessionSummary.hook.ts"
-					}
-				]
-			}
-		],
-		"UserPromptSubmit": [
-			{
-				"hooks": [
-					{
-						"type": "command",
-						"command": "${PAI_DIR}/hooks/FormatReminder.hook.ts"
-					},
-					{
-						"type": "command",
-						"command": "${PAI_DIR}/hooks/AutoWorkCreation.hook.ts"
-					},
-					{
-						"type": "command",
-						"command": "${PAI_DIR}/hooks/ExplicitRatingCapture.hook.ts"
-					},
-					{
-						"type": "command",
-						"command": "${PAI_DIR}/hooks/ImplicitSentimentCapture.hook.ts"
-					},
-					{
-						"type": "command",
-						"command": "${PAI_DIR}/hooks/UpdateTabTitle.hook.ts"
-					}
-				]
-			}
-		],
-		"SessionStart": [
-			{
-				"hooks": [
-					{
-						"type": "command",
-						"command": "${PAI_DIR}/hooks/StartupGreeting.hook.ts"
-					},
-					{
-						"type": "command",
-						"command": "${PAI_DIR}/hooks/LoadContext.hook.ts"
-					},
-					{
-						"type": "command",
-						"command": "${PAI_DIR}/hooks/CheckVersion.hook.ts"
-					}
-				]
-			}
-		],
-		"Stop": [
-			{
-				"hooks": [
-					{
-						"type": "command",
-						"command": "${PAI_DIR}/hooks/StopOrchestrator.hook.ts"
-					}
-				]
-			}
-		],
-		"SubagentStop": [
-			{
-				"hooks": [
-					{
-						"type": "command",
-						"command": "${PAI_DIR}/hooks/AgentOutputCapture.hook.ts"
-					}
-				]
-			}
-		]
-	},
-	"statusLine": {
-		"type": "command",
-		"command": "${PAI_DIR}/statusline-command.sh"
-	},
-	"alwaysThinkingEnabled": true,
-	"_docs": {
-		"_overview": "SETTINGS.JSON - Central configuration for PAI. Works out of the box. Run install wizard to customize.",
-		"_sections": {
-			"daidentity": "AI identity (name, voice). Customize via install wizard.",
-			"principal": "Your identity. Run 'bun run install.ts' to set your name.",
-			"permissions": "Pre-configured for security and usability.",
-			"hooks": "Hook configuration for lifecycle events."
-		}
-	},
-	"max_tokens": 4096,
-	"attribution": {
-		"commit": "",
-		"pr": ""
-	}
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "env": {
+    "PAI_DIR": "/Users/ed/.claude",
+    "PROJECTS_DIR": "",
+    "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "80000",
+    "BASH_DEFAULT_TIMEOUT_MS": "600000"
+  },
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "permissions": {
+    "allow": [
+      "Bash",
+      "Read",
+      "Write",
+      "Edit",
+      "MultiEdit",
+      "Glob",
+      "Grep",
+      "LS",
+      "WebFetch",
+      "WebSearch",
+      "NotebookRead",
+      "NotebookEdit",
+      "TodoWrite",
+      "ExitPlanMode",
+      "Task",
+      "Skill",
+      "mcp__*"
+    ],
+    "deny": [],
+    "ask": [
+      "Bash(rm -rf /)",
+      "Bash(rm -rf /:*)",
+      "Bash(sudo rm -rf /)",
+      "Bash(sudo rm -rf /:*)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -rf ~:*)",
+      "Bash(rm -rf ~/.claude)",
+      "Bash(rm -rf ~/.claude:*)",
+      "Bash(diskutil eraseDisk:*)",
+      "Bash(diskutil zeroDisk:*)",
+      "Bash(diskutil partitionDisk:*)",
+      "Bash(diskutil apfs deleteContainer:*)",
+      "Bash(diskutil apfs eraseVolume:*)",
+      "Bash(dd if=/dev/zero:*)",
+      "Bash(mkfs:*)",
+      "Bash(gh repo delete:*)",
+      "Bash(gh repo edit --visibility public:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git push origin --force:*)",
+      "Bash(git push origin -f:*)",
+      "Read(~/.ssh/id_*)",
+      "Read(~/.ssh/*.pem)",
+      "Read(~/.aws/credentials)",
+      "Read(~/.gnupg/private*)",
+      "Write(~/.claude/settings.json)",
+      "Edit(~/.claude/settings.json)",
+      "Write(~/.ssh/*)",
+      "Edit(~/.ssh/*)"
+    ],
+    "defaultMode": "default"
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [],
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/SecurityValidator.hook.ts"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/SecurityValidator.hook.ts"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/SecurityValidator.hook.ts"
+          }
+        ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/SecurityValidator.hook.ts"
+          }
+        ]
+      },
+      {
+        "matcher": "AskUserQuestion",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/SetQuestionTab.hook.ts"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "AskUserQuestion",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/QuestionAnswered.hook.ts"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/WorkCompletionLearning.hook.ts"
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/SessionSummary.hook.ts"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/FormatReminder.hook.ts"
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/AutoWorkCreation.hook.ts"
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/ExplicitRatingCapture.hook.ts"
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/ImplicitSentimentCapture.hook.ts"
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/UpdateTabTitle.hook.ts"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/StartupGreeting.hook.ts"
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/LoadContext.hook.ts"
+          },
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/CheckVersion.hook.ts"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/StopOrchestrator.hook.ts"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/AgentOutputCapture.hook.ts"
+          }
+        ]
+      }
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "${PAI_DIR}/statusline-command.sh"
+  },
+  "enabledPlugins": {
+    "superpowers@superpowers": true
+  },
+  "alwaysThinkingEnabled": true,
+  "paiVersion": "2.4",
+  "contextFiles": [
+    "skills/CORE/SKILL.md",
+    "skills/CORE/SYSTEM/AISTEERINGRULES.md",
+    "skills/CORE/USER/AISTEERINGRULES.md",
+    "skills/CORE/USER/DAIDENTITY.md"
+  ],
+  "daidentity": {
+    "name": "Atlas",
+    "fullName": "Atlas - Personal AI",
+    "displayName": "Atlas",
+    "color": "#a48cf2",
+    "voiceId": "Ioq2c1GJee5RyqeoBIH3",
+    "voice": {
+      "stability": 0.35,
+      "similarity_boost": 0.8,
+      "style": 0.9,
+      "speed": 1.1,
+      "use_speaker_boost": true,
+      "volume": 0.8,
+      "fallbackVoice": "Daniel (Enhanced)"
+    },
+    "startupCatchphrase": "Hello Ed. Atlas standing by."
+  },
+  "principal": {
+    "name": "Ed",
+    "timezone": "America/New_York"
+  },
+  "pai": {
+    "repoUrl": "github.com/danielmiessler/PAI",
+    "version": "2.4"
+  },
+  "techStack": {
+    "terminal": "Kitty",
+    "packageManager": "bun",
+    "pythonPackageManager": "uv",
+    "language": "TypeScript"
+  },
+  "theme": "eldritch/dark",
+  "_docs": {
+    "_overview": "SETTINGS.JSON - Central configuration for PAI. Works out of the box. Run install wizard to customize.",
+    "_sections": {
+      "daidentity": "AI identity (name, voice). Customize via install wizard.",
+      "principal": "Your identity. Run 'bun run install.ts' to set your name.",
+      "permissions": "Pre-configured for security and usability.",
+      "hooks": "Hook configuration for lifecycle events."
+    }
+  },
+  "max_tokens": 4096
 }
