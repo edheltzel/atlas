@@ -1,6 +1,6 @@
 ---
 name: WebAssessment
-description: Web security assessment. USE WHEN web assessment, pentest, security testing, vulnerability scan. SkillSearch('webassessment') for docs.
+description: USE WHEN web assessment, pentest, security testing, vulnerability scan.
 ---
 
 ## Customization

@@ -1,6 +1,6 @@
 ---
 name: install-backend
-description: Install the curated backend skill stack for a project. Bun, Hono, Cloudflare Workers, D1, Postgres, SQLite. USE WHEN install backend skills, backend stack, setup backend, new backend project, api project setup, hono project, cloudflare workers project.
+description: USE WHEN install backend skills, backend stack, setup backend, new backend project, api project setup, hono project, cloudflare workers project.
 ---
 
 # Install Backend Stack

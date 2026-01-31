@@ -1,6 +1,6 @@
 ---
 name: Xlsx
-description: Excel file processing. USE WHEN xlsx, Excel, spreadsheet. SkillSearch('xlsx') for docs.
+description: USE WHEN xlsx, Excel, spreadsheet.
 ---
 
 # Requirements for Outputs

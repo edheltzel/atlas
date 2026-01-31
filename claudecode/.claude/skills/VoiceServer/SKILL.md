@@ -1,6 +1,6 @@
 ---
 name: VoiceServer
-description: Voice server management. USE WHEN voice server, TTS server, voice notification, prosody.
+description: USE WHEN voice server, TTS server, voice notification, prosody.
 ---
 
 ## Customization

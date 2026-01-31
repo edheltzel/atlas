@@ -1,6 +1,6 @@
 ---
 name: PrivateInvestigator
-description: Ethical people-finding. USE WHEN find person, locate, reconnect, people search, skip trace. SkillSearch('privateinvestigator') for docs.
+description: USE WHEN find person, locate, reconnect, people search, skip trace.
 ---
 
 ## Customization

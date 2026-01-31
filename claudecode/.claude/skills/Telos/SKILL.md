@@ -1,6 +1,6 @@
 ---
 name: Telos
-description: Life OS and project analysis. USE WHEN TELOS, life goals, projects, dependencies, books, movies. SkillSearch('telos') for docs.
+description: USE WHEN Telos, life goals, projects, dependencies, books, movies.
 ---
 
 # Telos

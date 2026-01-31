@@ -1,6 +1,6 @@
 ---
 name: Aphorisms
-description: Aphorism management. USE WHEN aphorism, quote, saying. SkillSearch('aphorisms') for docs.
+description: USE WHEN aphorism, quote, saying.
 ---
 
 ## Customization

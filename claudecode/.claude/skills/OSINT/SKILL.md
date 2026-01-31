@@ -1,6 +1,6 @@
 ---
 name: OSINT
-description: Open source intelligence gathering. USE WHEN OSINT, due diligence, background check, research person, company intel, investigate. SkillSearch('osint') for docs.
+description: USE WHEN OSINT, due diligence, background check, research person, company intel, investigate.
 ---
 
 ## Customization

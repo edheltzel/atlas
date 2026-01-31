@@ -1,6 +1,6 @@
 ---
 name: install-devops
-description: Install the curated DevOps and infrastructure skill stack for a project. Cloudflare Workers, Pages, R2, D1, deployment, CI/CD, security. USE WHEN install devops skills, devops stack, setup devops, infrastructure skills, deployment skills, cloudflare project setup.
+description: USE WHEN install devops skills, devops stack, setup devops, infrastructure skills, deployment skills, cloudflare project setup.
 ---
 
 # Install DevOps Stack

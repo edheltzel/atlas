@@ -1,6 +1,6 @@
 ---
 name: System
-description: System maintenance with three core operations - integrity check (find/fix broken references), document session (current transcript), document recent (catch-up since last update). Plus security workflows. USE WHEN integrity check, audit system, document session, document this session, document today, document recent, catch up docs, what's undocumented, check for secrets, security scan, privacy check, OR asking about past work ("we just worked on", "remember when we").
+description: USE WHEN integrity check, audit system, document session, document this session, document today, document recent, catch up docs, what's undocumented, check for secrets, security scan, privacy check, past work recall.
 ---
 
 ## Customization

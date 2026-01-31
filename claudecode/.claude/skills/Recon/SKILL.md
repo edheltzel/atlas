@@ -1,6 +1,6 @@
 ---
 name: Recon
-description: Security reconnaissance. USE WHEN recon, reconnaissance, bug bounty, attack surface. SkillSearch('recon') for docs.
+description: USE WHEN recon, reconnaissance, bug bounty, attack surface.
 ---
 
 ## Customization

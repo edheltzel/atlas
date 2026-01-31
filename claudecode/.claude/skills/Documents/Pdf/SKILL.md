@@ -1,6 +1,6 @@
 ---
 name: Pdf
-description: PDF processing. USE WHEN pdf, PDF file. SkillSearch('pdf') for docs.
+description: USE WHEN pdf, PDF file.
 ---
 
 # PDF Processing Guide

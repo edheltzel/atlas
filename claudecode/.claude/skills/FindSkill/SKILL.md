@@ -1,6 +1,6 @@
 ---
 name: find-skill
-description: Search the skills.sh registry for agent skills matching a query. USE WHEN find skill, search skill, discover skill, is there a skill for, skill for X, need a skill.
+description: USE WHEN find skill, search skill, discover skill, is there a skill for, skill for X, need a skill.
 argument-hint: "[query]"
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: CreateCLI
-description: Generate TypeScript CLIs. USE WHEN create CLI, build CLI, command-line tool. SkillSearch('createcli') for docs.
+description: USE WHEN create CLI, build CLI, command-line tool.
 ---
 
 ## Customization

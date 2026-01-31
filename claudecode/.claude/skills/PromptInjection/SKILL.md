@@ -1,6 +1,6 @@
 ---
 name: PromptInjection
-description: Prompt injection testing. USE WHEN prompt injection, jailbreak, LLM security, AI security assessment, pentest AI application, test chatbot vulnerabilities.
+description: USE WHEN prompt injection, jailbreak, LLM security, AI security assessment, pentest AI application, test chatbot vulnerabilities.
 ---
 
 ## Customization
