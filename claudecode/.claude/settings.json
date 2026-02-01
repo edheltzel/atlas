@@ -251,6 +251,31 @@
     "language": "TypeScript"
   },
   "theme": "eldritch/dark",
+  "voiceServer": {
+    "tts": {
+      "provider": "kokoro",
+      "providers": {
+        "elevenlabs": {
+          "enabled": false,
+          "apiKey": "${ELEVENLABS_API_KEY}",
+          "defaultVoiceId": "s3TPKV1kjDlVtZbl4Ksh",
+          "description": "Premium cloud TTS - requires API key from elevenlabs.io"
+        },
+        "kokoro": {
+          "enabled": true,
+          "endpoint": "http://127.0.0.1:8880/v1",
+          "defaultVoice": "af_sky",
+          "description": "Local TTS - free, offline, no API key needed"
+        },
+        "say": {
+          "enabled": true,
+          "voice": "Daniel (Enhanced)",
+          "description": "macOS built-in - always available fallback"
+        }
+      },
+      "fallbackOrder": ["kokoro", "elevenlabs", "say"]
+    }
+  },
   "_docs": {
     "_overview": "SETTINGS.JSON - Central configuration for PAI. Works out of the box. Run install wizard to customize.",
     "_sections": {
@@ -265,8 +290,8 @@
     "skills": 34,
     "workflows": 142,
     "hooks": 18,
-    "signals": 397,
+    "signals": 414,
     "files": 59,
-    "updatedAt": "2026-02-01T19:50:52.406Z"
+    "updatedAt": "2026-02-01T21:57:49.344Z"
   }
 }

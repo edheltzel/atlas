@@ -11,7 +11,11 @@
       "stability": 0.50,
       "similarity_boost": 0.75,
       "description": "UK Male - Expressive eager buddy: genuinely excited to help, animated celebrations, warm and enthusiastic partner",
-      "type": "Premium"
+      "type": "Premium",
+      "kokoro": {
+        "voice": "am_adam",
+        "speed": 1.1
+      }
     },
     "perplexity-researcher": {
       "voice_id": "AXdMgz6evoL7OPd7eU12",
@@ -21,7 +25,11 @@
       "stability": 0.65,
       "similarity_boost": 0.9,
       "description": "US Female - Analytical, authoritative, confident",
-      "type": "Premium"
+      "type": "Premium",
+      "kokoro": {
+        "voice": "af_sky",
+        "speed": 1.0
+      }
     },
     "claude-researcher": {
       "voice_id": "AXdMgz6evoL7OPd7eU12",
@@ -31,7 +39,11 @@
       "stability": 0.65,
       "similarity_boost": 0.9,
       "description": "US Female - Strategic, sophisticated, authoritative",
-      "type": "Premium"
+      "type": "Premium",
+      "kokoro": {
+        "voice": "af_sky",
+        "speed": 1.0
+      }
     },
     "gemini-researcher": {
       "voice_id": "2zRM7PkgwBPiau2jvVXc",
@@ -41,7 +53,11 @@
       "stability": 0.65,
       "similarity_boost": 0.85,
       "description": "Multi-perspective, thorough, analytical",
-      "type": "Premium"
+      "type": "Premium",
+      "kokoro": {
+        "voice": "af_bella",
+        "speed": 1.0
+      }
     },
     "engineer": {
       "voice_id": "Fahco4VZzobUeiPqni1S",
@@ -51,7 +67,11 @@
       "stability": 0.7,
       "similarity_boost": 0.85,
       "description": "Strategic, senior leadership, measured - battle-scarred engineering leader",
-      "type": "Premium"
+      "type": "Premium",
+      "kokoro": {
+        "voice": "am_michael",
+        "speed": 0.95
+      }
     },
     "architect": {
       "voice_id": "NNl6r8mD7vthiJatiJt1",
@@ -61,7 +81,11 @@
       "stability": 0.7,
       "similarity_boost": 0.85,
       "description": "UK Female - Strategic, sophisticated, wise",
-      "type": "Premium"
+      "type": "Premium",
+      "kokoro": {
+        "voice": "bf_emma",
+        "speed": 0.95
+      }
     },
     "designer": {
       "voice_id": "h8eW5xfRUGVJrZhAFxqK",
@@ -71,7 +95,11 @@
       "stability": 0.62,
       "similarity_boost": 0.85,
       "description": "Indian Female - Sophisticated critic: snobby perfectionist, judgmental eye, dismissive of mediocrity",
-      "type": "Premium"
+      "type": "Premium",
+      "kokoro": {
+        "voice": "af_nicole",
+        "speed": 1.0
+      }
     },
     "artist": {
       "voice_id": "h8eW5xfRUGVJrZhAFxqK",
@@ -81,7 +109,11 @@
       "stability": 0.38,
       "similarity_boost": 0.68,
       "description": "Indian Female - Dreamy visionary: eccentric, flighty tangents, distracted by beauty, unconventional ideas",
-      "type": "Premium"
+      "type": "Premium",
+      "kokoro": {
+        "voice": "af_sarah",
+        "speed": 0.9
+      }
     },
     "pentester": {
       "voice_id": "UZvBfqEdvCFLqsBOo9Zr",
@@ -91,7 +123,11 @@
       "stability": 0.32,
       "similarity_boost": 0.88,
       "description": "UK Male - Mischievous hacker: overly excited finding vulns, playful chaos, curious puzzle-solver",
-      "type": "Enhanced"
+      "type": "Enhanced",
+      "kokoro": {
+        "voice": "bm_george",
+        "speed": 1.15
+      }
     },
     "writer": {
       "voice_id": "goT3UYdM9bhm0n2lmKQx",
@@ -101,7 +137,11 @@
       "stability": 0.6,
       "similarity_boost": 0.8,
       "description": "UK Female - Articulate, warm, engaging",
-      "type": "Premium"
+      "type": "Premium",
+      "kokoro": {
+        "voice": "bf_emma",
+        "speed": 0.95
+      }
     },
     "intern": {
       "voice_id": "lcMyyd2HUfFzxdCaC4Ta",
@@ -111,7 +151,11 @@
       "stability": 0.42,
       "similarity_boost": 0.72,
       "description": "Brilliant overachiever: eager to prove themselves, insatiably curious, enthusiastic about everything",
-      "type": "Premium"
+      "type": "Premium",
+      "kokoro": {
+        "voice": "am_adam",
+        "speed": 1.2
+      }
     }
   }
 }
