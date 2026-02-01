@@ -2,6 +2,19 @@
 
 **Hand-drawn technical diagrams combining Mermaid structure with Excalidraw sketchy aesthetic and UL color scheme.**
 
+## Voice Notification
+
+```bash
+curl -s -X POST http://localhost:8888/notify \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Running the Mermaid workflow in the Art skill to create diagrams"}' \
+  > /dev/null 2>&1 &
+```
+
+Running **Mermaid** in **Art**...
+
+---
+
 Creates **EXCALIDRAW-STYLE MERMAID DIAGRAMS** — flowcharts, sequence diagrams, state machines, and other technical diagrams with whiteboard hand-drawn feel, derived from content via story explanation.
 
 ---
@@ -656,7 +669,7 @@ GOING INTO BLOG/WEBSITE: Remove background for transparency
 **For blog/website use** — use the **Images skill** for background removal:
 
 ```bash
-bun ~/.claude/skills/CORE/Tools/RemoveBg.ts /path/to/mermaid-diagram.png
+bun ~/.claude/skills/PAI/Tools/RemoveBg.ts /path/to/mermaid-diagram.png
 ```
 
 **See:** `~/.claude/skills/Images/Workflows/BackgroundRemoval.md` for full documentation.

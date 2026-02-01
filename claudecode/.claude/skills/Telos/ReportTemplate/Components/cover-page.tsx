@@ -19,7 +19,7 @@ export function CoverPage({
         {/* Logo - left-justified above title */}
         <img
           src="/ul-icon.png"
-          alt="Unsupervised Learning"
+          alt="{COMPANY_NAME}"
           width={125}
           height={125}
           className="mb-6 -ml-4"
@@ -34,7 +34,7 @@ export function CoverPage({
       <div className="cover-meta">
         <p className="cover-date">{reportDate}</p>
         <p className="text-muted-dark text-sm mt-2">
-          Unsupervised Learning Consulting
+          {COMPANY_NAME} Consulting
         </p>
       </div>
     </div>

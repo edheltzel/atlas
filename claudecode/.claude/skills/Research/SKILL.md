@@ -1,17 +1,49 @@
 ---
 name: Research
-description: USE WHEN do research, extensive research, quick research, minor research, research this, find information, investigate, extract wisdom, extract alpha, analyze content, web research, content research. NOTE: For OSINT or background checks, use OSINT skill.
+description: USE WHEN user says 'research' (ANY form - this is the MANDATORY trigger), 'do research', 'extensive research', 'quick research', 'minor research', 'research this', 'find information', 'investigate', 'extract wisdom', 'extract alpha', 'analyze content', 'can't get this content', 'use fabric', OR requests any web/content research. Supports three research modes (quick/standard/extensive), deep content analysis, intelligent retrieval, and 242+ Fabric patterns. NOTE: For due diligence, OSINT, or background checks, use OSINT skill instead.
 implements: Science
 science_cycle_time: meso
 context: fork
 ---
 
+## ⚠️ MANDATORY TRIGGER
+
+**When user says "research" (in any form), ALWAYS invoke this skill.**
+
+| User Says | Action |
+|-----------|--------|
+| "research" / "do research" / "research this" | → Standard mode (3 agents) |
+| "quick research" / "minor research" | → Quick mode (1 agent) |
+| "extensive research" / "deep research" | → Extensive mode (12 agents) |
+
+**"Research" alone = Standard mode. No exceptions.**
+
 ## Customization
 
 **Before executing, check for user customizations at:**
-`~/.claude/skills/CORE/USER/SKILLCUSTOMIZATIONS/Research/`
+`~/.claude/skills/PAI/USER/SKILLCUSTOMIZATIONS/Research/`
 
 If this directory exists, load and apply any PREFERENCES.md, configurations, or resources found there. These override default behavior. If the directory does not exist, proceed with skill defaults.
+
+
+## 🚨 MANDATORY: Voice Notification (REQUIRED BEFORE ANY ACTION)
+
+**You MUST send this notification BEFORE doing anything else when this skill is invoked.**
+
+1. **Send voice notification**:
+   ```bash
+   curl -s -X POST http://localhost:8888/notify \
+     -H "Content-Type: application/json" \
+     -d '{"message": "Running the WORKFLOWNAME workflow in the Research skill to ACTION"}' \
+     > /dev/null 2>&1 &
+   ```
+
+2. **Output text notification**:
+   ```
+   Running the **WorkflowName** workflow in the **Research** skill to ACTION...
+   ```
+
+**This is not optional. Execute this curl command immediately upon skill invocation.**
 
 # Research Skill
 
@@ -25,24 +57,6 @@ Research agents hallucinate URLs. A single broken link is a catastrophic failure
 
 ---
 
-## Voice Notification
-
-**When executing a workflow, do BOTH:**
-
-1. **Send voice notification**:
-   ```bash
-   curl -s -X POST http://localhost:8888/notify \
-     -H "Content-Type: application/json" \
-     -d '{"message": "Running the WORKFLOWNAME workflow from the Research skill"}' \
-     > /dev/null 2>&1 &
-   ```
-
-2. **Output text notification**:
-   ```
-   Running the **WorkflowName** workflow from the **Research** skill...
-   ```
-
-**Full documentation:** `~/.claude/skills/CORE/SkillNotifications.md`
 
 ## Workflow Routing
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { getTelosContext } from "@/lib/telos-data"
+import { spawn } from "child_process"
 
 export async function POST(request: Request) {
   try {
@@ -12,28 +13,10 @@ export async function POST(request: Request) {
       )
     }
 
-    const apiKey = process.env.ANTHROPIC_API_KEY
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: "API key not configured" },
-        { status: 500 }
-      )
-    }
-
     // Load all TELOS context
     const telosContext = getTelosContext()
 
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: 4096,
-        system: `You are a helpful AI assistant with access to the user's complete Personal TELOS (Life Operating System).
+    const systemPrompt = `You are a helpful AI assistant with access to the user's complete Personal TELOS (Life Operating System).
 
 ${telosContext}
 
@@ -42,27 +25,43 @@ When answering questions:
 - Be conversational and helpful
 - If asked about goals, projects, beliefs, wisdom, etc., use the exact information from the relevant sections
 - If information isn't in the TELOS data, say so clearly
-- Keep responses concise but informative`,
-        messages: [
-          {
-            role: "user",
-            content: message,
-          },
-        ],
-      }),
+- Keep responses concise but informative`
+
+    // Use Inference tool instead of direct API
+    const inferenceResult = await new Promise<{ success: boolean; output?: string; error?: string }>((resolve) => {
+      const homeDir = process.env.HOME || ''
+      const proc = spawn('bun', ['run', `${homeDir}/.claude/skills/PAI/Tools/Inference.ts`, '--level', 'fast', systemPrompt, message], {
+        stdio: ['ignore', 'pipe', 'pipe'],
+      })
+
+      let stdout = ''
+      let stderr = ''
+
+      proc.stdout.on('data', (data) => { stdout += data.toString() })
+      proc.stderr.on('data', (data) => { stderr += data.toString() })
+
+      proc.on('close', (code) => {
+        if (code !== 0) {
+          resolve({ success: false, error: stderr || `Process exited with code ${code}` })
+        } else {
+          resolve({ success: true, output: stdout.trim() })
+        }
+      })
+
+      proc.on('error', (err) => {
+        resolve({ success: false, error: err.message })
+      })
     })
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error("API Error:", errorText)
-      throw new Error(`API request failed: ${response.statusText}`)
+    if (!inferenceResult.success) {
+      console.error("Inference Error:", inferenceResult.error)
+      throw new Error(`Inference failed: ${inferenceResult.error}`)
     }
 
-    const data = await response.json()
-    const assistantMessage = data.content[0]?.text
+    const assistantMessage = inferenceResult.output
 
     if (!assistantMessage) {
-      throw new Error("No response from API")
+      throw new Error("No response from inference")
     }
 
     return NextResponse.json({ response: assistantMessage })

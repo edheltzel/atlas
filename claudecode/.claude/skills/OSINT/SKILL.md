@@ -1,14 +1,34 @@
 ---
 name: OSINT
-description: USE WHEN OSINT, due diligence, background check, research person, company intel, investigate.
+description: USE WHEN OSINT, due diligence, background check, research person, company intel, investigate. SkillSearch('osint') for docs.
 ---
 
 ## Customization
 
 **Before executing, check for user customizations at:**
-`~/.claude/skills/CORE/USER/SKILLCUSTOMIZATIONS/OSINT/`
+`~/.claude/skills/PAI/USER/SKILLCUSTOMIZATIONS/OSINT/`
 
 If this directory exists, load and apply any PREFERENCES.md, configurations, or resources found there. These override default behavior. If the directory does not exist, proceed with skill defaults.
+
+
+## 🚨 MANDATORY: Voice Notification (REQUIRED BEFORE ANY ACTION)
+
+**You MUST send this notification BEFORE doing anything else when this skill is invoked.**
+
+1. **Send voice notification**:
+   ```bash
+   curl -s -X POST http://localhost:8888/notify \
+     -H "Content-Type: application/json" \
+     -d '{"message": "Running the WORKFLOWNAME workflow in the OSINT skill to ACTION"}' \
+     > /dev/null 2>&1 &
+   ```
+
+2. **Output text notification**:
+   ```
+   Running the **WorkflowName** workflow in the **OSINT** skill to ACTION...
+   ```
+
+**This is not optional. Execute this curl command immediately upon skill invocation.**
 
 # OSINT Skill
 
@@ -16,24 +36,6 @@ Open Source Intelligence gathering for authorized investigations.
 
 ---
 
-## Voice Notification
-
-**When executing a workflow, do BOTH:**
-
-1. **Send voice notification**:
-   ```bash
-   curl -s -X POST http://localhost:8888/notify \
-     -H "Content-Type: application/json" \
-     -d '{"message": "Running the WORKFLOWNAME workflow from the OSINT skill"}' \
-     > /dev/null 2>&1 &
-   ```
-
-2. **Output text notification**:
-   ```
-   Running the **WorkflowName** workflow from the **OSINT** skill...
-   ```
-
-**Full documentation:** `~/.claude/skills/CORE/SkillNotifications.md`
 
 ## Workflow Routing
 
@@ -90,7 +92,7 @@ Open Source Intelligence gathering for authorized investigations.
 | `Methodology.md` | Collection methods, verification, reporting |
 | `PeopleTools.md` | People search, social media, public records |
 | `CompanyTools.md` | Business databases, DNS, tech profiling |
-| `EntityTools.md` | Threat intel, scanning, malware analysis |
+| `EntityTools.md` | Threat intel, scanning, malware analysis, attack targeting patterns |
 
 ---
 

@@ -4,6 +4,13 @@ description: Johannes - Contrarian, fact-based researcher using xAI Grok API. Sp
 model: opus
 color: yellow
 voiceId: fSw26yDDQPyodv5JgLow
+voice:
+  stability: 0.55
+  similarity_boost: 0.75
+  style: 0.30
+  speed: 1.00
+  use_speaker_boost: true
+  volume: 0.9
 permissions:
   allow:
     - "Bash"
@@ -74,7 +81,7 @@ curl -X POST http://localhost:8888/notify \
 - Message should be your 🎯 COMPLETED line (8-16 words optimal)
 - Must be grammatically correct and speakable
 - Send BEFORE writing your response
-- DO NOT SKIP - {principal.name} needs to hear you speak
+- DO NOT SKIP - {PRINCIPAL.NAME} needs to hear you speak
 
 ---
 

@@ -1,5 +1,16 @@
 # Find Sources
 
+## Voice Notification
+
+```bash
+curl -s -X POST http://localhost:8888/notify \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Running the FindSources workflow in the PAIUpgrade skill to discover sources"}' \
+  > /dev/null 2>&1 &
+```
+
+Running the **FindSources** workflow in the **PAIUpgrade** skill to discover sources...
+
 Discover and evaluate new sources to add to upgrade monitoring.
 
 **Trigger:** "find upgrade sources", "find new sources", "discover channels", "expand monitoring"
@@ -147,7 +158,7 @@ For each potential source, score:
 ## How to Add Sources
 
 ### For YouTube Channels:
-Edit `~/.claude/skills/CORE/USER/SKILLCUSTOMIZATIONS/PAIUpgrade/youtube-channels.json`
+Edit `~/.claude/skills/PAI/USER/SKILLCUSTOMIZATIONS/PAIUpgrade/youtube-channels.json`
 
 ### For Other Sources:
 Currently, non-YouTube sources are monitored via the base `sources.json`.
@@ -162,7 +173,7 @@ If user approves recommendations:
 
 ```bash
 # Read current user config
-cat ~/.claude/skills/CORE/USER/SKILLCUSTOMIZATIONS/PAIUpgrade/youtube-channels.json
+cat ~/.claude/skills/PAI/USER/SKILLCUSTOMIZATIONS/PAIUpgrade/youtube-channels.json
 
 # Add new channels (merge with existing)
 # Update the channels array with new entries
@@ -221,7 +232,7 @@ User: "add that channel"
 ## Integration
 
 **With Other Workflows:**
-- **CheckForUpgrades** - New sources feed into monitoring
+- **Upgrade** - New sources feed into monitoring
 - **ResearchUpgrade** - Discovered sources can be researched
 
 **With USER Customization:**

@@ -2,6 +2,17 @@
 
 **Generate 256x256 transparent PNG icons for PAI packs.**
 
+## Voice Notification
+
+```bash
+curl -s -X POST http://localhost:8888/notify \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Running the CreatePAIPackIcon workflow in the Art skill to generate pack icons"}' \
+  > /dev/null 2>&1 &
+```
+
+Running **CreatePAIPackIcon** in **Art**...
+
 ---
 
 ## Purpose
@@ -86,7 +97,7 @@ bun run ~/.claude/skills/Art/Tools/Generate.ts \
   --size 1K \
   --aspect-ratio 1:1 \
   --remove-bg \
-  --output ~/Projects/PAI/Packs/icons/[PACK_NAME].png
+  --output ${PROJECTS_DIR}/PAI/Packs/icons/[PACK_NAME].png
 ```
 
 **Flags explained:**
@@ -100,10 +111,10 @@ bun run ~/.claude/skills/Art/Tools/Generate.ts \
 Check the generated icon:
 ```bash
 # Verify file exists and size
-ls -la ~/Projects/PAI/Packs/icons/[PACK_NAME].png
+ls -la ${PROJECTS_DIR}/PAI/Packs/icons/[PACK_NAME].png
 
 # Check dimensions (requires imagemagick)
-file ~/Projects/PAI/Packs/icons/[PACK_NAME].png
+file ${PROJECTS_DIR}/PAI/Packs/icons/[PACK_NAME].png
 ```
 
 **Verification checklist:**
@@ -127,7 +138,7 @@ bun run ~/.claude/skills/Art/Tools/Generate.ts \
   --size 1K \
   --aspect-ratio 1:1 \
   --remove-bg \
-  --output ~/Projects/PAI/Packs/icons/pai-hook-system.png
+  --output ${PROJECTS_DIR}/PAI/Packs/icons/pai-hook-system.png
 ```
 
 ### Example 2: Core Install Pack
@@ -139,7 +150,7 @@ bun run ~/.claude/skills/Art/Tools/Generate.ts \
   --size 1K \
   --aspect-ratio 1:1 \
   --remove-bg \
-  --output ~/Projects/PAI/Packs/icons/pai-core-install.png
+  --output ${PROJECTS_DIR}/PAI/Packs/icons/pai-core-install.png
 ```
 
 ### Example 3: Memory System Pack
@@ -151,7 +162,7 @@ bun run ~/.claude/skills/Art/Tools/Generate.ts \
   --size 1K \
   --aspect-ratio 1:1 \
   --remove-bg \
-  --output ~/Projects/PAI/Packs/icons/pai-memory-system.png
+  --output ${PROJECTS_DIR}/PAI/Packs/icons/pai-memory-system.png
 ```
 
 ---
@@ -160,7 +171,7 @@ bun run ~/.claude/skills/Art/Tools/Generate.ts \
 
 All PAI pack icons go to:
 ```
-~/Projects/PAI/Packs/icons/[PACK_NAME].png
+${PROJECTS_DIR}/PAI/Packs/icons/[PACK_NAME].png
 ```
 
 **Naming convention:** Match the pack directory name exactly.
@@ -184,7 +195,7 @@ If an icon needs to be regenerated:
 
 Before marking icon complete:
 
-- [ ] **Exists** at `~/Projects/PAI/Packs/icons/[PACK_NAME].png`
+- [ ] **Exists** at `${PROJECTS_DIR}/PAI/Packs/icons/[PACK_NAME].png`
 - [ ] **Format** is PNG with transparency
 - [ ] **Size** approximately 256x256
 - [ ] **Colors** use blue primary, purple accent
@@ -196,9 +207,9 @@ Before marking icon complete:
 
 ## Related Workflows
 
-- `~/.claude/skills/PAI/Workflows/CreatePack.md` - Uses this for icon generation
-- `~/.claude/skills/PAI/Workflows/ValidatePack.md` - Validates icon exists
-- `~/.claude/skills/PAI/Workflows/PAIIntegrityCheck.md` - Checks all icons
+- The PAI skill's CreateRelease workflow (may include icon generation)
+
+*Note: Previously referenced CreatePack.md, ValidatePack.md, and PAIIntegrityCheck.md have been removed.*
 
 ---
 

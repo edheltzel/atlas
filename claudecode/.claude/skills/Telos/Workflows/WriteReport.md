@@ -151,7 +151,7 @@ If artifacts don't exist, run the assessment workflow first (CreateNarrativePoin
 
 ```bash
 # Copy template to output directory (if not already done)
-cp -r ~/.claude/skills/_TELOS/report-template/* {output_dir}/
+cp -r ~/.claude/skills/Telos/report-template/* {output_dir}/
 
 # Install dependencies
 cd {output_dir} && bun install
@@ -224,7 +224,7 @@ The report will hot-reload as you regenerate.
 
 ### Regeneration Shortcut
 
-When {principal.name} edits source files and says "regenerate the report":
+When {PRINCIPAL.NAME} edits source files and says "regenerate the report":
 
 1. Run assessment workflow to update artifacts
 2. Re-run Step 3 to regenerate report-data.ts
@@ -241,7 +241,7 @@ When {principal.name} edits source files and says "regenerate the report":
   - **"TELOS Assessment"** label (Heliotrope Caps, primary blue, tracking-[0.25em])
   - Report title (Advocate Wide font)
   - "Prepared for {Client Name}" - **CUSTOMIZE per engagement**
-- Footer: Date + "Unsupervised Learning Consulting"
+- Footer: Date + "{COMPANY_NAME} Consulting"
 
 ### 2. Executive Summary (1 page)
 - **Methodology exhibit** - Interview count and roles interviewed (by role, not by name)
@@ -442,11 +442,11 @@ The workflow generates a complete Next.js app:
 ```bash
 # User: "Create a TELOS report for Acme Corp"
 
-# Step 1: {daidentity.name} runs TELOS analysis on source directory
-# Step 2: {daidentity.name} executes CreateNarrativePoints workflow
-# Step 3: {daidentity.name} copies report-template to output directory
-# Step 4: {daidentity.name} generates report-data.ts with content
-# Step 5: {daidentity.name} runs bun install && bun dev
+# Step 1: {DAIDENTITY.NAME} runs TELOS analysis on source directory
+# Step 2: {DAIDENTITY.NAME} executes CreateNarrativePoints workflow
+# Step 3: {DAIDENTITY.NAME} copies report-template to output directory
+# Step 4: {DAIDENTITY.NAME} generates report-data.ts with content
+# Step 5: {DAIDENTITY.NAME} runs bun install && bun dev
 
 # To view:
 cd {output_dir} && bun dev
@@ -463,7 +463,7 @@ cd {output_dir} && bun dev
 **CRITICAL: The report template lives at:**
 
 ```
-~/.claude/skills/_TELOS/report-template/
+~/.claude/skills/Telos/report-template/
 ```
 
 This template includes:
@@ -609,11 +609,11 @@ Before board presentation:
 **To update fonts:**
 ```bash
 # Copy latest fonts from ULSite
-cp ~/Projects/ULSite/public/fonts/*.woff2 ~/.claude/skills/_TELOS/report-template/public/fonts/
+cp ~/Projects/ULSite/public/fonts/*.woff2 ~/.claude/skills/Telos/report-template/public/fonts/
 ```
 
 **To update template components:**
-Edit files in `~/.claude/skills/_TELOS/report-template/components/`
+Edit files in `~/.claude/skills/Telos/report-template/components/`
 
 **To change color scheme:**
-Edit CSS custom properties in `~/.claude/skills/_TELOS/report-template/app/globals.css`
+Edit CSS custom properties in `~/.claude/skills/Telos/report-template/app/globals.css`

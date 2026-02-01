@@ -3,7 +3,7 @@
 /**
  * generate - UL Image Generation CLI
  *
- * Generate Unsupervised Learning branded images using Flux 1.1 Pro, Nano Banana, Nano Banana Pro, or GPT-image-1.
+ * Generate branded images using Flux 1.1 Pro, Nano Banana, Nano Banana Pro, or GPT-image-1.
  * Follows llcli pattern for deterministic, composable CLI design.
  *
  * Usage:
@@ -132,7 +132,7 @@ function showHelp(): void {
   console.log(`
 generate - UL Image Generation CLI
 
-Generate Unsupervised Learning branded images using Flux 1.1 Pro, Nano Banana, or GPT-image-1.
+Generate branded images using Flux 1.1 Pro, Nano Banana, or GPT-image-1.
 
 USAGE:
   generate --model <model> --prompt "<prompt>" [OPTIONS]

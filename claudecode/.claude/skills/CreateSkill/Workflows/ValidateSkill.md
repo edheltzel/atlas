@@ -2,6 +2,17 @@
 
 **Purpose:** Check if an existing skill follows the canonical structure with proper TitleCase naming.
 
+## Voice Notification
+
+```bash
+curl -s -X POST http://localhost:8888/notify \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Running the ValidateSkill workflow in the CreateSkill skill to validate skill structure"}' \
+  > /dev/null 2>&1 &
+```
+
+Running the **ValidateSkill** workflow in the **CreateSkill** skill to validate skill structure...
+
 ---
 
 ## Step 1: Read the Authoritative Source
@@ -9,7 +20,7 @@
 **REQUIRED FIRST:** Read the canonical structure:
 
 ```
-~/.claude/skills/CORE/SkillSystem.md
+~/.claude/skills/PAI/SkillSystem.md
 ```
 
 ---
@@ -85,7 +96,7 @@ Verify the body has:
 **When executing a workflow, output this notification:**
 
 ```
-Running the **WorkflowName** workflow from the **SkillName** skill...
+Running **WorkflowName** in **SkillName**...
 ```
 
 | Workflow | Trigger | File |
@@ -176,7 +187,7 @@ grep -l "Intent-to-Flag" ~/.claude/skills/[SkillName]/Workflows/*.md
 | (default) | `--model sonnet` | Balanced |
 ```
 
-**Reference:** `~/.claude/skills/CORE/CliFirstArchitecture.md`
+**Reference:** `~/.claude/skills/PAI/CliFirstArchitecture.md`
 
 ---
 

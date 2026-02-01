@@ -247,7 +247,7 @@ After generating all files, output a summary:
 ```
 User: "Extract content from /path/to/interviews"
 
-{daidentity.name}:
+{DAIDENTITY.NAME}:
 1. Scans directory, finds 15 interview files
 2. Activates Ultrathink for deep analysis
 3. Processes each file, extracting to 13 categories

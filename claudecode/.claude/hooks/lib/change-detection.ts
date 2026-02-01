@@ -70,8 +70,8 @@ const EXCLUDED_PATHS = [
 
 // High-priority paths that always warrant documentation
 const HIGH_PRIORITY_PATHS = [
-  'skills/CORE/SYSTEM/',
-  'skills/CORE/USER/',
+  'skills/PAI/SYSTEM/',
+  'skills/PAI/USER/',
   'PAISYSTEMARCHITECTURE.md',
   'SKILLSYSTEM.md',
   'MEMORYSYSTEM.md',
@@ -83,8 +83,8 @@ const HIGH_PRIORITY_PATHS = [
 
 // Philosophical/architectural patterns in paths
 const PHILOSOPHICAL_PATTERNS = [
-  /CORE\/SYSTEM\//i,
-  /CORE\/USER\//i,
+  /PAI\/SYSTEM\//i,
+  /PAI\/USER\//i,
   /ARCHITECTURE/i,
   /PRINCIPLES/i,
   /FOUNDING/i,
@@ -222,7 +222,7 @@ export function categorizeChange(path: string): ChangeCategory | null {
   // Categorize by path pattern
   if (path.includes('skills/')) {
     if (path.includes('/Workflows/')) return 'workflow';
-    if (path.includes('CORE/SYSTEM/')) return 'core-system';
+    if (path.includes('PAI/SYSTEM/')) return 'core-system';
     return 'skill';
   }
 
@@ -500,7 +500,7 @@ export function generateDescriptiveTitle(changes: FileChange[]): string {
   const skillNames = new Set<string>();
   for (const p of paths) {
     const match = p.match(/skills\/([^/]+)\//);
-    if (match && match[1] !== 'CORE') skillNames.add(match[1]);
+    if (match && match[1] !== 'PAI') skillNames.add(match[1]);
   }
 
   // Detect file types
@@ -509,8 +509,8 @@ export function generateDescriptiveTitle(changes: FileChange[]): string {
   const hasTools = paths.some(p => p.includes('/Tools/') && p.endsWith('.ts'));
   const hasHooks = paths.some(p => p.includes('hooks/'));
   const hasConfig = paths.some(p => p.endsWith('settings.json'));
-  const hasCoreSystem = paths.some(p => p.includes('CORE/SYSTEM/'));
-  const hasCoreUser = paths.some(p => p.includes('CORE/USER/'));
+  const hasCoreSystem = paths.some(p => p.includes('PAI/SYSTEM/'));
+  const hasCoreUser = paths.some(p => p.includes('PAI/USER/'));
 
   let title = '';
 
@@ -566,18 +566,18 @@ export function generateDescriptiveTitle(changes: FileChange[]): string {
   // Core system changes
   else if (hasCoreSystem) {
     const docNames = paths
-      .filter(p => p.includes('CORE/SYSTEM/'))
+      .filter(p => p.includes('PAI/SYSTEM/'))
       .map(p => basename(p, '.md'));
     if (docNames.length === 1) {
       title = `${docNames[0]} Documentation Updated`;
     } else {
-      title = 'Core System Documentation Updated';
+      title = 'PAI System Documentation Updated';
     }
   }
   // Core user changes
   else if (hasCoreUser) {
     const docNames = paths
-      .filter(p => p.includes('CORE/USER/'))
+      .filter(p => p.includes('PAI/USER/'))
       .map(p => basename(p, '.md'));
     if (docNames.length === 1) {
       title = `${docNames[0]} User Config Updated`;

@@ -1,14 +1,34 @@
 ---
 name: CreateCLI
-description: USE WHEN create CLI, build CLI, command-line tool.
+description: USE WHEN create CLI, build CLI, command-line tool. SkillSearch('createcli') for docs.
 ---
 
 ## Customization
 
 **Before executing, check for user customizations at:**
-`~/.claude/skills/CORE/USER/SKILLCUSTOMIZATIONS/CreateCLI/`
+`~/.claude/skills/PAI/USER/SKILLCUSTOMIZATIONS/CreateCLI/`
 
 If this directory exists, load and apply any PREFERENCES.md, configurations, or resources found there. These override default behavior. If the directory does not exist, proceed with skill defaults.
+
+
+## 🚨 MANDATORY: Voice Notification (REQUIRED BEFORE ANY ACTION)
+
+**You MUST send this notification BEFORE doing anything else when this skill is invoked.**
+
+1. **Send voice notification**:
+   ```bash
+   curl -s -X POST http://localhost:8888/notify \
+     -H "Content-Type: application/json" \
+     -d '{"message": "Running the WORKFLOWNAME workflow in the CreateCLI skill to ACTION"}' \
+     > /dev/null 2>&1 &
+   ```
+
+2. **Output text notification**:
+   ```
+   Running the **WorkflowName** workflow in the **CreateCLI** skill to ACTION...
+   ```
+
+**This is not optional. Execute this curl command immediately upon skill invocation.**
 
 # CreateCLI
 
@@ -19,25 +39,6 @@ Generate production-ready TypeScript CLIs with comprehensive documentation, type
 ---
 
 
-## Voice Notification
-
-**When executing a workflow, do BOTH:**
-
-1. **Send voice notification**:
-   ```bash
-   curl -s -X POST http://localhost:8888/notify \
-     -H "Content-Type: application/json" \
-     -d '{"message": "Running the WORKFLOWNAME workflow from the CreateCLI skill"}' \
-     > /dev/null 2>&1 &
-   ```
-
-2. **Output text notification**:
-   ```
-   Running the **WorkflowName** workflow from the **CreateCLI** skill...
-   ```
-
-**Full documentation:** `~/.claude/skills/CORE/SkillNotifications.md`
-
 ## Workflow Routing
 
 Route to the appropriate workflow based on the request.
@@ -45,7 +46,7 @@ Route to the appropriate workflow based on the request.
 **When executing a workflow, output this notification directly:**
 
 ```
-Running the **WorkflowName** workflow from the **CreateCLI** skill...
+Running the **WorkflowName** workflow in the **CreateCLI** skill to ACTION...
 ```
 
   - Create a new CLI tool from scratch → `Workflows/CreateCli.md`
@@ -163,7 +164,7 @@ Generated CLIs follow PAI standards:
 Generated CLIs go to:
 - `~/.claude/Bin/[cli-name]/` - Personal CLIs (like llcli)
 - `~/Projects/[project-name]/` - Project-specific CLIs
-- `~/Projects/PAI/Examples/clis/` - Example CLIs (PUBLIC repo)
+- `${PROJECTS_DIR}/PAI/Examples/clis/` - Example CLIs (PUBLIC repo)
 
 **SAFETY:** Always verify repository location before git operations
 

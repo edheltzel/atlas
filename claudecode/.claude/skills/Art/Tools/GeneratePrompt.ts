@@ -69,7 +69,7 @@ interface PromptOutput {
 
 const ART_AESTHETIC_PATH = resolve(
   process.env.HOME!,
-  ".claude/skills/CORE/Aesthetic.md"
+  ".claude/skills/PAI/Aesthetic.md"
 );
 
 const COLOR_HEX_MAP: Record<TokyoNightColor, string> = {
@@ -344,7 +344,7 @@ function generatePrompt(config: PromptConfig): string {
       : "Dark gradient background transitioning from #1a1b26 to #24283b.";
 
   // Base prompt
-  let prompt = `Minimal Tokyo Night–inspired illustration for ${imageType === "blog-header" ? "an Unsupervised Learning blog post" : "an essay"} about ${essayTheme}.
+  let prompt = `Minimal Tokyo Night-inspired illustration for ${imageType === "blog-header" ? "a blog post" : "an essay"} about ${essayTheme}.
 
 ${backgroundDesc} Thin, slightly imperfect deep navy linework and flat color fills only, no shading. Tokyo Night–inspired accent color${accentColors.length > 1 ? "s" : ""} ${colorDescriptions} used sparingly.
 

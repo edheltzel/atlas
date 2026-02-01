@@ -75,7 +75,7 @@ Use deep thinking for deep thematic analysis. Identify:
    - Excellence & Mastery
 
 5. **Audience Context** - Who is this for?
-   - Unsupervised Learning newsletter subscribers (technical, curious, rationalist)
+   - Newsletter subscribers (technical, curious, rationalist)
    - Blog readers (varied technical background)
    - Social media audience (quick insights)
 

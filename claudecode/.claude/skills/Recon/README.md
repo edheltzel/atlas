@@ -8,7 +8,7 @@ Comprehensive reconnaissance skill for domains, IP addresses, netblocks, and ASN
 ```
 User: "Do passive recon on example.com"
 
-{daidentity.name}: Activating recon with passive-recon workflow
+{DAIDENTITY.NAME}: Activating recon with passive-recon workflow
      - WHOIS lookup
      - DNS enumeration
      - Certificate transparency
@@ -22,7 +22,7 @@ Report: ~/.claude/MEMORY/WORK/{current_work}/scratch/recon-example-com/
 ```
 User: "Investigate IP 1.2.3.4"
 
-{daidentity.name}: Activating recon with ip-recon workflow
+{DAIDENTITY.NAME}: Activating recon with ip-recon workflow
      - IPInfo lookup (Cloudflare, San Francisco, AS13335)
      - Reverse DNS (www.example.com)
      - WHOIS netblock (1.2.3.0/24, Cloudflare Inc)
@@ -35,7 +35,7 @@ Report: Complete IP intelligence report generated
 ```
 User: "Do OSINT on Acme Corp and map their infrastructure"
 
-{daidentity.name}: Activating OSINT...
+{DAIDENTITY.NAME}: Activating OSINT...
      Found: acme.com, acmecorp.com, acme.io
 
      Calling recon for technical infrastructure...
@@ -104,6 +104,24 @@ Network range reconnaissance.
 
 **Input:** CIDR notation (e.g., 192.168.1.0/24)
 **Authorization:** REQUIRED for active scanning
+
+## Data References
+
+### LOTLBinaries.md
+Living Off The Land binary reference for threat hunting and detection.
+
+**Contents:**
+- `finger.exe` - C2 communication via legacy protocol
+- `certutil.exe` - Download and decode payloads
+- `mshta.exe` - Execute inline scripts
+- `rundll32.exe` - Proxy DLL execution
+- `regsvr32.exe` - Scriptlet execution (Squiblydoo)
+- `bitsadmin.exe` - Background file downloads
+- Browser extension evasion patterns (Chrome Alarms delay)
+
+**Usage:** Reference during threat hunting, incident response, or extension analysis.
+
+---
 
 ## Tools
 
@@ -333,5 +351,5 @@ echo "OSINT Acme Corp and map infrastructure" | claude
 ---
 
 **Created:** 2025-11-11
-**Author:** {daidentity.name} (with deep thinking deep reasoning)
+**Author:** {DAIDENTITY.NAME} (with deep thinking deep reasoning)
 **Status:** Production Ready

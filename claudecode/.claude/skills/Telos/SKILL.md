@@ -1,41 +1,41 @@
 ---
 name: Telos
-description: USE WHEN Telos, life goals, projects, dependencies, books, movies.
+description: USE WHEN TELOS, life goals, projects, dependencies, books, movies. SkillSearch('telos') for docs.
 ---
 
-# Telos
+## 🚨 MANDATORY: Voice Notification (REQUIRED BEFORE ANY ACTION)
 
-**TELOS** (Telic Evolution and Life Operating System) is a comprehensive context-gathering system with two applications:
-
-1. **Personal TELOS** - {principal.name}'s life context system (beliefs, goals, lessons, wisdom) at `~/.claude/skills/CORE/USER/TELOS/`
-2. **Project TELOS** - Analysis framework for organizations/projects (relationships, dependencies, goals, progress)
-
-
-## Voice Notification
-
-**When executing a workflow, do BOTH:**
+**You MUST send this notification BEFORE doing anything else when this skill is invoked.**
 
 1. **Send voice notification**:
    ```bash
    curl -s -X POST http://localhost:8888/notify \
      -H "Content-Type: application/json" \
-     -d '{"message": "Running the WORKFLOWNAME workflow from the Telos skill"}' \
+     -d '{"message": "Running the WORKFLOWNAME workflow in the Telos skill to ACTION"}' \
      > /dev/null 2>&1 &
    ```
 
 2. **Output text notification**:
    ```
-   Running the **WorkflowName** workflow from the **Telos** skill...
+   Running the **WorkflowName** workflow in the **Telos** skill to ACTION...
    ```
 
-**Full documentation:** `~/.claude/skills/CORE/SkillNotifications.md`
+**This is not optional. Execute this curl command immediately upon skill invocation.**
+
+# Telos
+
+**TELOS** (Telic Evolution and Life Operating System) is a comprehensive context-gathering system with two applications:
+
+1. **Personal TELOS** - {PRINCIPAL.NAME}'s life context system (beliefs, goals, lessons, wisdom) at `~/.claude/skills/PAI/USER/TELOS/`
+2. **Project TELOS** - Analysis framework for organizations/projects (relationships, dependencies, goals, progress)
+
 
 ## Workflow Routing
 
 **When executing a workflow, output this notification directly:**
 
 ```
-Running the **WorkflowName** workflow from the **Telos** skill...
+Running the **WorkflowName** workflow in the **Telos** skill to ACTION...
 ```
 
 | Workflow | Trigger | File |
@@ -99,30 +99,30 @@ User: "write a TELOS report for Acme Corp"
 
 ## Context Detection
 
-**How {daidentity.name} determines which TELOS context:**
+**How {DAIDENTITY.NAME} determines which TELOS context:**
 
 | User Request | Context | Location |
 |--------------|---------|----------|
-| "my TELOS", "my goals", "my beliefs", "add to TELOS" | Personal TELOS | `~/.claude/skills/CORE/USER/TELOS/` |
+| "my TELOS", "my goals", "my beliefs", "add to TELOS" | Personal TELOS | `~/.claude/skills/PAI/USER/TELOS/` |
 | "Alma", "TELOSAPP", "analyze [project]", "dashboard for" | Project TELOS | User-specified directory |
 | "analyze ~/path/to/project" | Project TELOS | Specified path |
 
 ---
 
-# Part 1: Personal TELOS ({principal.name}'s Life)
+# Part 1: Personal TELOS ({PRINCIPAL.NAME}'s Life)
 
 ## Location
 
 **CRITICAL PATH:** All personal TELOS files are located at:
 ```
-~/.claude/skills/CORE/USER/TELOS/
+~/.claude/skills/PAI/USER/TELOS/
 ```
 
 Personal TELOS lives in the CORE USER directory, NOT directly under the Telos skill directory.
 
 ## Personal TELOS Framework
 
-All files located in `~/.claude/skills/CORE/USER/TELOS/`:
+All files located in `~/.claude/skills/PAI/USER/TELOS/`:
 
 ### Core Philosophy
 - **TELOS.md** - Main framework document
@@ -134,7 +134,7 @@ All files located in `~/.claude/skills/CORE/USER/TELOS/`:
 - **BOOKS.md** - Favorite books
 - **MOVIES.md** - Favorite movies
 - **LEARNED.md** - Lessons learned over time
-- **WRONG.md** - Things {principal.name} was wrong about (growth tracking)
+- **WRONG.md** - Things {PRINCIPAL.NAME} was wrong about (growth tracking)
 
 ### Mental Models
 - **FRAMES.md** - Mental frames and perspectives
@@ -159,11 +159,11 @@ All files located in `~/.claude/skills/CORE/USER/TELOS/`:
 
 ```bash
 # View specific file
-read ~/.claude/skills/CORE/USER/TELOS/GOALS.md
-read ~/.claude/skills/CORE/USER/TELOS/BELIEFS.md
+read ~/.claude/skills/PAI/USER/TELOS/GOALS.md
+read ~/.claude/skills/PAI/USER/TELOS/BELIEFS.md
 
 # View recent updates
-read ~/.claude/skills/CORE/USER/TELOS/updates.md
+read ~/.claude/skills/PAI/USER/TELOS/updates.md
 ```
 
 ### Update Personal TELOS
@@ -203,9 +203,9 @@ For any project directory, TELOS provides:
 ```bash
 # User specifies directory
 "Analyze ~/Cloud/Projects/TELOSAPP"
---> {daidentity.name} scans for .md and .csv files anywhere in tree
+--> {DAIDENTITY.NAME} scans for .md and .csv files anywhere in tree
 
-# {daidentity.name} automatically finds all .md and .csv files regardless of structure
+# {DAIDENTITY.NAME} automatically finds all .md and .csv files regardless of structure
 ```
 
 ## Analysis Workflow
@@ -215,7 +215,7 @@ For any project directory, TELOS provides:
 **Auto-detection:**
 - User mentions project name (TELOSAPP, Alma, etc.)
 - User provides path explicitly
-- {daidentity.name} looks for common project locations
+- {DAIDENTITY.NAME} looks for common project locations
 
 ### Step 2: Scan Files
 
@@ -374,7 +374,7 @@ Engineer 10: Integration and testing
 ## Key Principles
 
 1. **Dual Context** - Handles both personal and project TELOS seamlessly
-   - Personal TELOS: `~/.claude/skills/CORE/USER/TELOS/` (in CORE USER directory)
+   - Personal TELOS: `~/.claude/skills/PAI/USER/TELOS/` (in CORE USER directory)
    - Project TELOS: User-specified directories
 2. **Auto-Detection** - Determines context from user question
 3. **Flexible Discovery** - Finds files regardless of structure
@@ -386,6 +386,6 @@ Engineer 10: Integration and testing
 
 ---
 
-**TELOS is {principal.name}'s life operating system AND project analysis framework. One skill, two powerful contexts.**
+**TELOS is {PRINCIPAL.NAME}'s life operating system AND project analysis framework. One skill, two powerful contexts.**
 
-**Remember:** Personal TELOS files live at `~/.claude/skills/CORE/USER/TELOS/` (in the CORE USER directory)
+**Remember:** Personal TELOS files live at `~/.claude/skills/PAI/USER/TELOS/` (in the CORE USER directory)

@@ -1,6 +1,6 @@
 ---
 name: Docx
-description: USE WHEN docx, Word document.
+description: Word document processing. USE WHEN docx, Word document. SkillSearch('docx') for docs.
 ---
 
 # DOCX creation, editing, and analysis
@@ -9,7 +9,7 @@ description: USE WHEN docx, Word document.
 
 **Before starting any task with this skill, load complete PAI context:**
 
-`read ~/.claude/skills/CORE/SKILL.md`
+`read ~/.claude/skills/PAI/SKILL.md`
 
 This provides access to:
 - Complete contact list (Angela, Bunny, Saša, Greg, team members)

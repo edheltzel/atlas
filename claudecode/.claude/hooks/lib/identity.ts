@@ -35,6 +35,22 @@ export interface VoiceProsody {
   use_speaker_boost: boolean;
 }
 
+export interface VoicePersonality {
+  baseVoice: string;
+  enthusiasm: number;
+  energy: number;
+  expressiveness: number;
+  resilience: number;
+  composure: number;
+  optimism: number;
+  warmth: number;
+  formality: number;
+  directness: number;
+  precision: number;
+  curiosity: number;
+  playfulness: number;
+}
+
 export interface Identity {
   name: string;
   fullName: string;
@@ -42,6 +58,7 @@ export interface Identity {
   voiceId: string;
   color: string;
   voice?: VoiceProsody;
+  personality?: VoicePersonality;
 }
 
 export interface Principal {
@@ -97,6 +114,7 @@ export function getIdentity(): Identity {
     voiceId: daidentity.voiceId || DEFAULT_IDENTITY.voiceId,
     color: daidentity.color || DEFAULT_IDENTITY.color,
     voice: (daidentity as any).voice as VoiceProsody | undefined,
+    personality: (daidentity as any).personality as VoicePersonality | undefined,
   };
 }
 
@@ -167,8 +185,15 @@ export function getDefaultPrincipal(): Principal {
 }
 
 /**
- * Get voice prosody settings (convenience function)
+ * Get voice prosody settings (convenience function) - legacy ElevenLabs
  */
 export function getVoiceProsody(): VoiceProsody | undefined {
   return getIdentity().voice;
+}
+
+/**
+ * Get voice personality settings (convenience function) - Qwen3-TTS
+ */
+export function getVoicePersonality(): VoicePersonality | undefined {
+  return getIdentity().personality;
 }

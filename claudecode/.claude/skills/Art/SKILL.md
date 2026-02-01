@@ -1,6 +1,6 @@
 ---
 name: Art
-description: USE WHEN create visual content, illustrations, diagrams, art, header images, visualizations, mermaid, flowchart, technical diagram, infographic, PAI icon, pack icon.
+description: USE WHEN user wants to create visual content, illustrations, diagrams, OR mentions art, header images, visualizations, mermaid, flowchart, technical diagram, infographic, PAI icon, pack icon, or PAI pack icon.
 ---
 
 # Art Skill
@@ -10,7 +10,7 @@ Complete visual content system for creating illustrations, diagrams, and visual 
 ## Customization
 
 **Before executing, check for user customizations at:**
-`~/.claude/skills/CORE/USER/SKILLCUSTOMIZATIONS/Art/`
+`~/.claude/skills/PAI/USER/SKILLCUSTOMIZATIONS/Art/`
 
 If this directory exists, load and apply:
 - `PREFERENCES.md` - Aesthetic preferences, default model, output location
@@ -18,6 +18,26 @@ If this directory exists, load and apply:
 - `SceneConstruction.md` - Scene composition guidelines
 
 These override default behavior. If the directory does not exist, proceed with skill defaults.
+
+
+## 🚨 MANDATORY: Voice Notification (REQUIRED BEFORE ANY ACTION)
+
+**You MUST send this notification BEFORE doing anything else when this skill is invoked.**
+
+1. **Send voice notification**:
+   ```bash
+   curl -s -X POST http://localhost:8888/notify \
+     -H "Content-Type: application/json" \
+     -d '{"message": "Running the WORKFLOWNAME workflow in the Art skill to ACTION"}' \
+     > /dev/null 2>&1 &
+   ```
+
+2. **Output text notification**:
+   ```
+   Running the **WorkflowName** workflow in the **Art** skill to ACTION...
+   ```
+
+**This is not optional. Execute this curl command immediately upon skill invocation.**
 
 ## 🚨🚨🚨 MANDATORY: Output to Downloads First 🚨🚨🚨
 
@@ -31,31 +51,13 @@ These override default behavior. If the directory does not exist, proceed with s
 
 **This applies to ALL workflows in this skill.**
 
-## Voice Notification
-
-**When executing a workflow, do BOTH:**
-
-1. **Send voice notification**:
-   ```bash
-   curl -s -X POST http://localhost:8888/notify \
-     -H "Content-Type: application/json" \
-     -d '{"message": "Running the WORKFLOWNAME workflow from the Art skill"}' \
-     > /dev/null 2>&1 &
-   ```
-
-2. **Output text notification**:
-   ```
-   Running the **WorkflowName** workflow from the **Art** skill...
-   ```
-
-**Full documentation:** `~/.claude/skills/CORE/SkillNotifications.md`
-
----
 
 ## Workflow Routing
 
 Route to the appropriate workflow based on the request.
 
+  - Remove background from image → `Workflows/RemoveBackground.md`
+  - UL wallpaper with logo integration → `Workflows/ULWallpaper.md`
   - Blog header or editorial illustration → `Workflows/Essay.md`
   - D3.js interactive chart or dashboard → `Workflows/D3Dashboards.md`
   - Visualization or unsure which format → `Workflows/Visualize.md`
@@ -88,7 +90,7 @@ Route to the appropriate workflow based on the request.
 - Character design specifications
 - Scene composition rules
 
-**Load from:** `~/.claude/skills/CORE/USER/SKILLCUSTOMIZATIONS/Art/PREFERENCES.md`
+**Load from:** `~/.claude/skills/PAI/USER/SKILLCUSTOMIZATIONS/Art/PREFERENCES.md`
 
 ---
 
@@ -96,7 +98,7 @@ Route to the appropriate workflow based on the request.
 
 **User customization** may include reference images for consistent style.
 
-Check `~/.claude/skills/CORE/USER/SKILLCUSTOMIZATIONS/Art/PREFERENCES.md` for:
+Check `~/.claude/skills/PAI/USER/SKILLCUSTOMIZATIONS/Art/PREFERENCES.md` for:
 - Reference image locations
 - Style examples by use case
 - Character and scene reference guidance
@@ -197,5 +199,5 @@ User: "create icon for the skill system pack"
 → Generates 1K image with --remove-bg for transparency
 → Resizes to 256x256 RGBA PNG
 → Outputs to ~/Downloads/ for preview
-→ After approval, copies to ~/Projects/PAI/Packs/icons/
+→ After approval, copies to ${PROJECTS_DIR}/PAI/Packs/icons/
 ```

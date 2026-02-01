@@ -1,12 +1,12 @@
 ---
 name: Aphorisms
-description: USE WHEN aphorism, quote, saying.
+description: USE WHEN aphorism, quote, saying. SkillSearch('aphorisms') for docs.
 ---
 
 ## Customization
 
 **Before executing, check for user customizations at:**
-`~/.claude/skills/CORE/USER/SKILLCUSTOMIZATIONS/Aphorisms/`
+`~/.claude/skills/PAI/USER/SKILLCUSTOMIZATIONS/Aphorisms/`
 
 If this directory exists, load and apply any PREFERENCES.md, configurations, or resources found there. These override default behavior. If the directory does not exist, proceed with skill defaults.
 

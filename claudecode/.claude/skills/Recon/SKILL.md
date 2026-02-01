@@ -1,12 +1,12 @@
 ---
 name: Recon
-description: USE WHEN recon, reconnaissance, bug bounty, attack surface.
+description: USE WHEN recon, reconnaissance, bug bounty, attack surface. SkillSearch('recon') for docs.
 ---
 
 ## Customization
 
 **Before executing, check for user customizations at:**
-`~/.claude/skills/CORE/USER/SKILLCUSTOMIZATIONS/Recon/`
+`~/.claude/skills/PAI/USER/SKILLCUSTOMIZATIONS/Recon/`
 
 If this directory exists, load and apply any PREFERENCES.md, configurations, or resources found there. These override default behavior. If the directory does not exist, proceed with skill defaults.
 
@@ -14,28 +14,30 @@ If this directory exists, load and apply any PREFERENCES.md, configurations, or 
 
 **Infrastructure and Network Reconnaissance**
 
-## Purpose
 
-Technical reconnaissance of network infrastructure including domains, IP addresses, netblocks, and ASNs. Combines passive intelligence gathering with authorized active scanning to map attack surfaces and identify assets.
+## 🚨 MANDATORY: Voice Notification (REQUIRED BEFORE ANY ACTION)
 
-## Voice Notification
-
-**When executing a workflow, do BOTH:**
+**You MUST send this notification BEFORE doing anything else when this skill is invoked.**
 
 1. **Send voice notification**:
    ```bash
    curl -s -X POST http://localhost:8888/notify \
      -H "Content-Type: application/json" \
-     -d '{"message": "Running the WORKFLOWNAME workflow from the Recon skill"}' \
+     -d '{"message": "Running the WORKFLOWNAME workflow in the Recon skill to ACTION"}' \
      > /dev/null 2>&1 &
    ```
 
 2. **Output text notification**:
    ```
-   Running the **WorkflowName** workflow from the **Recon** skill...
+   Running the **WorkflowName** workflow in the **Recon** skill to ACTION...
    ```
 
-**Full documentation:** `~/.claude/skills/CORE/SkillNotifications.md`
+**This is not optional. Execute this curl command immediately upon skill invocation.**
+
+## Purpose
+
+Technical reconnaissance of network infrastructure including domains, IP addresses, netblocks, and ASNs. Combines passive intelligence gathering with authorized active scanning to map attack surfaces and identify assets.
+
 
 ## When to Use This Skill
 

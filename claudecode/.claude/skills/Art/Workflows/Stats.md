@@ -2,6 +2,19 @@
 
 **Single striking statistics illustrated as visual data points using UL aesthetic.**
 
+## Voice Notification
+
+```bash
+curl -s -X POST http://localhost:8888/notify \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Running the Stats workflow in the Art skill to create stat cards"}' \
+  > /dev/null 2>&1 &
+```
+
+Running **Stats** in **Art**...
+
+---
+
 Creates **ILLUSTRATED STAT CARDS** — one number/statistic made visual with simple illustration and editorial style.
 
 ---

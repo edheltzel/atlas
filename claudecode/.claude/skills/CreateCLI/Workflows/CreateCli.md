@@ -7,6 +7,17 @@ purpose: Generate complete, production-ready TypeScript CLI from requirements
 
 **Generate production-quality TypeScript command-line interfaces following llcli pattern and CLI-First Architecture.**
 
+## Voice Notification
+
+```bash
+curl -s -X POST http://localhost:8888/notify \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Running the CreateCli workflow in the CreateCLI skill to generate new CLI"}' \
+  > /dev/null 2>&1 &
+```
+
+Running the **CreateCli** workflow in the **CreateCLI** skill to generate new CLI...
+
 ---
 
 ## 🎯 PURPOSE
@@ -265,7 +276,7 @@ const format = formatIdx !== -1 ? args[formatIdx + 1] : 'json';
 4. **Value flags**: `--flag <value>` for choices
 5. **Composable**: Flags should combine logically
 
-**Reference:** `~/.claude/skills/CORE/CliFirstArchitecture.md` (Configuration Flags section)
+**Reference:** `~/.claude/skills/PAI/CliFirstArchitecture.md` (Configuration Flags section)
 
 ---
 

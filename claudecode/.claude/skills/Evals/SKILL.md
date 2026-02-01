@@ -1,6 +1,6 @@
 ---
 name: Evals
-description: USE WHEN eval, evaluate, test agent, benchmark, verify behavior, regression test, capability test.
+description: USE WHEN eval, evaluate, test agent, benchmark, verify behavior, regression test, capability test. Includes three grader types (code-based, model-based, human), transcript capture, pass@k/pass^k metrics, and ALGORITHM integration.
 implements: Science
 science_cycle_time: meso
 ---
@@ -8,7 +8,7 @@ science_cycle_time: meso
 ## Customization
 
 **Before executing, check for user customizations at:**
-`~/.claude/skills/CORE/USER/SKILLCUSTOMIZATIONS/Evals/`
+`~/.claude/skills/PAI/USER/SKILLCUSTOMIZATIONS/Evals/`
 
 If this directory exists, load and apply any PREFERENCES.md, configurations, or resources found there. These override default behavior. If the directory does not exist, proceed with skill defaults.
 

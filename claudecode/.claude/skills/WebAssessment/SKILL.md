@@ -1,12 +1,12 @@
 ---
 name: WebAssessment
-description: USE WHEN web assessment, pentest, security testing, vulnerability scan.
+description: USE WHEN web assessment, pentest, security testing, vulnerability scan. SkillSearch('webassessment') for docs.
 ---
 
 ## Customization
 
 **Before executing, check for user customizations at:**
-`~/.claude/skills/CORE/USER/SKILLCUSTOMIZATIONS/WebAssessment/`
+`~/.claude/skills/PAI/USER/SKILLCUSTOMIZATIONS/WebAssessment/`
 
 If this directory exists, load and apply any PREFERENCES.md, configurations, or resources found there. These override default behavior. If the directory does not exist, proceed with skill defaults.
 

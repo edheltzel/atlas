@@ -1,16 +1,30 @@
 # SpawnParallelAgents Workflow
 
-**Launches multiple generic Intern agents for parallel grunt work (NOT custom agents).**
+**Launches multiple parallel agents for grunt work - same task, different inputs.**
+
+## Voice Notification
+
+```bash
+curl -s -X POST http://localhost:8888/notify \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Running the SpawnParallelAgents workflow in the Agents skill to launch agents"}' \
+  > /dev/null 2>&1 &
+```
+
+Running **SpawnParallelAgents** in **Agents**...
+
+---
 
 ## When to Use
 
-{principal.name} says:
+{PRINCIPAL.NAME} says:
 - "Launch 5 agents to research these companies"
 - "Spin up agents to process this list"
 - "Create agents to analyze these files" (no "custom")
-- "Use interns to check these URLs"
 
-**KEY: No "custom" keyword = generic Intern agents (same voice, fast parallel execution)**
+**KEY: No "custom" keyword = simple parallel workers for grunt work (fast execution)**
+
+**NOT the same as custom agents** - for unique personalities/voices/colors, use the CreateCustomAgent workflow.
 
 ## The Workflow
 
@@ -118,9 +132,9 @@ Provide a brief assessment and any issues found.`,
 
 ## Example: Research 5 Companies
 
-**{principal.name}:** "Launch agents to research these 5 AI security companies"
+**{PRINCIPAL.NAME}:** "Launch agents to research these 5 AI security companies"
 
-**{daidentity.name}'s Execution:**
+**{DAIDENTITY.NAME}'s Execution:**
 ```typescript
 // Single message with 5 Task calls:
 Task({
@@ -329,35 +343,32 @@ Task({ ..., model: "haiku" })
 
 ## Voice Output
 
-All generic Intern agents use the same voice:
-- **Dev Patel** (d3MFdIuCfbAIwiu7jC4a)
-- High-energy genius generalist
-- 270 wpm speaking rate
-- Enthusiastic and eager
+## Voice Output
 
-This is intentional - for parallel grunt work, we don't need personality diversity. That's what custom agents are for.
+For grunt work, voice output is optional. If enabled, all parallel agents use the default voice configuration.
+
+This is intentional - for parallel grunt work, we prioritize speed over personality diversity. **For unique voices and identities, use the CreateCustomAgent workflow instead.**
 
 ## When to Use Custom Agents Instead
 
 Use **CreateCustomAgent workflow** when:
+- User says "custom agents" (the key trigger)
 - You need distinct personalities/perspectives
-- Voice diversity matters (presenting results)
+- Voice and color diversity matters
 - Different analytical approaches required
 - Each agent brings unique expertise
 
 Use **SpawnParallelAgents workflow** when:
-- Simple parallel processing
+- Simple parallel processing (no "custom" keyword)
 - Same task, different inputs
 - Speed matters more than personality
-- Voice diversity not needed
+- Identity diversity not needed
 
 ## Related Workflows
 
-- **CreateCustomAgent** - For agents with unique personalities/voices
+- **CreateCustomAgent** - For agents with unique personalities, voices, and colors
 - **ListTraits** - Show available traits for custom agents
 
 ## References
 
 - Agent personalities: `~/.claude/skills/Agents/AgentPersonalities.md`
-- Intern agent definition: Line 277-287 in AgentPersonalities.md
-- Delegation patterns: `~/.claude/skills/CORE/Workflows/Delegation.md`

@@ -1,38 +1,39 @@
 ---
 name: RedTeam
-description: USE WHEN red team, attack idea, counterarguments, critique, stress test.
+description: USE WHEN red team, attack idea, counterarguments, critique, stress test. SkillSearch('redteam') for docs.
 ---
 
 ## Customization
 
 **Before executing, check for user customizations at:**
-`~/.claude/skills/CORE/USER/SKILLCUSTOMIZATIONS/RedTeam/`
+`~/.claude/skills/PAI/USER/SKILLCUSTOMIZATIONS/RedTeam/`
 
 If this directory exists, load and apply any PREFERENCES.md, configurations, or resources found there. These override default behavior. If the directory does not exist, proceed with skill defaults.
 
-# RedTeam Skill
 
-Military-grade adversarial analysis using parallel agent deployment. Breaks arguments into atomic components, attacks from 32 expert perspectives (engineers, architects, pentesters, interns), synthesizes findings, and produces devastating counter-arguments with steelman representations.
+## 🚨 MANDATORY: Voice Notification (REQUIRED BEFORE ANY ACTION)
 
-
-## Voice Notification
-
-**When executing a workflow, do BOTH:**
+**You MUST send this notification BEFORE doing anything else when this skill is invoked.**
 
 1. **Send voice notification**:
    ```bash
    curl -s -X POST http://localhost:8888/notify \
      -H "Content-Type: application/json" \
-     -d '{"message": "Running the WORKFLOWNAME workflow from the RedTeam skill"}' \
+     -d '{"message": "Running the WORKFLOWNAME workflow in the RedTeam skill to ACTION"}' \
      > /dev/null 2>&1 &
    ```
 
 2. **Output text notification**:
    ```
-   Running the **WorkflowName** workflow from the **RedTeam** skill...
+   Running the **WorkflowName** workflow in the **RedTeam** skill to ACTION...
    ```
 
-**Full documentation:** `~/.claude/skills/CORE/SkillNotifications.md`
+**This is not optional. Execute this curl command immediately upon skill invocation.**
+
+# RedTeam Skill
+
+Military-grade adversarial analysis using parallel agent deployment. Breaks arguments into atomic components, attacks from 32 expert perspectives (engineers, architects, pentesters, interns), synthesizes findings, and produces devastating counter-arguments with steelman representations.
+
 
 ## Workflow Routing
 
@@ -41,7 +42,7 @@ Route to the appropriate workflow based on the request.
 **When executing a workflow, output this notification directly:**
 
 ```
-Running the **WorkflowName** workflow from the **RedTeam** skill...
+Running the **WorkflowName** workflow in the **RedTeam** skill to ACTION...
 ```
 
 | Trigger | Workflow |

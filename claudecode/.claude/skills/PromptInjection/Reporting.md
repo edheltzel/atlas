@@ -18,7 +18,7 @@
 # Executive Summary
 
 ## Assessment Overview
-Unsupervised Learning conducted a comprehensive prompt injection security
+{COMPANY_NAME} conducted a comprehensive prompt injection security
 assessment of [Client] AI chatbot from [dates]. Testing covered [scope areas].
 
 ## Key Findings

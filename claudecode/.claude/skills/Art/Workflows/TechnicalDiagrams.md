@@ -2,6 +2,17 @@
 
 **Clean Excalidraw-style technical diagrams with custom typography aesthetic.**
 
+## Voice Notification
+
+```bash
+curl -s -X POST http://localhost:8888/notify \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Running the TechnicalDiagrams workflow in the Art skill to create diagrams"}' \
+  > /dev/null 2>&1 &
+```
+
+Running **TechnicalDiagrams** in **Art**...
+
 ---
 
 ## Purpose

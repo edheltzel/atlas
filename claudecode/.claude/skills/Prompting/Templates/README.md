@@ -168,7 +168,7 @@ cd ~/.claude
 git checkout v2.5.0
 # Or to just undo templating:
 rm -rf Templates/
-git checkout v2.5.0 -- skills/CORE/Prompting.md
+git checkout v2.5.0 -- skills/PAI/Prompting.md
 ```
 
 ## Token Savings
@@ -304,7 +304,7 @@ This system is based on research from:
 
 ## Related Documentation
 
-- `~/.claude/skills/CORE/Prompting.md` (Templating section)
+- `~/.claude/skills/PAI/Prompting.md` (Templating section)
 - `~/.claude/History/research/2025-12/2025-12-09-templating-system-research.md`
 - `~/.claude/History/learnings/2025-12/2025-12-09-021700_LEARNING_complete-templating-system-and-evals-integration.md`
 - `~/.claude/skills/Evals/SKILL.md`

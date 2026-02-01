@@ -1,7 +1,7 @@
 # Diverged Files from Upstream PAI
 
 **Last Updated:** 2026-01-31
-**Atlas Version:** PAI 2.4 based
+**Atlas Version:** PAI 2.5 synced
 **Upstream Version:** PAI v2.5.0
 **Algorithm:** Atlas 7-phase ISC (diverged from PAI 8-point STORY)
 

@@ -1,219 +1,208 @@
-# Research Upgrade
+# Research Upgrade Workflow
 
-Deeply research a discovered upgrade opportunity to understand implementation details, best practices, and PAI integration approach.
+## Voice Notification
 
-**Trigger:** "research this upgrade", "deep dive on [feature]", "analyze release notes", "further research"
+```bash
+curl -s -X POST http://localhost:8888/notify \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Running the ResearchUpgrade workflow in the PAIUpgrade skill to research upgrades"}' \
+  > /dev/null 2>&1 &
+```
+
+Running the **ResearchUpgrade** workflow in the **PAIUpgrade** skill to research upgrades...
+
+Deep dive on a specific upgrade opportunity to understand implementation details and create an actionable plan.
+
+**Trigger:** "research this upgrade", "deep dive on [feature]", "dig deeper", "further research"
 
 ---
 
 ## Overview
 
-When CheckForUpgrades discovers something interesting, use this workflow to:
-1. Research the feature across multiple authoritative sources
+When the Upgrade workflow discovers something interesting, use this workflow to:
+1. Research the feature across authoritative sources
 2. Understand implementation details and best practices
-3. Map to PAI architecture for integration opportunities
-4. Generate actionable implementation recommendations
+3. Map to the user's PAI architecture
+4. Generate a detailed implementation plan
 
 ---
 
-## Process
+## Execution
 
 ### Step 1: Identify Research Target
 
-Accept input in various forms:
-- Feature name from CheckForUpgrades results
-- Release notes content (from `/release-notes` command)
-- Blog post or documentation URL
-- YouTube video transcript
+Accept input as:
+- Feature name from Upgrade workflow results
+- URL (blog post, documentation, release notes)
+- Video transcript excerpt
 - Changelog entry
 
----
+### Step 2: Launch Parallel Research Agents
 
-### Step 2: Launch Parallel Research
+Spawn 4 parallel Intern agents to research the feature:
 
-**For each significant feature, research across sources:**
-
-Use BACKGROUNDDELEGATION to spawn parallel Intern agents:
-
-```markdown
-For feature: [Feature Name]
-
-Search these sources:
-1. GitHub: anthropics/claude-code
-   - README, CHANGELOG, docs/, examples/
-   - Commit messages mentioning the feature
-   - Issue discussions
-
-2. Anthropic Engineering Blog
-   - https://www.anthropic.com/news
-   - https://www.anthropic.com/research
-
-3. Claude Documentation
-   - https://docs.claude.com
-   - https://support.claude.com
-
-4. MCP Documentation (if relevant)
-   - https://modelcontextprotocol.io
-   - https://spec.modelcontextprotocol.io
-
-5. Community Resources
-   - GitHub Discussions
-   - Stack Overflow
 ```
+Use Task tool with subagent_type=Intern, run 4 agents in parallel:
 
----
+Agent 1 - Official Documentation:
+"Research [FEATURE] in official Anthropic documentation:
+- Search docs.claude.com
+- Check support.claude.com
+- Look in modelcontextprotocol.io (if MCP-related)
+
+Return: Official description, usage examples, any caveats or limitations."
+
+Agent 2 - GitHub Sources:
+"Research [FEATURE] in Anthropic GitHub repositories:
+- anthropics/claude-code (README, CHANGELOG, docs/, examples/)
+- anthropics/anthropic-sdk-python
+- anthropics/anthropic-sdk-typescript
+- modelcontextprotocol/ repositories
+
+Return: Code examples, commit history mentioning feature, any discussions."
+
+Agent 3 - Blog and Announcements:
+"Search for [FEATURE] in Anthropic communications:
+- anthropic.com/news
+- anthropic.com/research
+- Twitter/X @AnthropicAI
+
+Return: Announcement context, intended use cases, any demos."
+
+Agent 4 - Community Usage:
+"Search for [FEATURE] in community resources:
+- GitHub Discussions
+- Stack Overflow
+- Developer forums
+
+Return: Real-world usage examples, common issues, tips from practitioners."
+```
 
 ### Step 3: Synthesize Research
 
-For each feature, compile:
+Compile findings into structured analysis:
 
 | Aspect | Details |
 |--------|---------|
-| **Official Documentation** | What Anthropic says about it |
-| **Implementation Details** | How it works under the hood |
+| **What It Does** | Clear explanation from official sources |
+| **How It Works** | Technical implementation details |
 | **Use Cases** | Documented examples and patterns |
 | **Limitations** | Known constraints or caveats |
 | **Best Practices** | Recommended usage patterns |
 
----
+### Step 4: Map to User's PAI
 
-### Step 4: Map to PAI Architecture
+Using the user context from the Upgrade workflow (or gather fresh if not available):
 
-Analyze applicability to PAI components:
+| PAI Component | Potential Impact |
+|---------------|------------------|
+| Skills System | New capabilities, better patterns |
+| Hooks System | New triggers, better event handling |
+| Agent System | New delegation patterns |
+| Tools | New CLI capabilities |
+| Configuration | Settings changes |
 
-| Component | Potential Impact |
-|-----------|-----------------|
-| Skills System | New skill capabilities, context forking |
-| Hooks System | New hook types, triggers, agent-scoped hooks |
-| Agent System | New agent types, delegation patterns |
-| Workflows | New workflow possibilities |
-| Tools | New CLI tools or capabilities |
-| Configuration | Settings changes, deny lists |
-
----
-
-### Step 5: Generate Recommendations
-
-Use priority framework:
-- 🔥 **HIGH PRIORITY** - Immediate value, can implement today
-- 📌 **MEDIUM PRIORITY** - Good value, requires more work
-- 💡 **ASPIRATIONAL** - Future possibilities, research needed
-
-Each recommendation includes:
-- Feature being leveraged
-- Current PAI gap it fills
-- Implementation approach
-- Estimated effort
-- Dependencies
-
----
-
-### Step 6: Output Report
+### Step 5: Generate Implementation Plan
 
 ```markdown
-# Upgrade Research: [Feature/Topic]
-**Research Date:** [date]
+# Upgrade Research: [Feature Name]
+**Research Date:** [timestamp]
 
 ## Executive Summary
-[2-3 sentences on findings and key opportunities]
+[2-3 sentences: what this is, why it matters, recommendation]
 
-## Features Researched
+## Feature Analysis
 
-### [Feature Name]
-**Category:** [hooks/skills/agents/config/etc]
-**Official Docs:** [URL if found]
+### What It Does
+[Clear explanation]
 
-**What It Does:**
-[Clear explanation from research]
+### Technical Details
+[How it works under the hood]
 
-**Technical Details:**
-[Implementation specifics from GitHub/docs]
+### Use Cases
+[Where and when to use it]
 
-**PAI Opportunity:**
-[How we can use this]
+### Limitations
+[What it can't do or edge cases]
 
-**Implementation:**
-- [ ] [Step 1]
-- [ ] [Step 2]
+## PAI Implementation
 
----
+### Opportunity
+[What this enables in your PAI setup]
 
-## Prioritized Upgrade Roadmap
+### Implementation Steps
+- [ ] Step 1: [specific action]
+- [ ] Step 2: [specific action]
+- [ ] Step 3: [specific action]
 
-### 🔥 HIGH PRIORITY (This Week)
-1. [Feature] → [Implementation]
+### Files to Modify
+- `path/to/file.md` - [what changes]
+- `path/to/another.ts` - [what changes]
 
-### 📌 MEDIUM PRIORITY (This Month)
-1. [Feature] → [Implementation]
+### Effort Estimate
+[Low/Medium/High with brief rationale]
 
-### 💡 ASPIRATIONAL (Research Further)
-1. [Feature] → [Why interesting]
+### Dependencies
+[What needs to be in place first]
 
 ## Research Sources
-- [URLs consulted]
+- [URL 1] - [what we learned]
+- [URL 2] - [what we learned]
 
 ## Next Steps
-- [ ] [Specific action item]
+- [ ] [Specific action to take]
 ```
 
 ---
 
-## Research Agent Template
+## Special Case: Release Notes Deep Dive
 
-When spawning research agents:
+When researching release notes specifically:
 
-```markdown
-Research the following Claude Code feature in depth:
+1. Run `/release-notes` or fetch latest CHANGELOG
+2. Extract each significant feature
+3. Launch parallel research for each feature
+4. Compile into comprehensive upgrade roadmap
 
-**Feature:** [Feature name]
-**Brief:** [What we know so far]
+This replaces the former ReleaseNotesDeepDive workflow.
 
-Search these sources:
-1. GitHub: anthropics/claude-code - README, CHANGELOG, docs/, commits
-2. Anthropic blog: anthropic.com/news
-3. Claude docs: docs.claude.com
-4. MCP docs: modelcontextprotocol.io
+---
 
-Find:
-- Official documentation or examples
-- Implementation details
-- Use cases and best practices
-- Limitations or caveats
-- Related features or dependencies
+## Error Handling
 
-Return a structured summary with source URLs.
+- If research agents return sparse results: Note "limited documentation available"
+- If feature is too new: Check GitHub commits/PRs directly
+- If conflicting information: Prefer official docs > GitHub > community
+
+---
+
+## Example
+
+```
+User: "research the context forking feature"
+
+[Spawn 4 research agents in parallel]
+
+Agent 1: Found in docs.claude.com - context: fork allows skills to run isolated
+Agent 2: Found in anthropics/claude-code CHANGELOG - introduced v1.0.15
+Agent 3: Found in Anthropic blog - designed for complex skill workflows
+Agent 4: Found in GitHub discussions - users report 40% latency reduction
+
+# Upgrade Research: Context Forking
+**Research Date:** 2026-01-15
+
+## Executive Summary
+Context forking allows skills to execute in isolated contexts, preventing prompt
+bloat and improving latency. Highly relevant for your security hooks refactor.
+
+## Feature Analysis
+
+### What It Does
+Creates a clean context when a skill executes, inheriting only specified context...
+
+[continues with full analysis]
 ```
 
 ---
 
-## Examples
-
-**Deep dive on release notes:**
-```
-User: "analyze the latest Claude Code release"
-→ Run /release-notes to get official list
-→ Extract significant features
-→ Launch parallel research agents
-→ Compile findings into upgrade roadmap
-```
-
-**Research specific feature:**
-```
-User: "research the new context forking feature"
-→ Spawn research agents for that feature
-→ Search GitHub, docs, blog
-→ Map to PAI skills architecture
-→ Output implementation recommendations
-```
-
----
-
-## Integration
-
-**With Other Workflows:**
-- **CheckForUpgrades** - Discovers items to research
-- **FindSources** - Identifies new sources to monitor
-
-**With CORE:**
-- **BACKGROUNDDELEGATION** - Launch parallel research agents
-- **GIT** - Commit any implemented upgrades
+**This workflow takes a single upgrade opportunity and turns it into an actionable implementation plan with full research backing.**

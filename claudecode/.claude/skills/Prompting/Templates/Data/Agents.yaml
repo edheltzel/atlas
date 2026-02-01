@@ -1,4 +1,4 @@
-# PAI Agent Definitions
+# {DAIDENTITY.NAME} Agent Definitions
 # Canonical source for templating - derived from AgentPersonalities.md
 # Used by: ROSTER template, BRIEFING template, VOICE template
 
@@ -14,10 +14,10 @@ defaults:
 # Agent definitions
 agents:
   # === PRIMARY ASSISTANT ===
-  main:
-    id: main
+  kai:
+    id: kai
     name: Jamie Thompson
-    display_name: PAI
+    display_name: {DAIDENTITY.NAME}
     archetype: enthusiast
     role: Primary AI Assistant
     emoji: "🤖"
@@ -51,7 +51,7 @@ agents:
     role: Strategic Research Analyst
     emoji: "🎯"
     voice:
-      voice_id: AXdMgz6evoL7OPd7eU12
+      voice_id: YOUR_VOICE_ID_HERE
       voice_name: Ava (Premium)
       rate_wpm: 229
       stability: 0.64
@@ -106,7 +106,7 @@ agents:
     role: Senior Engineering Leader
     emoji: "⚙️"
     voice:
-      voice_id: iLVmqjzCGGvqtMCk6vVQ
+      voice_id: YOUR_VOICE_ID_HERE
       voice_name: Marcus (Premium)
       rate_wpm: 212
       stability: 0.72
@@ -133,7 +133,7 @@ agents:
     role: System Architect
     emoji: "🏛️"
     voice:
-      voice_id: muZKMsIDGYtIkjjiUS82
+      voice_id: YOUR_VOICE_ID_HERE
       voice_name: Serena (Premium)
       rate_wpm: 205
       stability: 0.75
@@ -161,7 +161,7 @@ agents:
     role: UX/UI Designer
     emoji: "🎨"
     voice:
-      voice_id: ZF6FPAbjXT4488VcRRnw
+      voice_id: YOUR_VOICE_ID_HERE
       voice_name: Isha (Premium)
       rate_wpm: 226
       stability: 0.52
@@ -188,7 +188,7 @@ agents:
     role: Visual Content Creator
     emoji: "🖼️"
     voice:
-      voice_id: ZF6FPAbjXT4488VcRRnw
+      voice_id: YOUR_VOICE_ID_HERE
       voice_name: Isha (Premium)
       rate_wpm: 215
       stability: 0.20

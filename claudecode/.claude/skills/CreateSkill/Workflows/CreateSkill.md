@@ -2,12 +2,23 @@
 
 Create a new skill following the canonical structure with proper TitleCase naming.
 
+## Voice Notification
+
+```bash
+curl -s -X POST http://localhost:8888/notify \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Running the CreateSkill workflow in the CreateSkill skill to create new skill"}' \
+  > /dev/null 2>&1 &
+```
+
+Running the **CreateSkill** workflow in the **CreateSkill** skill to create new skill...
+
 ## Step 1: Read the Authoritative Sources
 
 **REQUIRED FIRST:**
 
-1. Read the skill system documentation: `~/.claude/skills/CORE/SkillSystem.md`
-2. Read the canonical example: `~/.claude/skills/_BLOGGING/SKILL.md`
+1. Read the skill system documentation: `~/.claude/skills/PAI/SkillSystem.md`
+2. Read the canonical example: `~/.claude/skills/Art/SKILL.md`
 
 ## Step 2: Understand the Request
 
@@ -59,13 +70,26 @@ description: [What it does]. USE WHEN [intent triggers using OR]. [Additional ca
 
 [Brief description]
 
+## Voice Notification
+
+**When executing a workflow, do BOTH:**
+
+1. **Send voice notification**:
+   ```bash
+   curl -s -X POST http://localhost:8888/notify \
+     -H "Content-Type: application/json" \
+     -d '{"message": "Running WORKFLOWNAME in SKILLNAME"}' \
+     > /dev/null 2>&1 &
+   ```
+
+2. **Output text notification**:
+   ```
+   Running **WorkflowName** in **SkillName**...
+   ```
+
+**Full documentation:** `~/.claude/skills/PAI/SYSTEM/THENOTIFICATIONSYSTEM.md`
+
 ## Workflow Routing
-
-**When executing a workflow, output this notification:**
-
-```
-Running the **WorkflowName** workflow from the **SkillName** skill...
-```
 
 | Workflow | Trigger | File |
 |----------|---------|------|
@@ -141,14 +165,14 @@ bun ToolName.ts \
 - Workflows should expose this flexibility, not hardcode single patterns
 - Users speak naturally; workflows translate to precise CLI
 
-**Reference:** `~/.claude/skills/CORE/CliFirstArchitecture.md` (Workflow-to-Tool Integration section)
+**Reference:** `~/.claude/skills/PAI/CliFirstArchitecture.md` (Workflow-to-Tool Integration section)
 
 **Examples (TitleCase):**
 ```bash
 touch ~/.claude/skills/Daemon/Workflows/UpdateDaemonInfo.md
 touch ~/.claude/skills/Daemon/Workflows/UpdatePublicRepo.md
-touch ~/.claude/skills/_BLOGGING/Workflows/Create.md
-touch ~/.claude/skills/_BLOGGING/Workflows/Publish.md
+touch ~/.claude/skills/Research/Workflows/DeepDive.md
+touch ~/.claude/skills/Research/Workflows/QuickScan.md
 ```
 
 ## Step 7: Verify TitleCase
@@ -183,6 +207,7 @@ Verify ALL files use TitleCase:
 - [ ] Description is under 1024 characters
 
 ### Markdown Body
+- [ ] `## Voice Notification` section present (for skills with workflows)
 - [ ] `## Workflow Routing` section with table format
 - [ ] All workflow files have routing entries
 - [ ] `## Examples` section with 2-3 concrete usage patterns

@@ -6,7 +6,7 @@ Intelligent pattern selection for Fabric CLI. Automatically selects the right pa
 
 **Before starting any task with this skill, load complete PAI context:**
 
-`read ~/.claude/skills/CORE/SKILL.md`
+`read ~/.claude/skills/PAI/SKILL.md`
 
 This provides access to:
 - Complete contact list (Angela, Bunny, Saša, Greg, team members)
@@ -16,23 +16,14 @@ This provides access to:
 - Voice IDs for agent routing (ElevenLabs)
 - Personal preferences and operating instructions
 
-## Setup Check - Fabric Repository
+## Primary Skill Reference
 
-**IMPORTANT: Before using this skill, verify the Fabric repository is available:**
+**The Fabric skill has moved to a dedicated skill directory.**
 
-```bash
-# Check if Fabric repo exists
-if [ ! -d "$HOME/.claude/skills/fabric/fabric-repo" ]; then
-  echo "Fabric repository not found. Cloning..."
-  cd "$HOME/.claude/skills/fabric"
-  git clone https://github.com/fabric-project/fabric.git fabric-repo
-  echo "Fabric repository cloned successfully."
-else
-  echo "Fabric repository found at $HOME/.claude/skills/fabric/fabric-repo"
-fi
-```
+**Primary Skill:** `~/.claude/skills/Fabric/SKILL.md`
+**Patterns Location:** `~/.claude/skills/Fabric/Patterns/`
 
-**If the repo doesn't exist, clone it immediately before proceeding with any pattern selection.**
+For pattern updates, use: "update fabric patterns" → invokes Fabric skill's UpdatePatterns workflow.
 
 ## When to Activate This Skill
 
@@ -169,7 +160,7 @@ fabric "your text here" -p [pattern]
 - `summarize_pull-requests` - PR summary
 - `summarize_prompt` - Prompt summary
 - `youtube_summary` - YouTube video summary
-- `create_ul_summary` - Unsupervised Learning summary
+- `create_ul_summary` - Newsletter summary
 - `create_cyber_summary` - Cybersecurity summary
 
 ### Extraction (30+ patterns)
@@ -279,23 +270,18 @@ fabric "your text here" -p [pattern]
 - `check_agreement` - Agreement checking
 - `arbiter-evaluate-quality` - Quality evaluation
 
-## 🔄 Updating Patterns
+## Updating Patterns
 
-The Fabric repository is included in this skill at `${PAI_DIR}/skills/fabric/fabric-repo/`.
+Patterns are managed by the Fabric skill at `~/.claude/skills/Fabric/`.
 
 **To update patterns:**
 
-```bash
-cd ${PAI_DIR}/skills/fabric/fabric-repo
-git pull origin main
-```
+Say: "update fabric patterns" → invokes Fabric skill's UpdatePatterns workflow
 
 **To see all available patterns:**
 
 ```bash
-ls ${PAI_DIR}/skills/fabric/fabric-repo/data/Patterns/
-# OR from your local Fabric install:
-ls ~/.config/fabric/Patterns/
+ls ~/.claude/skills/Fabric/Patterns/
 ```
 
 ## 💡 Usage Examples
@@ -368,12 +354,12 @@ fabric -u "URL" -p extract_wisdom > wisdom.txt
 cat wisdom.txt | fabric -p create_5_sentence_summary
 ```
 
-## 📖 Supplementary Resources
+## Supplementary Resources
 
-**Full Pattern List:** `ls ${PAI_DIR}/skills/fabric/fabric-repo/data/Patterns/`
-**Fabric Repo:** `${PAI_DIR}/skills/fabric/fabric-repo/`
-**Fabric Documentation:** https://github.com/fabric-project/fabric
-**Pattern Templates:** See `${PAI_DIR}/skills/fabric/fabric-repo/data/Patterns/official_pattern_template/`
+**Full Pattern List:** `ls ~/.claude/skills/Fabric/Patterns/`
+**Fabric Skill:** `~/.claude/skills/Fabric/SKILL.md`
+**Fabric Documentation:** https://github.com/danielmiessler/fabric
+**Pattern Templates:** See `~/.claude/skills/Fabric/Patterns/official_pattern_template/`
 
 ## 🔑 Key Insight
 

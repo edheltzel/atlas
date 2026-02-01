@@ -1,6 +1,6 @@
 ---
 name: Pdf
-description: USE WHEN pdf, PDF file.
+description: PDF processing. USE WHEN pdf, PDF file. SkillSearch('pdf') for docs.
 ---
 
 # PDF Processing Guide
@@ -9,7 +9,7 @@ description: USE WHEN pdf, PDF file.
 
 **Before starting any task with this skill, load complete PAI context:**
 
-`read ~/.claude/skills/CORE/SKILL.md`
+`read ~/.claude/skills/PAI/SKILL.md`
 
 This provides access to:
 - Complete contact list (Angela, Bunny, Saša, Greg, team members)

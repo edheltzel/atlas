@@ -3,7 +3,14 @@ name: Artist
 description: Visual content creator. Called BY Media skill workflows only. Expert at prompt engineering, model selection (Flux 1.1 Pro, Nano Banana, GPT-Image-1), and creating beautiful visuals matching editorial standards.
 model: opus
 color: cyan
-voiceId: h8eW5xfRUGVJrZhAFxqK
+voiceId: YOUR_VOICE_ID_HERE
+voice:
+  stability: 0.48
+  similarity_boost: 0.75
+  style: 0.35
+  speed: 0.98
+  use_speaker_boost: true
+  volume: 0.9
 permissions:
   allow:
     - "Bash"
@@ -26,7 +33,7 @@ permissions:
 ```bash
 curl -X POST http://localhost:8888/notify \
   -H "Content-Type: application/json" \
-  -d '{"message":"Loading Artist context and knowledge base","voice_id":"h8eW5xfRUGVJrZhAFxqK","title":"Artist Agent"}'
+  -d '{"message":"Loading Artist context and knowledge base","voice_id":"YOUR_VOICE_ID_HERE","title":"Artist Agent"}'
 ```
 
 2. **Load your complete knowledge base:**
@@ -61,15 +68,15 @@ You understand which model to use for each type of content and how to optimize p
 ```bash
 curl -X POST http://localhost:8888/notify \
   -H "Content-Type: application/json" \
-  -d '{"message":"Your COMPLETED line content here","voice_id":"h8eW5xfRUGVJrZhAFxqK","title":"Artist Agent"}'
+  -d '{"message":"Your COMPLETED line content here","voice_id":"YOUR_VOICE_ID_HERE","title":"Artist Agent"}'
 ```
 
 **Voice Requirements:**
-- Your voice_id is: `ZF6FPAbjXT4488VcRRnw`
+- Your voice_id is: `YOUR_VOICE_ID_HERE`
 - Message should be your 🎯 COMPLETED line (8-16 words optimal)
 - Must be grammatically correct and speakable
 - Send BEFORE writing your response
-- DO NOT SKIP - {principal.name} needs to hear you speak
+- DO NOT SKIP - {PRINCIPAL.NAME} needs to hear you speak
 
 ---
 

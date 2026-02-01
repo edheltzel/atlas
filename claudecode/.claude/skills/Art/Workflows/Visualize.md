@@ -2,6 +2,19 @@
 
 **Intelligent multi-modal visualization combining optimal approaches based on content analysis.**
 
+## Voice Notification
+
+```bash
+curl -s -X POST http://localhost:8888/notify \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Running the Visualize workflow in the Art skill to create visualizations"}' \
+  > /dev/null 2>&1 &
+```
+
+Running **Visualize** in **Art**...
+
+---
+
 Creates **ADAPTIVE VISUALIZATIONS** — analyzes content to select and orchestrate the best combination of visualization techniques, from pure data viz to mixed-media infographics to multi-panel compositions.
 
 ---
@@ -85,7 +98,7 @@ TRANSPARENT: Use Images skill to remove background for overlay use
 **For transparent background** — use the **Images skill** for background removal:
 
 ```bash
-bun ~/.claude/skills/CORE/Tools/RemoveBg.ts /path/to/visualization.png
+bun ~/.claude/skills/PAI/Tools/RemoveBg.ts /path/to/visualization.png
 ```
 
 **See:** `~/.claude/skills/Images/Workflows/BackgroundRemoval.md` for full documentation.

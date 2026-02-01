@@ -1,14 +1,34 @@
 ---
 name: FirstPrinciples
-description: USE WHEN first principles, fundamental, root cause, decompose.
+description: USE WHEN first principles, fundamental, root cause, decompose. SkillSearch('firstprinciples') for docs.
 ---
 
 ## Customization
 
 **Before executing, check for user customizations at:**
-`~/.claude/skills/CORE/USER/SKILLCUSTOMIZATIONS/FirstPrinciples/`
+`~/.claude/skills/PAI/USER/SKILLCUSTOMIZATIONS/FirstPrinciples/`
 
 If this directory exists, load and apply any PREFERENCES.md, configurations, or resources found there. These override default behavior. If the directory does not exist, proceed with skill defaults.
+
+
+## 🚨 MANDATORY: Voice Notification (REQUIRED BEFORE ANY ACTION)
+
+**You MUST send this notification BEFORE doing anything else when this skill is invoked.**
+
+1. **Send voice notification**:
+   ```bash
+   curl -s -X POST http://localhost:8888/notify \
+     -H "Content-Type: application/json" \
+     -d '{"message": "Running the WORKFLOWNAME workflow in the FirstPrinciples skill to ACTION"}' \
+     > /dev/null 2>&1 &
+   ```
+
+2. **Output text notification**:
+   ```
+   Running the **WorkflowName** workflow in the **FirstPrinciples** skill to ACTION...
+   ```
+
+**This is not optional. Execute this curl command immediately upon skill invocation.**
 
 # FirstPrinciples Skill
 
@@ -35,25 +55,6 @@ Foundational reasoning methodology based on Elon Musk's physics-based thinking f
 - **Any skill**: When inherited assumptions may be limiting the solution space
 
 
-## Voice Notification
-
-**When executing a workflow, do BOTH:**
-
-1. **Send voice notification**:
-   ```bash
-   curl -s -X POST http://localhost:8888/notify \
-     -H "Content-Type: application/json" \
-     -d '{"message": "Running the WORKFLOWNAME workflow from the FirstPrinciples skill"}' \
-     > /dev/null 2>&1 &
-   ```
-
-2. **Output text notification**:
-   ```
-   Running the **WorkflowName** workflow from the **FirstPrinciples** skill...
-   ```
-
-**Full documentation:** `~/.claude/skills/CORE/SkillNotifications.md`
-
 ## Workflow Routing
 
 Route to the appropriate workflow based on the request.
@@ -61,7 +62,7 @@ Route to the appropriate workflow based on the request.
 **When executing a workflow, output this notification directly:**
 
 ```
-Running the **WorkflowName** workflow from the **FirstPrinciples** skill...
+Running the **WorkflowName** workflow in the **FirstPrinciples** skill to ACTION...
 ```
 
   - Break problem into fundamental parts → `Workflows/Deconstruct.md`

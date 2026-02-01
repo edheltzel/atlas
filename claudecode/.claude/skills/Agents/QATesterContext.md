@@ -9,8 +9,8 @@
 ## Required Knowledge (Pre-load from Skills)
 
 ### Core Foundations
-- **skills/CORE/CoreStack.md** - Stack preferences and tooling
-- **skills/CORE/CONSTITUTION.md** - Constitutional principles (Article IX)
+- **skills/PAI/CoreStack.md** - Stack preferences and tooling
+- **skills/PAI/CONSTITUTION.md** - Constitutional principles (Article IX)
 
 ### Testing Standards
 - **skills/Development/TESTING.md** - Testing standards and requirements

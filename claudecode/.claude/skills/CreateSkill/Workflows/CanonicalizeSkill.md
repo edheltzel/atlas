@@ -2,6 +2,17 @@
 
 **Purpose:** Restructure an existing skill to match the canonical format with proper naming conventions.
 
+## Voice Notification
+
+```bash
+curl -s -X POST http://localhost:8888/notify \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Running the CanonicalizeSkill workflow in the CreateSkill skill to restructure skill"}' \
+  > /dev/null 2>&1 &
+```
+
+Running the **CanonicalizeSkill** workflow in the **CreateSkill** skill to restructure skill...
+
 ---
 
 ## Step 1: Read the Authoritative Source
@@ -9,7 +20,7 @@
 **REQUIRED FIRST:** Read the canonical structure:
 
 ```
-~/.claude/skills/CORE/SkillSystem.md
+~/.claude/skills/PAI/SkillSystem.md
 ```
 
 This defines exactly what "canonicalize" means.
@@ -184,7 +195,7 @@ Add `## Workflow Routing` section in markdown body:
 **When executing a workflow, output this notification:**
 
 ```
-Running the **WorkflowName** workflow from the **SkillName** skill...
+Running **WorkflowName** in **SkillName**...
 ```
 
 | Workflow | Trigger | File |

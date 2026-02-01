@@ -2,6 +2,19 @@
 
 **Hand-drawn side-by-side visual comparisons using UL aesthetic.**
 
+## Voice Notification
+
+```bash
+curl -s -X POST http://localhost:8888/notify \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Running the Comparisons workflow in the Art skill to create side-by-side visuals"}' \
+  > /dev/null 2>&1 &
+```
+
+Running **Comparisons** in **Art**...
+
+---
+
 Creates **VISUAL COMPARISONS** — "X vs Y" split compositions, before/after transformations, and illustrated contrasts with editorial style.
 
 ---
@@ -36,7 +49,7 @@ Illustrated comparisons show two contrasting concepts, states, or approaches sid
 ### Character Requirements (When figures present)
 
 **If comparison includes human or robot figures, MUST apply Planeform aesthetic:**
-- Read: `~/.claude/skills/CORE/Aesthetic.md`
+- Read: `~/.claude/skills/PAI/Aesthetic.md`
 - Figures built from ANGULAR PLANES (no round forms)
 - Adult proportions (1:7), NOT cute/stubby
 - Faces are minimal geometric blocks

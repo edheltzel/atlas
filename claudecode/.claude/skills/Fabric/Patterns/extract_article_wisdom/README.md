@@ -20,7 +20,7 @@
 
 **`extractwisdom` addresses the problem of **too much content** and too little time.**
 
-_Not only that, but it's also too easy to forget the stuff we read, watch, or listen to._
+_Not only that, but it's also too easy to forget the stuff you read, watch, or listen to._
 
 This pattern _extracts wisdom_ from any content that can be translated into text, for example:
 
@@ -61,13 +61,13 @@ You can reference the `extractwisdom` **system** and **user** content directly l
 ### Pull the _system_ prompt directly
 
 ```sh
-curl -sS https://github.com/danielmiessler/fabric/blob/main/extract-wisdom/dmiessler/extract-wisdom-1.0.0/system.md
+curl -sS https://raw.githubusercontent.com/danielmiessler/fabric/main/Patterns/extract_wisdom/dmiessler/extract_wisdom-1.0.0/system.md
 ```
 
 ### Pull the _user_ prompt directly
 
 ```sh
-curl -sS https://github.com/danielmiessler/fabric/blob/main/extract-wisdom/dmiessler/extract-wisdom-1.0.0/user.md
+curl -sS https://raw.githubusercontent.com/danielmiessler/fabric/main/Patterns/extract_wisdom/dmiessler/extract_wisdom-1.0.0/user.md
 ```
 
 ## Output
@@ -150,5 +150,5 @@ This allows you to quickly extract what's valuable and meaningful from the conte
 ## Meta
 
 - **Author**: Daniel Miessler
-- **Version Information**: The main `extractwisdom` version.
+- **Version Information**: Daniel's main `extractwisdom` version.
 - **Published**: January 5, 2024

@@ -1,12 +1,12 @@
 ---
 name: BeCreative
-description: USE WHEN be creative, deep thinking, extended reasoning.
+description: USE WHEN be creative, deep thinking, deep thinking, extended reasoning. SkillSearch('becreative') for docs.
 ---
 
 ## Customization
 
 **Before executing, check for user customizations at:**
-`~/.claude/skills/CORE/USER/SKILLCUSTOMIZATIONS/BeCreative/`
+`~/.claude/skills/PAI/USER/SKILLCUSTOMIZATIONS/BeCreative/`
 
 If this directory exists, load and apply any PREFERENCES.md, configurations, or resources found there. These override default behavior. If the directory does not exist, proceed with skill defaults.
 

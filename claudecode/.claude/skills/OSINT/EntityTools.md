@@ -195,3 +195,60 @@
 ---
 
 **Remember:** Use multiple tools, cross-verify findings. Respect rate limits and ToS. Only use on authorized targets.
+
+---
+
+## Attack Targeting Patterns
+
+### Corporate vs Consumer Discrimination
+
+**Context:** Attackers fingerprint targets to determine value and serve appropriate payloads.
+
+**Indicators That Identify Corporate Targets:**
+| Indicator | Method | Weight |
+|-----------|--------|--------|
+| Domain-joined machine | AD enumeration | HIGH |
+| Corporate email domain | Browser session | HIGH |
+| VPN/proxy detected | Network config | MEDIUM |
+| Enterprise software | Process list | MEDIUM |
+| Managed browser policies | Registry/config | HIGH |
+
+**Why This Matters for OSINT:**
+- When investigating threat actors, look for targeting logic in malware
+- Domain-joined detection = corporate espionage motivation
+- Consumer-only targeting = different threat model (crypto, banking)
+- Mixed targeting = commodity malware with tiered access sales
+
+**Enumeration Commands Attackers Use:**
+```powershell
+# Domain membership check
+(Get-WmiObject -Class Win32_ComputerSystem).PartOfDomain
+
+# Full AD domain info
+[System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
+
+# Check for enterprise software
+Get-WmiObject -Class Win32_Product | Where-Object {$_.Name -like "*endpoint*"}
+```
+
+**Analysis Questions:**
+1. Does the malware check domain status before executing?
+2. Are there different payload paths for corp vs consumer?
+3. Does the C2 infrastructure have tiered pricing/access?
+
+### Browser Extension Attack Patterns
+
+**"Crash Fix" Attack Chain:**
+1. Typosquatted extension mimics legitimate (uBlock Origin, etc.)
+2. Uses Chrome Alarms API for 60+ minute delay (evasion)
+3. Triggers fake browser crash
+4. Social engineers clipboard payload execution
+5. Uses LOTL binaries (finger.exe) for C2
+
+**OSINT Value:**
+- Track extension publisher accounts across stores
+- Map C2 infrastructure
+- Identify similar extensions using same techniques
+- Correlate with threat actor TTPs
+
+**Reference:** See `~/.claude/skills/Parser/Workflows/ExtractBrowserExtension.md` for analysis workflow.

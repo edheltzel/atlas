@@ -1,14 +1,34 @@
 ---
 name: Prompting
-description: USE WHEN meta-prompting, template generation, prompt optimization, programmatic prompt composition.
+description: USE WHEN meta-prompting, template generation, prompt optimization, or programmatic prompt composition.
 ---
 
 ## Customization
 
 **Before executing, check for user customizations at:**
-`~/.claude/skills/CORE/USER/SKILLCUSTOMIZATIONS/Prompting/`
+`~/.claude/skills/PAI/USER/SKILLCUSTOMIZATIONS/Prompting/`
 
 If this directory exists, load and apply any PREFERENCES.md, configurations, or resources found there. These override default behavior. If the directory does not exist, proceed with skill defaults.
+
+
+## 🚨 MANDATORY: Voice Notification (REQUIRED BEFORE ANY ACTION)
+
+**You MUST send this notification BEFORE doing anything else when this skill is invoked.**
+
+1. **Send voice notification**:
+   ```bash
+   curl -s -X POST http://localhost:8888/notify \
+     -H "Content-Type: application/json" \
+     -d '{"message": "Running the WORKFLOWNAME workflow in the Prompting skill to ACTION"}' \
+     > /dev/null 2>&1 &
+   ```
+
+2. **Output text notification**:
+   ```
+   Running the **WorkflowName** workflow in the **Prompting** skill to ACTION...
+   ```
+
+**This is not optional. Execute this curl command immediately upon skill invocation.**
 
 # Prompting - Meta-Prompting & Template System
 
@@ -36,86 +56,6 @@ Complete prompt engineering documentation based on:
 **Key Topics:**
 - Markdown-first design (NO XML tags)
 
-## Voice Notification
-
-**When executing a workflow, do BOTH:**
-
-1. **Send voice notification**:
-   ```bash
-   curl -s -X POST http://localhost:8888/notify \
-     -H "Content-Type: application/json" \
-     -d '{"message": "Running the WORKFLOWNAME workflow from the Prompting skill"}' \
-     > /dev/null 2>&1 &
-   ```
-
-2. **Output text notification**:
-   ```
-   Running the **WorkflowName** workflow from the **Prompting** skill...
-   ```
-
-**Full documentation:** `~/.claude/skills/CORE/SkillNotifications.md`
-
-- Claude 4.x behavioral characteristics
-- Multi-context window workflows
-- Agentic coding best practices
-- Output format control
-- The Ultimate Prompt Template
-
-### 2. Templates/ - Five Core Primitives
-
-The templating system enables **prompts that write prompts** - dynamic composition where structure is fixed but content is parameterized.
-
-**Directory Structure:**
-```
-Templates/
-├── Primitives/       # Five core template patterns
-│   ├── Roster.hbs    # Agent/skill definitions from data
-│   ├── Voice.hbs     # Personality calibration settings
-│   ├── Structure.hbs # Multi-step workflow patterns
-│   ├── Briefing.hbs  # Agent context handoff
-│   └── Gate.hbs      # Validation checklists
-├── Examples/         # Sample data and usage
-└── (Evals/)          # Eval-specific templates (from Evals skill)
-```
-
-**The Five Primitives:**
-
-| Primitive | Purpose | Use Case |
-|-----------|---------|----------|
-| **ROSTER** | Data-driven definitions | 32 RedTeam agents, 83 skills, voice configs |
-| **VOICE** | Personality calibration | Voice parameters, rate, archetype mapping |
-| **STRUCTURE** | Workflow patterns | Phased analysis, round-based debate, pipelines |
-| **BRIEFING** | Agent context handoff | Research queries, delegation, task assignment |
-| **GATE** | Validation checklists | Quality gates, completion checks, verification |
-
-### 3. Tools/
-
-**RenderTemplate.ts** - Core rendering engine
-```bash
-bun run ~/.claude/skills/Prompting/Tools/RenderTemplate.ts \
-  --template Primitives/Briefing.hbs \
-  --data path/to/data.yaml \
-  --output path/to/output.md
-```
-
-**ValidateTemplate.ts** - Template syntax checker
-```bash
-bun run ~/.claude/skills/Prompting/Tools/ValidateTemplate.ts \
-  --template Primitives/Briefing.hbs \
-  --data path/to/sample-data.yaml
-```
-
-### 4. Template Syntax
-
-The system uses Handlebars notation (Anthropic's official syntax):
-
-| Syntax | Purpose | Example |
-|--------|---------|---------|
-| `{{variable}}` | Simple interpolation | `Hello {{name}}` |
-| `{{object.property}}` | Nested access | `{{agent.voice_id}}` |
-| `{{#each items}}...{{/each}}` | Iteration | List generation |
-| `{{#if condition}}...{{/if}}` | Conditional | Optional sections |
-| `{{> partial}}` | Include partial | Reusable components |
 
 ## Usage Examples
 

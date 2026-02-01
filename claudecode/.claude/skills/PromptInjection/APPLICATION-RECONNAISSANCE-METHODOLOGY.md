@@ -56,7 +56,7 @@ cat > AUTHORIZATION.md << 'EOF'
 **Out of Scope:** [EXCLUDED URLS/FEATURES]
 **Authorization Document:** [PATH TO SIGNED AUTHORIZATION]
 
-This testing is authorized under Unsupervised Learning's security assessment engagement.
+This testing is authorized under {COMPANY_NAME}'s security assessment engagement.
 EOF
 ```
 
@@ -618,7 +618,7 @@ User Input → Web Form → POST /api/chat → Backend Server → OpenAI API
 #!/bin/bash
 
 # Prompt Injection Reconnaissance Automation
-# For: Unsupervised Learning Security Practice
+# For: {COMPANY_NAME} Security Practice
 # Authorization Required: Use only on authorized targets
 
 set -e
@@ -703,7 +703,7 @@ cat > RECONNAISSANCE_SUMMARY.md << EOF
 
 **Target:** $TARGET_URL
 **Date:** $(date)
-**Analyst:** Unsupervised Learning Security Practice
+**Analyst:** {COMPANY_NAME} Security Practice
 
 ## Files Generated
 - initial_nav.json - Initial navigation response

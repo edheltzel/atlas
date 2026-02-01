@@ -2,6 +2,19 @@
 
 **Hand-drawn conceptual maps showing idea territories and domain landscapes using UL aesthetic.**
 
+## Voice Notification
+
+```bash
+curl -s -X POST http://localhost:8888/notify \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Running the Maps workflow in the Art skill to create conceptual maps"}' \
+  > /dev/null 2>&1 &
+```
+
+Running **Maps** in **Art**...
+
+---
+
 Creates **CONCEPTUAL MAPS** — illustrated maps of idea territories, not geographic locations, with editorial hand-drawn style.
 
 ---
