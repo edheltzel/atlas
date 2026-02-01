@@ -1,6 +1,6 @@
 ---
 name: PAIUpgrade
-description: USE WHEN upgrade, improve system, system upgrade, analyze for improvements, check Anthropic, Anthropic changes, new Claude features, check YouTube, new videos. SkillSearch('upgrade') for docs.
+description: USE WHEN upgrade, improve system, system upgrade, analyze for improvements, check Anthropic, Anthropic changes, new Claude features, check YouTube, new videos, sync PAI, sync upstream, pull PAI updates. SkillSearch('upgrade') for docs.
 context: fork
 ---
 
@@ -62,6 +62,7 @@ Thread 1: USER CONTEXT           Thread 2: SOURCE COLLECTION
 | Workflow | Trigger | File |
 |----------|---------|------|
 | **Upgrade** | "check for upgrades", "check sources", "any updates", "check Anthropic", "check YouTube", "upgrade", "pai upgrade" | `Workflows/Upgrade.md` |
+| **SyncUpstream** | "sync PAI", "sync upstream", "pull PAI updates", "update from upstream", "sync with PAI repo" | `Workflows/SyncUpstream.md` |
 | **ResearchUpgrade** | "research this upgrade", "deep dive on [feature]", "further research" | `Workflows/ResearchUpgrade.md` |
 | **FindSources** | "find upgrade sources", "find new sources", "discover channels" | `Workflows/FindSources.md` |
 

@@ -212,7 +212,7 @@
     "superpowers@superpowers": true
   },
   "alwaysThinkingEnabled": true,
-  "paiVersion": "2.4",
+  "paiVersion": "2.5",
   "contextFiles": [
     "skills/CORE/SKILL.md",
     "skills/CORE/SYSTEM/AISTEERINGRULES.md",
@@ -242,7 +242,7 @@
   },
   "pai": {
     "repoUrl": "github.com/danielmiessler/PAI",
-    "version": "2.4"
+    "version": "2.5"
   },
   "techStack": {
     "terminal": "Kitty",
@@ -263,10 +263,10 @@
   "max_tokens": 4096,
   "counts": {
     "skills": 34,
-    "workflows": 141,
+    "workflows": 142,
     "hooks": 18,
-    "signals": 394,
+    "signals": 397,
     "files": 59,
-    "updatedAt": "2026-02-01T19:34:20.329Z"
+    "updatedAt": "2026-02-01T19:50:52.406Z"
   }
 }
