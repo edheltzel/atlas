@@ -95,3 +95,7 @@ claudecode/.claude/skills/analytics-tracking
 claudecode/.claude/skills/content-strategy
 claudecode/.claude/skills/marketing-ideas
 claudecode/.claude/tasks/
+
+# Machine-specific / auto-generated
+claudecode/.claude/chrome/chrome-native-host
+claudecode/.claude/plugins/known_marketplaces.json
