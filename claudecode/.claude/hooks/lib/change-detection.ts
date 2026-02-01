@@ -70,8 +70,8 @@ const EXCLUDED_PATHS = [
 
 // High-priority paths that always warrant documentation
 const HIGH_PRIORITY_PATHS = [
-  'skills/PAI/SYSTEM/',
-  'skills/PAI/USER/',
+  'skills/CORE/SYSTEM/',
+  'skills/CORE/USER/',
   'PAISYSTEMARCHITECTURE.md',
   'SKILLSYSTEM.md',
   'MEMORYSYSTEM.md',

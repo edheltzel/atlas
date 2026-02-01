@@ -260,5 +260,13 @@
       "hooks": "Hook configuration for lifecycle events."
     }
   },
-  "max_tokens": 4096
+  "max_tokens": 4096,
+  "counts": {
+    "skills": 34,
+    "workflows": 141,
+    "hooks": 18,
+    "signals": 376,
+    "files": 59,
+    "updatedAt": "2026-02-01T01:11:45.607Z"
+  }
 }
