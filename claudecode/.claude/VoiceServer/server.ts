@@ -2,7 +2,7 @@
 /**
  * Voice Server - Multi-Provider TTS Notification Server
  *
- * Supports three TTS providers (configurable in settings.json):
+ * Supports three TTS providers (configurable in voices.json):
  * 1. Kokoro (local) - Free, offline, no API key needed
  * 2. ElevenLabs (cloud) - Premium quality, requires API key
  * 3. macOS say (system) - Basic quality, always available fallback
@@ -12,6 +12,7 @@
  * - Per-provider circuit breakers (fast fallback after failures)
  * - Configurable fallback chain
  * - Environment variable support for API keys
+ * - Consolidated config in voices.json
  */
 
 import { serve } from "bun";
@@ -46,26 +47,7 @@ interface VoiceSettings {
   use_speaker_boost?: boolean;
 }
 
-interface VoiceConfig {
-  voice_id: string;
-  voice_name: string;
-  stability: number;
-  similarity_boost: number;
-  description: string;
-  type: string;
-  kokoro?: {
-    voice: string;
-    speed?: number;
-  };
-}
-
-interface VoicesConfig {
-  default_rate?: number;
-  default_volume?: number;
-  voices: Record<string, VoiceConfig>;
-}
-
-interface TTSProviderConfig {
+interface ProviderConfig {
   enabled: boolean;
   apiKey?: string;
   endpoint?: string;
@@ -75,14 +57,34 @@ interface TTSProviderConfig {
   description?: string;
 }
 
-interface TTSConfig {
-  provider: string;
-  providers: {
-    elevenlabs: TTSProviderConfig;
-    kokoro: TTSProviderConfig;
-    say: TTSProviderConfig;
+interface VoiceMapping {
+  description?: string;
+  elevenlabs?: {
+    voice_id: string;
+    voice_name?: string;
+    stability?: number;
+    similarity_boost?: number;
+    style?: number;
+    use_speaker_boost?: boolean;
   };
+  kokoro?: {
+    voice: string;
+    speed?: number;
+  };
+}
+
+interface VoicesConfig {
+  providers: {
+    kokoro: ProviderConfig;
+    elevenlabs: ProviderConfig;
+    say: ProviderConfig;
+  };
+  defaultProvider: string;
   fallbackOrder: string[];
+  default_rate?: number;
+  default_volume?: number;
+  identity: VoiceMapping;
+  agents: Record<string, VoiceMapping>;
 }
 
 // =============================================================================
@@ -115,7 +117,7 @@ for (const envPath of envPaths) {
 }
 
 const PORT = parseInt(process.env.PORT || "8888");
-const SETTINGS_PATH = join(homedir(), '.claude', 'settings.json');
+const VOICES_PATH = join(import.meta.dir, 'voices.json');
 const DEFAULT_MACOS_VOICE = 'Daniel (Enhanced)';
 const ELEVENLABS_TIMEOUT_MS = 10_000;
 const KOKORO_TIMEOUT_MS = 10_000;
@@ -130,38 +132,21 @@ function resolveEnvVar(value: string | undefined): string | undefined {
   return value;
 }
 
-// Load settings.json
-function loadSettings(): any {
-  try {
-    if (existsSync(SETTINGS_PATH)) {
-      return JSON.parse(readFileSync(SETTINGS_PATH, 'utf-8'));
-    }
-  } catch (error) {
-    console.warn('⚠️  Failed to read settings.json');
-  }
-  return {};
-}
-
-// Get TTS configuration with defaults
-function getTTSConfig(): TTSConfig {
-  const settings = loadSettings();
-  const ttsConfig = settings?.voiceServer?.tts;
-
-  // Default configuration (open source friendly)
-  const defaultConfig: TTSConfig = {
-    provider: 'kokoro',
+// Load voices.json (single source of truth for all voice config)
+function loadVoicesConfig(): VoicesConfig {
+  const defaultConfig: VoicesConfig = {
     providers: {
-      elevenlabs: {
-        enabled: false,
-        apiKey: '${ELEVENLABS_API_KEY}',
-        defaultVoiceId: 's3TPKV1kjDlVtZbl4Ksh',
-        description: 'Premium cloud TTS - requires API key from elevenlabs.io'
-      },
       kokoro: {
         enabled: true,
         endpoint: 'http://127.0.0.1:8880/v1',
         defaultVoice: 'af_sky',
         description: 'Local TTS - free, offline, no API key needed'
+      },
+      elevenlabs: {
+        enabled: false,
+        apiKey: '${ELEVENLABS_API_KEY}',
+        defaultVoiceId: 's3TPKV1kjDlVtZbl4Ksh',
+        description: 'Premium cloud TTS - requires API key from elevenlabs.io'
       },
       say: {
         enabled: true,
@@ -169,33 +154,42 @@ function getTTSConfig(): TTSConfig {
         description: 'macOS built-in - always available fallback'
       }
     },
-    fallbackOrder: ['kokoro', 'elevenlabs', 'say']
+    defaultProvider: 'kokoro',
+    fallbackOrder: ['kokoro', 'elevenlabs', 'say'],
+    default_volume: 0.8,
+    identity: {
+      description: 'Main AI assistant voice',
+      kokoro: { voice: 'am_adam', speed: 1.1 }
+    },
+    agents: {}
   };
 
-  if (!ttsConfig) {
-    return defaultConfig;
+  try {
+    if (existsSync(VOICES_PATH)) {
+      const content = readFileSync(VOICES_PATH, 'utf-8');
+      const config = JSON.parse(content);
+      console.log('✅ Loaded voice config from voices.json');
+      return {
+        ...defaultConfig,
+        ...config,
+        providers: {
+          ...defaultConfig.providers,
+          ...config.providers
+        }
+      };
+    }
+  } catch (error) {
+    console.warn('⚠️  Failed to load voices.json, using defaults');
   }
 
-  // Merge with defaults
-  return {
-    provider: ttsConfig.provider || defaultConfig.provider,
-    providers: {
-      elevenlabs: { ...defaultConfig.providers.elevenlabs, ...ttsConfig.providers?.elevenlabs },
-      kokoro: { ...defaultConfig.providers.kokoro, ...ttsConfig.providers?.kokoro },
-      say: { ...defaultConfig.providers.say, ...ttsConfig.providers?.say }
-    },
-    fallbackOrder: ttsConfig.fallbackOrder || defaultConfig.fallbackOrder
-  };
+  return defaultConfig;
 }
 
+// Global config (loaded once at startup)
+const voicesConfig = loadVoicesConfig();
+
 function getMacOSFallbackVoice(): string {
-  const settings = loadSettings();
-  const fallbackVoice = settings?.daidentity?.voice?.fallbackVoice;
-  if (fallbackVoice && typeof fallbackVoice === 'string') {
-    return fallbackVoice;
-  }
-  const ttsConfig = getTTSConfig();
-  return ttsConfig.providers.say.voice || DEFAULT_MACOS_VOICE;
+  return voicesConfig.providers.say.voice || DEFAULT_MACOS_VOICE;
 }
 
 // =============================================================================
@@ -247,42 +241,30 @@ function shouldSkipProvider(provider: string): boolean {
 }
 
 // =============================================================================
-// Voice Configuration Loading
+// Voice Configuration Lookup
 // =============================================================================
 
-let voicesConfig: VoicesConfig | null = null;
-try {
-  const corePersonalitiesPath = join(homedir(), '.claude', 'skills', 'CORE', 'SYSTEM', 'AGENTPERSONALITIES.md');
-  if (existsSync(corePersonalitiesPath)) {
-    const markdownContent = readFileSync(corePersonalitiesPath, 'utf-8');
-    const jsonMatch = markdownContent.match(/```json\n([\s\S]*?)\n```/);
-    if (jsonMatch && jsonMatch[1]) {
-      voicesConfig = JSON.parse(jsonMatch[1]);
-      console.log('✅ Loaded voice personalities from CORE/SYSTEM/AGENTPERSONALITIES.md');
-    }
-  } else {
-    const voicesPath = join(import.meta.dir, 'voices.json');
-    if (existsSync(voicesPath)) {
-      const voicesContent = readFileSync(voicesPath, 'utf-8');
-      voicesConfig = JSON.parse(voicesContent);
-      console.log('✅ Loaded voice personalities from voices.json');
-    }
-  }
-} catch (error) {
-  console.warn('⚠️  Failed to load voice personalities, using defaults');
-}
-
-function getVoiceConfig(identifier: string): VoiceConfig | null {
-  if (!voicesConfig) return null;
-
-  if (voicesConfig.voices[identifier]) {
-    return voicesConfig.voices[identifier];
+function getVoiceMapping(identifier: string | null): VoiceMapping | null {
+  if (!identifier) {
+    // Return identity voice for main AI
+    return voicesConfig.identity;
   }
 
-  for (const config of Object.values(voicesConfig.voices)) {
-    if (config.voice_id === identifier) {
-      return config;
+  // Check agents
+  if (voicesConfig.agents[identifier]) {
+    return voicesConfig.agents[identifier];
+  }
+
+  // Check if it's an ElevenLabs voice ID
+  for (const [name, mapping] of Object.entries(voicesConfig.agents)) {
+    if (mapping.elevenlabs?.voice_id === identifier) {
+      return mapping;
     }
+  }
+
+  // Check identity
+  if (voicesConfig.identity.elevenlabs?.voice_id === identifier) {
+    return voicesConfig.identity;
   }
 
   return null;
@@ -334,11 +316,9 @@ function validateInput(input: any): { valid: boolean; error?: string; sanitized?
 }
 
 function getVolumeSetting(): number {
-  if (voicesConfig && 'default_volume' in voicesConfig) {
-    const vol = (voicesConfig as any).default_volume;
-    if (typeof vol === 'number' && vol >= 0 && vol <= 1) {
-      return vol;
-    }
+  const vol = voicesConfig.default_volume;
+  if (typeof vol === 'number' && vol >= 0 && vol <= 1) {
+    return vol;
   }
   return 1.0;
 }
@@ -397,8 +377,7 @@ class MacOSSayProvider implements TTSProvider {
   name = 'say';
 
   isEnabled(): boolean {
-    const config = getTTSConfig();
-    return config.providers.say.enabled !== false;
+    return voicesConfig.providers.say.enabled !== false;
   }
 
   async isHealthy(): Promise<boolean> {
@@ -439,31 +418,26 @@ class ElevenLabsProvider implements TTSProvider {
   private client: ElevenLabsClient | null = null;
 
   constructor() {
-    const config = getTTSConfig();
-    const apiKey = resolveEnvVar(config.providers.elevenlabs.apiKey) || process.env.ELEVENLABS_API_KEY;
+    const apiKey = resolveEnvVar(voicesConfig.providers.elevenlabs.apiKey) || process.env.ELEVENLABS_API_KEY;
     if (apiKey) {
       this.client = new ElevenLabsClient({ apiKey });
     }
   }
 
   isEnabled(): boolean {
-    const config = getTTSConfig();
-    return config.providers.elevenlabs.enabled === true && this.client !== null;
+    return voicesConfig.providers.elevenlabs.enabled === true && this.client !== null;
   }
 
   async isHealthy(): Promise<boolean> {
     if (!this.client) return false;
     if (shouldSkipProvider('elevenlabs')) return false;
-
-    // Simple health check - we could add a real API ping here
     return true;
   }
 
   async speak(text: string, voiceId?: string, voiceSettings?: VoiceSettings): Promise<boolean> {
     if (!this.client) return false;
 
-    const config = getTTSConfig();
-    const voice = voiceId || config.providers.elevenlabs.defaultVoiceId || 's3TPKV1kjDlVtZbl4Ksh';
+    const voice = voiceId || voicesConfig.providers.elevenlabs.defaultVoiceId || 's3TPKV1kjDlVtZbl4Ksh';
 
     const settings = {
       stability: voiceSettings?.stability ?? 0.5,
@@ -533,16 +507,14 @@ class KokoroProvider implements TTSProvider {
   name = 'kokoro';
 
   isEnabled(): boolean {
-    const config = getTTSConfig();
-    return config.providers.kokoro.enabled === true;
+    return voicesConfig.providers.kokoro.enabled === true;
   }
 
   async isHealthy(): Promise<boolean> {
     if (!this.isEnabled()) return false;
     if (shouldSkipProvider('kokoro')) return false;
 
-    const config = getTTSConfig();
-    const endpoint = config.providers.kokoro.endpoint || 'http://127.0.0.1:8880/v1';
+    const endpoint = voicesConfig.providers.kokoro.endpoint || 'http://127.0.0.1:8880/v1';
 
     try {
       const response = await fetch(`${endpoint}/models`, {
@@ -555,9 +527,8 @@ class KokoroProvider implements TTSProvider {
   }
 
   async speak(text: string, voice?: string, voiceSettings?: VoiceSettings): Promise<boolean> {
-    const config = getTTSConfig();
-    const endpoint = config.providers.kokoro.endpoint || 'http://127.0.0.1:8880/v1';
-    const kokoroVoice = voice || config.providers.kokoro.defaultVoice || 'af_sky';
+    const endpoint = voicesConfig.providers.kokoro.endpoint || 'http://127.0.0.1:8880/v1';
+    const kokoroVoice = voice || voicesConfig.providers.kokoro.defaultVoice || 'af_sky';
     const speed = voiceSettings?.speed ?? 1.0;
 
     const controller = new AbortController();
@@ -621,7 +592,6 @@ const providers: Record<string, TTSProvider> = {
 };
 
 async function getProviderStatus(): Promise<Record<string, { enabled: boolean; healthy: boolean; endpoint?: string }>> {
-  const config = getTTSConfig();
   const status: Record<string, { enabled: boolean; healthy: boolean; endpoint?: string }> = {};
 
   for (const [name, provider] of Object.entries(providers)) {
@@ -631,8 +601,8 @@ async function getProviderStatus(): Promise<Record<string, { enabled: boolean; h
     status[name] = {
       enabled,
       healthy,
-      ...(name === 'kokoro' && { endpoint: config.providers.kokoro.endpoint }),
-      ...(name === 'elevenlabs' && { apiKeyConfigured: !!resolveEnvVar(config.providers.elevenlabs.apiKey) })
+      ...(name === 'kokoro' && { endpoint: voicesConfig.providers.kokoro.endpoint }),
+      ...(name === 'elevenlabs' && { apiKeyConfigured: !!resolveEnvVar(voicesConfig.providers.elevenlabs.apiKey) })
     };
   }
 
@@ -644,13 +614,11 @@ async function speakWithFallback(
   voiceId?: string,
   voiceSettings?: VoiceSettings
 ): Promise<{ success: boolean; provider: string }> {
-  const config = getTTSConfig();
-
   // Build provider order: primary first, then fallback order
-  const providerOrder = [config.provider, ...config.fallbackOrder.filter(p => p !== config.provider)];
+  const providerOrder = [voicesConfig.defaultProvider, ...voicesConfig.fallbackOrder.filter(p => p !== voicesConfig.defaultProvider)];
 
-  // Get voice config for personality mapping
-  const voiceConfig = voiceId ? getVoiceConfig(voiceId) : null;
+  // Get voice mapping for personality
+  const voiceMapping = getVoiceMapping(voiceId || null);
 
   for (const providerName of providerOrder) {
     const provider = providers[providerName];
@@ -668,18 +636,20 @@ async function speakWithFallback(
     }
 
     // Determine voice/settings for this provider
-    let providerVoice = voiceId;
+    let providerVoice: string | undefined;
     let providerSettings = voiceSettings;
 
-    if (voiceConfig) {
-      if (providerName === 'kokoro' && voiceConfig.kokoro) {
-        providerVoice = voiceConfig.kokoro.voice;
-        providerSettings = { ...voiceSettings, speed: voiceConfig.kokoro.speed };
-      } else if (providerName === 'elevenlabs') {
-        providerVoice = voiceConfig.voice_id;
+    if (voiceMapping) {
+      if (providerName === 'kokoro' && voiceMapping.kokoro) {
+        providerVoice = voiceMapping.kokoro.voice;
+        providerSettings = { ...voiceSettings, speed: voiceMapping.kokoro.speed };
+      } else if (providerName === 'elevenlabs' && voiceMapping.elevenlabs) {
+        providerVoice = voiceMapping.elevenlabs.voice_id;
         providerSettings = {
-          stability: voiceConfig.stability,
-          similarity_boost: voiceConfig.similarity_boost,
+          stability: voiceMapping.elevenlabs.stability,
+          similarity_boost: voiceMapping.elevenlabs.similarity_boost,
+          style: voiceMapping.elevenlabs.style,
+          use_speaker_boost: voiceMapping.elevenlabs.use_speaker_boost,
           ...voiceSettings
         };
       }
@@ -728,20 +698,27 @@ async function sendNotification(
 
   if (voiceEnabled) {
     try {
-      const voiceConfig = voiceId ? getVoiceConfig(voiceId) : null;
+      const voiceMapping = getVoiceMapping(voiceId);
 
-      const voiceSettings: VoiceSettings = voiceConfig
-        ? {
-            stability: voiceConfig.stability,
-            similarity_boost: voiceConfig.similarity_boost,
-            style: (voiceConfig as any).style ?? DEFAULT_VOICE_SETTINGS.style,
-            speed: (voiceConfig as any).speed ?? DEFAULT_VOICE_SETTINGS.speed,
-            use_speaker_boost: (voiceConfig as any).use_speaker_boost ?? DEFAULT_VOICE_SETTINGS.use_speaker_boost,
-          }
-        : DEFAULT_VOICE_SETTINGS;
+      // Build voice settings from mapping
+      let voiceSettings = DEFAULT_VOICE_SETTINGS;
+      if (voiceMapping?.elevenlabs) {
+        voiceSettings = {
+          stability: voiceMapping.elevenlabs.stability ?? DEFAULT_VOICE_SETTINGS.stability,
+          similarity_boost: voiceMapping.elevenlabs.similarity_boost ?? DEFAULT_VOICE_SETTINGS.similarity_boost,
+          style: voiceMapping.elevenlabs.style ?? DEFAULT_VOICE_SETTINGS.style,
+          speed: voiceMapping.kokoro?.speed ?? DEFAULT_VOICE_SETTINGS.speed,
+          use_speaker_boost: voiceMapping.elevenlabs.use_speaker_boost ?? DEFAULT_VOICE_SETTINGS.use_speaker_boost,
+        };
+      } else if (voiceMapping?.kokoro) {
+        voiceSettings = {
+          ...DEFAULT_VOICE_SETTINGS,
+          speed: voiceMapping.kokoro.speed ?? 1.0,
+        };
+      }
 
-      if (voiceConfig) {
-        console.log(`👤 Voice: ${voiceConfig.description}`);
+      if (voiceMapping?.description) {
+        console.log(`👤 Voice: ${voiceMapping.description}`);
       }
 
       console.log(`🎙️  Speaking...`);
@@ -836,8 +813,7 @@ const server = serve({
           throw new Error('Invalid voice_id');
         }
 
-        const config = getTTSConfig();
-        console.log(`📨 Notification: "${title}" - "${message}" (voice: ${voiceEnabled}, provider: ${config.provider})`);
+        console.log(`📨 Notification: "${title}" - "${message}" (voice: ${voiceEnabled}, provider: ${voicesConfig.defaultProvider})`);
 
         await sendNotification(title, message, voiceEnabled, voiceId);
 
@@ -890,7 +866,6 @@ const server = serve({
     }
 
     if (url.pathname === "/health") {
-      const config = getTTSConfig();
       const providerStatus = await getProviderStatus();
 
       return new Response(
@@ -898,9 +873,10 @@ const server = serve({
           status: "healthy",
           port: PORT,
           voice_system: "Multi-provider TTS (Kokoro, ElevenLabs, macOS say)",
-          activeProvider: config.provider,
+          config_source: "voices.json",
+          activeProvider: voicesConfig.defaultProvider,
           providers: providerStatus,
-          fallbackOrder: config.fallbackOrder,
+          fallbackOrder: voicesConfig.fallbackOrder,
           macos_fallback_voice: getMacOSFallbackVoice(),
           circuit_breakers: {
             elevenlabs: {
@@ -933,12 +909,12 @@ const server = serve({
 // Startup Banner
 // =============================================================================
 
-const config = getTTSConfig();
 const providerStatus = await getProviderStatus();
 
 console.log(`🚀 Voice Server running on port ${PORT}`);
-console.log(`🎙️  Primary provider: ${config.provider}`);
-console.log(`📋 Fallback order: ${config.fallbackOrder.join(' → ')}`);
+console.log(`📄 Config source: voices.json`);
+console.log(`🎙️  Primary provider: ${voicesConfig.defaultProvider}`);
+console.log(`📋 Fallback order: ${voicesConfig.fallbackOrder.join(' → ')}`);
 console.log(`🔧 Provider status:`);
 for (const [name, status] of Object.entries(providerStatus)) {
   const icon = status.healthy ? '✅' : (status.enabled ? '⚠️' : '⬚');
