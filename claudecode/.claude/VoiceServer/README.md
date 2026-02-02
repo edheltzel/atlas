@@ -159,42 +159,116 @@ See `voices.json` for full configuration including ElevenLabs mappings.
 
 ## 🔧 Configuration
 
-### settings.json (VoiceServer)
+**All voice settings are in one file:** `~/.claude/VoiceServer/voices.json`
+
+### voices.json Structure
 
 ```json
 {
-  "voiceServer": {
-    "tts": {
-      "provider": "kokoro",
-      "providers": {
-        "elevenlabs": {
-          "enabled": false,
-          "apiKey": "${ELEVENLABS_API_KEY}"
-        },
-        "kokoro": {
-          "enabled": true,
-          "endpoint": "http://127.0.0.1:8880/v1",
-          "defaultVoice": "af_sky"
-        },
-        "say": {
-          "enabled": true,
-          "voice": "Daniel (Enhanced)"
-        }
-      },
-      "fallbackOrder": ["kokoro", "elevenlabs", "say"]
+  "providers": {
+    "kokoro": { "enabled": true, "endpoint": "http://127.0.0.1:8880/v1" },
+    "elevenlabs": { "enabled": false, "apiKey": "${ELEVENLABS_API_KEY}" },
+    "say": { "enabled": true, "voice": "Daniel (Enhanced)" }
+  },
+  "defaultProvider": "kokoro",
+  "fallbackOrder": ["kokoro", "elevenlabs", "say"],
+
+  "identity": {
+    "description": "Main AI assistant voice",
+    "kokoro": { "voice": "am_adam", "speed": 1.1 },
+    "elevenlabs": { "voice_id": "...", "stability": 0.35 }
+  },
+
+  "agents": {
+    "kai": { "kokoro": { "voice": "am_adam" }, "elevenlabs": {...} },
+    "engineer": { "kokoro": { "voice": "am_michael" }, ... }
+  }
+}
+```
+
+---
+
+## 🎨 Customizing Your Voice
+
+### Change the Main AI Voice (Identity)
+
+Edit `~/.claude/VoiceServer/voices.json`, find the `identity` section:
+
+```json
+"identity": {
+  "description": "Main AI assistant voice (Atlas)",
+  "kokoro": {
+    "voice": "am_adam",    // Change this to any Kokoro voice
+    "speed": 1.1           // Adjust speed (0.5 = slow, 2.0 = fast)
+  }
+}
+```
+
+**Available Kokoro voices:**
+| Voice | Description |
+|-------|-------------|
+| `af_sky` | American Female - Sky |
+| `af_bella` | American Female - Bella |
+| `af_nicole` | American Female - Nicole |
+| `af_sarah` | American Female - Sarah |
+| `am_adam` | American Male - Adam |
+| `am_michael` | American Male - Michael |
+| `bf_emma` | British Female - Emma |
+| `bm_george` | British Male - George |
+
+### Add Your Own ElevenLabs Voice
+
+1. Get your voice ID from [ElevenLabs](https://elevenlabs.io/voice-lab)
+2. Edit `voices.json`:
+
+```json
+"identity": {
+  "elevenlabs": {
+    "voice_id": "YOUR_VOICE_ID_HERE",
+    "stability": 0.35,
+    "similarity_boost": 0.8,
+    "style": 0.9
+  }
+}
+```
+
+3. Enable ElevenLabs:
+```json
+"providers": {
+  "elevenlabs": {
+    "enabled": true,
+    "apiKey": "${ELEVENLABS_API_KEY}"
+  }
+}
+```
+
+4. Set your API key:
+```bash
+echo "ELEVENLABS_API_KEY=sk-your-key" >> ~/.claude/.env
+```
+
+### Customize Agent Voices
+
+Each agent can have its own voice. Edit the `agents` section:
+
+```json
+"agents": {
+  "kai": {
+    "description": "Your custom description",
+    "kokoro": {
+      "voice": "am_adam",
+      "speed": 1.1
     }
   }
 }
 ```
 
-### Enable ElevenLabs (Optional)
+### After Making Changes
+
+Restart VoiceServer to apply:
 
 ```bash
-# Add API key
-echo "ELEVENLABS_API_KEY=sk-your-key" >> ~/.claude/.env
-
-# Enable in settings.json
-# "voiceServer.tts.providers.elevenlabs.enabled": true
+cd ~/.claude/VoiceServer && ./restart.sh
 ```
 
 ---
@@ -292,18 +366,22 @@ curl -X POST http://127.0.0.1:8880/v1/audio/speech \
 ```
 ~/.claude/VoiceServer/          # PAI notification server
 ├── server.ts                   # Multi-provider TTS server
-├── voices.json                 # Agent voice mappings
+├── voices.json                 # ⭐ ALL VOICE CONFIG HERE
+├── voices-schema.json          # JSON schema for voices.json
 ├── start.sh / stop.sh          # Service scripts
 └── README.md                   # This file
 
-~/.voicemode/                   # VoiceMode data
+~/.voicemode/                   # VoiceMode data (managed by voicemode CLI)
 ├── services/
 │   ├── kokoro/                 # Kokoro TTS service
 │   └── whisper/                # Whisper STT service
 └── config.yaml                 # VoiceMode configuration
 
 ~/.claude.json                  # Claude Code config (MCP servers)
+~/.claude/.env                  # API keys (ELEVENLABS_API_KEY, etc.)
 ```
+
+**Key file:** `~/.claude/VoiceServer/voices.json` - This is the single source of truth for all voice configuration including providers, identity voice, and agent voices.
 
 ---
 
