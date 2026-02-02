@@ -112,6 +112,15 @@
             "command": "${PAI_DIR}/hooks/SetQuestionTab.hook.ts"
           }
         ]
+      },
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${PAI_DIR}/hooks/SubagentStartGreeting.hook.ts"
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -254,9 +263,9 @@
   "counts": {
     "skills": 34,
     "workflows": 142,
-    "hooks": 18,
-    "signals": 422,
+    "hooks": 19,
+    "signals": 426,
     "files": 59,
-    "updatedAt": "2026-02-01T23:54:56.208Z"
+    "updatedAt": "2026-02-02T00:40:15.981Z"
   }
 }

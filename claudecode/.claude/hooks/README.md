@@ -55,7 +55,8 @@ Hooks are TypeScript scripts that execute at specific lifecycle events in Claude
 │                     └──► UpdateTabTitle (tab + voice announcement)  │
 │                                                                     │
 │  PreToolUse ──┬──► SecurityValidator (Bash/Edit/Write/Read)         │
-│               └──► SetQuestionTab (AskUserQuestion)                 │
+│               ├──► SetQuestionTab (AskUserQuestion)                 │
+│               └──► SubagentStartGreeting (Task)                     │
 │                                                                     │
 │  SubagentStop ──► AgentOutputCapture (subagent results)             │
 │                                                                     │
@@ -139,6 +140,7 @@ interface StopPayload extends BasePayload {
 |------|---------|----------|--------------|
 | `SecurityValidator.hook.ts` | Validate Bash/Edit/Write/Read | Yes (decision) | `patterns.yaml`, `MEMORY/SECURITY/` |
 | `SetQuestionTab.hook.ts` | Set teal tab for questions | No | Kitty terminal |
+| `SubagentStartGreeting.hook.ts` | Speak agent catchphrase on spawn | No | Voice Server, `voices.json` |
 
 ### SubagentStop Hooks
 
@@ -339,6 +341,7 @@ For `PreToolUse` hooks, matchers filter by tool name:
 - `"Write"` - Matches Write tool calls
 - `"Read"` - Matches Read tool calls
 - `"AskUserQuestion"` - Matches question prompts
+- `"Task"` - Matches subagent spawns (for catchphrase announcements)
 
 ---
 
@@ -472,5 +475,5 @@ Use this checklist when adding or modifying hooks:
 
 ---
 
-*Last updated: 2026-01-12*
-*Hooks count: 14 | Events: 6 | Shared libs: 11*
+*Last updated: 2026-02-01*
+*Hooks count: 15 | Events: 6 | Shared libs: 11*

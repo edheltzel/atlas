@@ -1,16 +1,46 @@
 # Voice Server - Complete Usage Guide
 
-**Current Version:** v1.5.0
+**Current Version:** v1.6.0
 
 ## Table of Contents
 
+- [What's New in v1.6.0](#whats-new-in-v160)
 - [What's New in v1.3.2](#whats-new-in-v132)
 - [Agent Personality System](#agent-personality-system)
+- [Subagent Catchphrases](#subagent-catchphrases)
 - [Voice Parameter Ranges](#voice-parameter-ranges)
 - [API Reference](#api-reference)
 - [Agent Profiles](#agent-profiles)
 - [Advanced Features](#advanced-features)
 - [Testing & Examples](#testing--examples)
+
+---
+
+## What's New in v1.6.0
+
+### Subagent Startup Catchphrases
+
+When a subagent is spawned via the Task tool, it now announces itself with a unique catchphrase. This provides auditory feedback so users know which specialized agent is being activated.
+
+**How it works:**
+1. `SubagentStartGreeting.hook.ts` triggers on `PreToolUse:Task`
+2. Hook reads `subagent_type` from tool input
+3. Looks up agent's catchphrase in `voices.json`
+4. POSTs to VoiceServer with agent's voice configuration
+
+**Configuration:** Catchphrases are stored in `~/.claude/VoiceServer/voices.json` under each agent's entry:
+
+```json
+"agents": {
+  "engineer": {
+    "description": "Strategic, senior leadership...",
+    "catchphrase": "Engineer standing by. Let's build.",
+    "kokoro": { "voice": "am_michael", "speed": 0.95 }
+  }
+}
+```
+
+See [Subagent Catchphrases](#subagent-catchphrases) for the full list.
 
 ---
 
@@ -79,6 +109,78 @@ Every agent voice is now unmistakably unique through extreme parameter variation
 - Marcus Webb (Engineer), Serena Blackwood (Architect)
 - Experience and long-term thinking
 - Deliberate wisdom, academic sophistication
+
+---
+
+## Subagent Catchphrases
+
+When subagents are spawned via the Task tool, they announce themselves with unique catchphrases. This provides auditory feedback so you know which specialized agent is being activated.
+
+### Catchphrase List
+
+| Agent | Catchphrase | Voice Character |
+|-------|-------------|-----------------|
+| **kai** | "Kai here, let's do this!" | Expressive eager buddy |
+| **engineer** | "Engineer standing by. Let's build." | Battle-scarred leader |
+| **architect** | "Architect online. Designing the solution." | Strategic sophisticate |
+| **designer** | "Designer here. Let's make it beautiful." | Design school perfectionist |
+| **artist** | "Artist here, ready to create." | Dreamy visionary |
+| **pentester** | "Pentester engaged. Time to find some vulns." | Reformed grey hat |
+| **writer** | "Writer at your service." | Technical storyteller |
+| **intern** | "Intern reporting for duty!" | Brilliant overachiever |
+| **claude-researcher** | "Claude Researcher ready to investigate." | Strategic sophisticate |
+| **gemini-researcher** | "Gemini Researcher online." | Multi-perspective analyst |
+| **perplexity-researcher** | "Perplexity Researcher online. Let me investigate." | Investigative analyst |
+| **codex-researcher** | "Codex here, let's dig in." | Technical archaeologist |
+| **grok-researcher** | "Grok Researcher, seeking truth." | Contrarian analyst |
+
+### Implementation
+
+The `SubagentStartGreeting.hook.ts` hook triggers on `PreToolUse:Task` events:
+
+1. Detects Task tool invocation with `subagent_type`
+2. Looks up agent in `voices.json`
+3. POSTs catchphrase to VoiceServer with agent's voice configuration
+4. Fails silently if VoiceServer not running
+
+### Customizing Catchphrases
+
+Edit `~/.claude/VoiceServer/voices.json` to modify catchphrases:
+
+```json
+"agents": {
+  "engineer": {
+    "description": "Strategic, senior leadership...",
+    "catchphrase": "Your custom catchphrase here.",
+    "kokoro": { "voice": "am_michael", "speed": 0.95 }
+  }
+}
+```
+
+### Testing Catchphrases
+
+```bash
+# Test a specific agent's catchphrase
+curl -X POST localhost:8888/notify -H "Content-Type: application/json" \
+  -d '{"message":"Engineer standing by. Let'\''s build.","voice_id":"engineer","voice_enabled":true}'
+
+# Test all catchphrases
+bun -e "
+const agents = [
+  ['kai', 'Kai here, let\\'s do this!'],
+  ['engineer', 'Engineer standing by. Let\\'s build.'],
+  ['architect', 'Architect online. Designing the solution.']
+];
+for (const [id, phrase] of agents) {
+  await fetch('http://localhost:8888/notify', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({message: phrase, voice_id: id, voice_enabled: true})
+  });
+  await new Promise(r => setTimeout(r, 2500));
+}
+"
+```
 
 ---
 
@@ -457,6 +559,12 @@ curl -X POST localhost:8888/notify -H "Content-Type: application/json" \
 ---
 
 ## Version History
+
+### v1.6.0 (2026-02-01) - Subagent Startup Catchphrases
+- Added unique catchphrases for all 13 agents
+- New `SubagentStartGreeting.hook.ts` triggers on Task tool
+- Catchphrases stored in `voices.json` under each agent
+- Auditory feedback when subagents spawn
 
 ### v1.3.2 (2025-11-16) - DRAMATIC Voice Differentiation
 - 97% speaking rate range increase (205-270 wpm)
