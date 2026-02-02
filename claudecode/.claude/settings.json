@@ -237,7 +237,8 @@
   },
   "principal": {
     "name": "Ed",
-    "timezone": "America/New_York"
+    "timezone": "America/New_York",
+    "location": "Springboro, Ohio"
   },
   "pai": {
     "repoUrl": "github.com/danielmiessler/PAI",
@@ -264,8 +265,8 @@
     "skills": 34,
     "workflows": 142,
     "hooks": 19,
-    "signals": 426,
+    "signals": 427,
     "files": 59,
-    "updatedAt": "2026-02-02T00:40:15.981Z"
+    "updatedAt": "2026-02-02T01:11:26.857Z"
   }
 }

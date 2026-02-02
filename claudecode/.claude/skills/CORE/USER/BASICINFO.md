@@ -11,7 +11,7 @@ This file contains essential facts that don't fit elsewhere but are useful for y
 - **Name:** [Your name]
 - **Preferred Name:** [Nickname or how you like to be addressed]
 - **Timezone:** [e.g., PST, EST, UTC+1]
-- **Location:** [City, Country]
+- **Location:** Springboro, Ohio, USA
 - **Primary Language:** [English, Spanish, etc.]
 
 ---

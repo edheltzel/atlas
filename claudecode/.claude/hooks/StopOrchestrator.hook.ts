@@ -99,7 +99,26 @@ async function readStdin(): Promise<HookInput | null> {
   return null;
 }
 
+// Timing helper for debug mode
+const DEBUG = process.env.PAI_DEBUG === '1' || process.env.PAI_DEBUG === 'true';
+async function timed<T>(name: string, fn: () => Promise<T>): Promise<T> {
+  const start = performance.now();
+  try {
+    const result = await fn();
+    if (DEBUG) {
+      console.error(`[StopOrchestrator] ⏱️  ${name}: ${(performance.now() - start).toFixed(0)}ms`);
+    }
+    return result;
+  } catch (err) {
+    if (DEBUG) {
+      console.error(`[StopOrchestrator] ⏱️  ${name}: ${(performance.now() - start).toFixed(0)}ms (FAILED)`);
+    }
+    throw err;
+  }
+}
+
 async function main() {
+  const mainStart = performance.now();
   const hookInput = await readStdin();
 
   if (!hookInput || !hookInput.transcript_path) {
@@ -108,19 +127,27 @@ async function main() {
   }
 
   // SINGLE READ, SINGLE PARSE
+  const parseStart = performance.now();
   const parsed = parseTranscript(hookInput.transcript_path);
+  if (DEBUG) {
+    console.error(`[StopOrchestrator] ⏱️  TranscriptParse: ${(performance.now() - parseStart).toFixed(0)}ms`);
+  }
 
   console.error(`[StopOrchestrator] Parsed transcript: ${parsed.plainCompletion.slice(0, 50)}...`);
 
-  // Run non-blocking handlers first
+  // Run non-blocking handlers first (with timing in debug mode)
+  const handlersStart = performance.now();
   const [voiceResult, captureResult, tabResult, integrityResult, rebuildResult, countsResult] = await Promise.allSettled([
-    handleVoice(parsed, hookInput.session_id),
-    handleCapture(parsed, hookInput),
-    handleTabState(parsed),
-    handleSystemIntegrity(parsed, hookInput),
-    handleRebuildSkill(),
-    handleUpdateCounts(),
+    timed('Voice', () => handleVoice(parsed, hookInput.session_id)),
+    timed('Capture', () => handleCapture(parsed, hookInput)),
+    timed('TabState', () => handleTabState(parsed)),
+    timed('SystemIntegrity', () => handleSystemIntegrity(parsed, hookInput)),
+    timed('RebuildSkill', () => handleRebuildSkill()),
+    timed('UpdateCounts', () => handleUpdateCounts()),
   ]);
+  if (DEBUG) {
+    console.error(`[StopOrchestrator] ⏱️  AllHandlers (parallel): ${(performance.now() - handlersStart).toFixed(0)}ms`);
+  }
 
   // Log any handler failures
   const handlerNames = ['Voice', 'Capture', 'TabState', 'SystemIntegrity', 'RebuildSkill', 'UpdateCounts'];
@@ -132,7 +159,11 @@ async function main() {
 
   // Run ISC validation (potentially blocking)
   try {
+    const iscStart = performance.now();
     const iscResult = await handleISCValidation(parsed, hookInput);
+    if (DEBUG) {
+      console.error(`[StopOrchestrator] ⏱️  ISCValidation: ${(performance.now() - iscStart).toFixed(0)}ms`);
+    }
 
     if (iscResult.shouldBlock && iscResult.blockReason) {
       // Output blocking decision to stdout (Claude Code reads this)
@@ -147,6 +178,9 @@ async function main() {
     console.error('[StopOrchestrator] ISCValidator handler failed:', err);
   }
 
+  if (DEBUG) {
+    console.error(`[StopOrchestrator] ⏱️  TOTAL: ${(performance.now() - mainStart).toFixed(0)}ms`);
+  }
   process.exit(0);
 }
 
