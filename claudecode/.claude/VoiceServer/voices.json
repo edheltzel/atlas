@@ -1,117 +1,189 @@
 {
   "$schema": "./voices-schema.json",
+
+  "providers": {
+    "kokoro": {
+      "enabled": true,
+      "endpoint": "http://127.0.0.1:8880/v1",
+      "defaultVoice": "af_sky",
+      "description": "Local TTS - free, offline, no API key needed"
+    },
+    "elevenlabs": {
+      "enabled": false,
+      "apiKey": "${ELEVENLABS_API_KEY}",
+      "defaultVoiceId": "s3TPKV1kjDlVtZbl4Ksh",
+      "description": "Premium cloud TTS - requires API key from elevenlabs.io"
+    },
+    "say": {
+      "enabled": true,
+      "voice": "Daniel (Enhanced)",
+      "description": "macOS built-in - always available fallback"
+    }
+  },
+  "defaultProvider": "kokoro",
+  "fallbackOrder": ["kokoro", "elevenlabs", "say"],
+
   "default_rate": 175,
   "default_volume": 0.8,
-  "voices": {
+
+  "identity": {
+    "description": "Main AI assistant voice (Atlas)",
+    "elevenlabs": {
+      "voice_id": "Ioq2c1GJee5RyqeoBIH3",
+      "stability": 0.35,
+      "similarity_boost": 0.8,
+      "style": 0.9,
+      "use_speaker_boost": true
+    },
+    "kokoro": {
+      "voice": "am_adam",
+      "speed": 1.1
+    }
+  },
+
+  "agents": {
     "kai": {
-      "voice_id": "s3TPKV1kjDlVtZbl4Ksh",
-      "voice_name": "Jamie (Premium)",
-      "rate_multiplier": 1.56,
-      "rate_wpm": 274,
-      "stability": 0.50,
-      "similarity_boost": 0.75,
       "description": "UK Male - Expressive eager buddy: genuinely excited to help, animated celebrations, warm and enthusiastic partner",
-      "type": "Premium"
+      "elevenlabs": {
+        "voice_id": "s3TPKV1kjDlVtZbl4Ksh",
+        "voice_name": "Jamie (Premium)",
+        "stability": 0.50,
+        "similarity_boost": 0.75
+      },
+      "kokoro": {
+        "voice": "am_adam",
+        "speed": 1.1
+      }
     },
     "perplexity-researcher": {
-      "voice_id": "AXdMgz6evoL7OPd7eU12",
-      "voice_name": "Ava (Premium)",
-      "rate_multiplier": 1.35,
-      "rate_wpm": 236,
-      "stability": 0.65,
-      "similarity_boost": 0.9,
       "description": "US Female - Analytical, authoritative, confident",
-      "type": "Premium"
+      "elevenlabs": {
+        "voice_id": "AXdMgz6evoL7OPd7eU12",
+        "voice_name": "Ava (Premium)",
+        "stability": 0.65,
+        "similarity_boost": 0.9
+      },
+      "kokoro": {
+        "voice": "af_sky",
+        "speed": 1.0
+      }
     },
     "claude-researcher": {
-      "voice_id": "AXdMgz6evoL7OPd7eU12",
-      "voice_name": "Ava (Premium)",
-      "rate_multiplier": 1.35,
-      "rate_wpm": 236,
-      "stability": 0.65,
-      "similarity_boost": 0.9,
       "description": "US Female - Strategic, sophisticated, authoritative",
-      "type": "Premium"
+      "elevenlabs": {
+        "voice_id": "AXdMgz6evoL7OPd7eU12",
+        "voice_name": "Ava (Premium)",
+        "stability": 0.65,
+        "similarity_boost": 0.9
+      },
+      "kokoro": {
+        "voice": "af_sky",
+        "speed": 1.0
+      }
     },
     "gemini-researcher": {
-      "voice_id": "2zRM7PkgwBPiau2jvVXc",
-      "voice_name": "Multi-perspective",
-      "rate_multiplier": 1.35,
-      "rate_wpm": 236,
-      "stability": 0.65,
-      "similarity_boost": 0.85,
       "description": "Multi-perspective, thorough, analytical",
-      "type": "Premium"
+      "elevenlabs": {
+        "voice_id": "2zRM7PkgwBPiau2jvVXc",
+        "voice_name": "Multi-perspective",
+        "stability": 0.65,
+        "similarity_boost": 0.85
+      },
+      "kokoro": {
+        "voice": "af_bella",
+        "speed": 1.0
+      }
     },
     "engineer": {
-      "voice_id": "Fahco4VZzobUeiPqni1S",
-      "voice_name": "Marcus (Premium)",
-      "rate_multiplier": 1.3,
-      "rate_wpm": 228,
-      "stability": 0.7,
-      "similarity_boost": 0.85,
       "description": "Strategic, senior leadership, measured - battle-scarred engineering leader",
-      "type": "Premium"
+      "elevenlabs": {
+        "voice_id": "Fahco4VZzobUeiPqni1S",
+        "voice_name": "Marcus (Premium)",
+        "stability": 0.7,
+        "similarity_boost": 0.85
+      },
+      "kokoro": {
+        "voice": "am_michael",
+        "speed": 0.95
+      }
     },
     "architect": {
-      "voice_id": "NNl6r8mD7vthiJatiJt1",
-      "voice_name": "Serena (Premium)",
-      "rate_multiplier": 1.35,
-      "rate_wpm": 236,
-      "stability": 0.7,
-      "similarity_boost": 0.85,
       "description": "UK Female - Strategic, sophisticated, wise",
-      "type": "Premium"
+      "elevenlabs": {
+        "voice_id": "NNl6r8mD7vthiJatiJt1",
+        "voice_name": "Serena (Premium)",
+        "stability": 0.7,
+        "similarity_boost": 0.85
+      },
+      "kokoro": {
+        "voice": "bf_emma",
+        "speed": 0.95
+      }
     },
     "designer": {
-      "voice_id": "h8eW5xfRUGVJrZhAFxqK",
-      "voice_name": "Isha (Premium)",
-      "rate_multiplier": 1.35,
-      "rate_wpm": 236,
-      "stability": 0.62,
-      "similarity_boost": 0.85,
       "description": "Indian Female - Sophisticated critic: snobby perfectionist, judgmental eye, dismissive of mediocrity",
-      "type": "Premium"
+      "elevenlabs": {
+        "voice_id": "h8eW5xfRUGVJrZhAFxqK",
+        "voice_name": "Isha (Premium)",
+        "stability": 0.62,
+        "similarity_boost": 0.85
+      },
+      "kokoro": {
+        "voice": "af_nicole",
+        "speed": 1.0
+      }
     },
     "artist": {
-      "voice_id": "h8eW5xfRUGVJrZhAFxqK",
-      "voice_name": "Isha (Premium)",
-      "rate_multiplier": 1.35,
-      "rate_wpm": 236,
-      "stability": 0.38,
-      "similarity_boost": 0.68,
       "description": "Indian Female - Dreamy visionary: eccentric, flighty tangents, distracted by beauty, unconventional ideas",
-      "type": "Premium"
+      "elevenlabs": {
+        "voice_id": "h8eW5xfRUGVJrZhAFxqK",
+        "voice_name": "Isha (Premium)",
+        "stability": 0.38,
+        "similarity_boost": 0.68
+      },
+      "kokoro": {
+        "voice": "af_sarah",
+        "speed": 0.9
+      }
     },
     "pentester": {
-      "voice_id": "UZvBfqEdvCFLqsBOo9Zr",
-      "voice_name": "Oliver (Enhanced)",
-      "rate_multiplier": 1.35,
-      "rate_wpm": 236,
-      "stability": 0.32,
-      "similarity_boost": 0.88,
       "description": "UK Male - Mischievous hacker: overly excited finding vulns, playful chaos, curious puzzle-solver",
-      "type": "Enhanced"
+      "elevenlabs": {
+        "voice_id": "UZvBfqEdvCFLqsBOo9Zr",
+        "voice_name": "Oliver (Enhanced)",
+        "stability": 0.32,
+        "similarity_boost": 0.88
+      },
+      "kokoro": {
+        "voice": "bm_george",
+        "speed": 1.15
+      }
     },
     "writer": {
-      "voice_id": "goT3UYdM9bhm0n2lmKQx",
-      "voice_name": "Serena (Premium)",
-      "rate_multiplier": 1.35,
-      "rate_wpm": 236,
-      "stability": 0.6,
-      "similarity_boost": 0.8,
       "description": "UK Female - Articulate, warm, engaging",
-      "type": "Premium"
+      "elevenlabs": {
+        "voice_id": "goT3UYdM9bhm0n2lmKQx",
+        "voice_name": "Serena (Premium)",
+        "stability": 0.6,
+        "similarity_boost": 0.8
+      },
+      "kokoro": {
+        "voice": "bf_emma",
+        "speed": 0.95
+      }
     },
     "intern": {
-      "voice_id": "lcMyyd2HUfFzxdCaC4Ta",
-      "voice_name": "High-energy genius",
-      "rate_multiplier": 1.4,
-      "rate_wpm": 245,
-      "stability": 0.42,
-      "similarity_boost": 0.72,
       "description": "Brilliant overachiever: eager to prove themselves, insatiably curious, enthusiastic about everything",
-      "type": "Premium"
+      "elevenlabs": {
+        "voice_id": "lcMyyd2HUfFzxdCaC4Ta",
+        "voice_name": "High-energy genius",
+        "stability": 0.42,
+        "similarity_boost": 0.72
+      },
+      "kokoro": {
+        "voice": "am_adam",
+        "speed": 1.2
+      }
     }
   }
 }

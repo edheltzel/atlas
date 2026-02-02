@@ -1,261 +1,320 @@
-# Voice Server
+# Voice Server + VoiceMode Integration
 
-A voice notification server for the Personal AI Infrastructure (PAI) system that provides text-to-speech notifications using ElevenLabs API or macOS's built-in `say` command as fallback.
+Two complementary voice systems for PAI:
 
-> **Quick Start**: See [QUICKSTART.md](QUICKSTART.md) for a 5-minute setup guide.
+| System | Purpose | Port |
+|--------|---------|------|
+| **VoiceServer** | PAI hook notifications (task complete, agent speak) | 8888 |
+| **VoiceMode** | Voice conversations with Claude (`claude converse`) | MCP |
 
-## 🎯 Features
+Both use the same local TTS/STT services (Kokoro + Whisper).
 
-- **ElevenLabs Integration**: High-quality AI voices for notifications
-- **Fallback Support**: Uses macOS `say` command when ElevenLabs is not configured
-- **Multiple Voice Support**: Different voices for different AI agents
-- **macOS Service**: Runs automatically in the background
-- **Menu Bar Indicator**: Visual status indicator in macOS menu bar
-- **Simple HTTP API**: Easy integration with any tool or script
+---
 
-## 📋 Prerequisites
+## 🚀 Complete Setup (Recommended)
 
-- macOS (tested on macOS 11+)
-- [Bun](https://bun.sh) runtime installed
-- ElevenLabs API key (optional, for AI voices)
+### 1. Install VoiceMode CLI
 
-## 🚀 Quick Start
-
-### 1. Install Bun (if not already installed)
 ```bash
-curl -fsSL https://bun.sh/install | bash
+# Using pipx (recommended for CLI tools)
+pipx install voice-mode
+
+# Or with pip
+pip install voice-mode
 ```
 
-### 2. Configure API Key (Optional but Recommended)
-Add your ElevenLabs API key to `~/.env`:
+### 2. Install Local Services
+
 ```bash
-echo "ELEVENLABS_API_KEY=your_api_key_here" >> ~/.env
-echo "ELEVENLABS_VOICE_ID=s3TPKV1kjDlVtZbl4Ksh" >> ~/.env
+# Install Kokoro (TTS - text to speech)
+voicemode service install kokoro
+voicemode service start kokoro
+
+# Install Whisper (STT - speech to text)
+voicemode service install whisper
+voicemode service start whisper
+
+# Verify both running
+voicemode service status
 ```
 
-> Get your free API key at [elevenlabs.io](https://elevenlabs.io) (10,000 characters/month free)
+### 3. Register VoiceMode with Claude Code
 
-### 3. Install Voice Server
 ```bash
-cd ~/.claude/voice-server
-./install.sh
+# Add VoiceMode as MCP server
+claude mcp add --scope user voicemode -- voicemode
+
+# Verify connection
+claude mcp list
 ```
 
-This will:
-- Install dependencies
-- Create a macOS LaunchAgent for auto-start
-- Start the voice server on port 8888
-- Verify the installation
-- Optionally install menu bar indicator (requires SwiftBar/BitBar)
+### 4. Start Voice Conversation
 
-## 🛠️ Service Management
-
-### Start Server
 ```bash
-./start.sh
-# or
-launchctl load ~/Library/LaunchAgents/com.pai.voice-server.plist
+# Voice chat with Claude!
+claude converse
 ```
 
-### Stop Server
+### 5. (Optional) Enable Auto-Start at Boot
+
 ```bash
-./stop.sh
-# or
-launchctl unload ~/Library/LaunchAgents/com.pai.voice-server.plist
+voicemode service enable kokoro
+voicemode service enable whisper
 ```
 
-### Restart Server
+---
+
+## 🎙️ Using Voice Mode
+
+### Voice Conversations with Claude
+
 ```bash
-./restart.sh
+# Start voice conversation
+claude converse
+
+# With specific voice
+claude converse --voice af_sky
+
+# Continuous mode (keeps listening)
+claude converse --continuous
 ```
 
-### Check Status
+### PAI Notifications (Hooks)
+
+The VoiceServer handles notifications from PAI hooks:
+
 ```bash
-./status.sh
+# Start VoiceServer
+cd ~/.claude/VoiceServer && ./start.sh
+
+# Test notification
+curl -X POST http://localhost:8888/notify \
+  -H "Content-Type: application/json" \
+  -d '{"message":"Task completed"}'
 ```
 
-### Uninstall
-```bash
-./uninstall.sh
-```
-This will stop the service and remove the LaunchAgent.
+---
 
-## 📡 API Usage
+## TTS Providers
 
-### Send a Voice Notification
+VoiceServer supports three TTS providers with automatic fallback:
+
+| Provider | Quality | Latency | Cost | Offline |
+|----------|---------|---------|------|---------|
+| **Kokoro** | Good (neural) | ~200ms | Free | Yes |
+| **ElevenLabs** | Excellent (neural) | ~500ms | Paid | No |
+| **macOS say** | Basic (system) | ~50ms | Free | Yes |
+
+### Default Configuration
+
+- **Kokoro**: Primary (free, local)
+- **macOS say**: Fallback (always available)
+- **ElevenLabs**: Disabled (opt-in with API key)
+
+---
+
+## 📡 VoiceServer API
+
+### Send Notification
+
 ```bash
 curl -X POST http://localhost:8888/notify \
   -H "Content-Type: application/json" \
-  -d '{
-    "message": "Task completed successfully",
-    "voice_id": "s3TPKV1kjDlVtZbl4Ksh",
-    "voice_enabled": true
-  }'
+  -d '{"message": "Hello", "voice_id": "kai"}'
 ```
 
 ### Parameters
-- `message` (required): The text to speak
-- `voice_id` (optional): ElevenLabs voice ID to use
-- `voice_enabled` (optional): Whether to speak the notification (default: true)
-- `title` (optional): Notification title (default: "PAI Notification")
 
-### Available Voice IDs
-```javascript
-// PAI System Agents
-Kai:                     s3TPKV1kjDlVtZbl4Ksh  // Main assistant
-Perplexity-Researcher:   AXdMgz6evoL7OPd7eU12  // Perplexity research agent
-Claude-Researcher:       AXdMgz6evoL7OPd7eU12  // Claude research agent
-Gemini-Researcher:       iLVmqjzCGGvqtMCk6vVQ  // Gemini research agent
-Engineer:                iLVmqjzCGGvqtMCk6vVQ  // Engineering agent (Marcus Webb)
-Designer:                ZF6FPAbjXT4488VcRRnw  // Design agent
-Architect:               muZKMsIDGYtIkjjiUS82  // Architecture agent
-Pentester:               xvHLFjaUEpx4BOf7EiDd  // Security agent
-Artist:                  ZF6FPAbjXT4488VcRRnw  // Artist agent
-Writer:                  gfRt6Z3Z8aTbpLfexQ7N  // Content agent
-```
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `message` | string | required | Text to speak |
+| `title` | string | "PAI Notification" | Notification title |
+| `voice_id` | string | null | Agent name or voice ID |
+| `voice_enabled` | boolean | true | Enable voice output |
 
-## 🖥️ Menu Bar Indicator
+### Health Check
 
-The voice server includes an optional menu bar indicator that shows the server status.
-
-### Installing the Menu Bar
-
-1. **Install SwiftBar** (recommended) or BitBar:
 ```bash
-brew install --cask swiftbar
-# OR
-brew install --cask bitbar
+curl http://localhost:8888/health | jq
 ```
 
-2. **Run the menu bar installer**:
-```bash
-cd ~/.claude/voice-server/menubar
-./install-menubar.sh
-```
+---
 
-### Menu Bar Features
-- **Visual Status**: 🎙️ (running) or 🎙️⚫ (stopped)
-- **Quick Controls**: Start/Stop/Restart server from menu
-- **Status Info**: Shows voice type (ElevenLabs/macOS Say)
-- **Quick Test**: Test voice with one click
-- **View Logs**: Access server logs directly
+## 🎭 Voice Personalities
 
-### Manual Installation
-If you prefer manual installation:
-1. Copy `menubar/pai-voice.5s.sh` to your SwiftBar/BitBar plugins folder
-2. Make it executable: `chmod +x pai-voice.5s.sh`
-3. Refresh SwiftBar/BitBar
+Each agent has distinct voice mappings:
+
+| Agent | Description | Kokoro Voice |
+|-------|-------------|--------------|
+| kai | Expressive eager buddy | am_adam |
+| engineer | Battle-scarred leader | am_michael |
+| architect | Strategic, wise | bf_emma |
+| designer | Sophisticated critic | af_nicole |
+| pentester | Mischievous hacker | bm_george |
+| intern | High-energy genius | am_adam |
+
+See `voices.json` for full configuration including ElevenLabs mappings.
+
+---
 
 ## 🔧 Configuration
 
-### Environment Variables
-Create or edit `~/.env` in your home directory:
+### settings.json (VoiceServer)
 
-```bash
-# Required for ElevenLabs voices (optional)
-ELEVENLABS_API_KEY=your_api_key_here
-
-# Default voice ID (optional, defaults to Kai)
-ELEVENLABS_VOICE_ID=s3TPKV1kjDlVtZbl4Ksh
-
-# Server port (optional, defaults to 8888)
-PORT=8888
+```json
+{
+  "voiceServer": {
+    "tts": {
+      "provider": "kokoro",
+      "providers": {
+        "elevenlabs": {
+          "enabled": false,
+          "apiKey": "${ELEVENLABS_API_KEY}"
+        },
+        "kokoro": {
+          "enabled": true,
+          "endpoint": "http://127.0.0.1:8880/v1",
+          "defaultVoice": "af_sky"
+        },
+        "say": {
+          "enabled": true,
+          "voice": "Daniel (Enhanced)"
+        }
+      },
+      "fallbackOrder": ["kokoro", "elevenlabs", "say"]
+    }
+  }
+}
 ```
 
-### Finding Your Voice ID
-1. Go to [ElevenLabs Voice Library](https://elevenlabs.io/voice-library)
-2. Select a voice you like
-3. Click "Use" and copy the Voice ID
-4. Update `ELEVENLABS_VOICE_ID` in your `~/.env`
+### Enable ElevenLabs (Optional)
+
+```bash
+# Add API key
+echo "ELEVENLABS_API_KEY=sk-your-key" >> ~/.claude/.env
+
+# Enable in settings.json
+# "voiceServer.tts.providers.elevenlabs.enabled": true
+```
+
+---
+
+## 🛠️ Service Management
+
+### VoiceMode Services
+
+```bash
+# Check all services
+voicemode service status
+
+# Start/stop individual services
+voicemode service start kokoro
+voicemode service stop whisper
+voicemode service restart kokoro
+
+# View logs
+voicemode service logs kokoro
+
+# Enable/disable auto-start
+voicemode service enable kokoro
+voicemode service disable whisper
+```
+
+### VoiceServer (PAI Notifications)
+
+```bash
+cd ~/.claude/VoiceServer
+
+./start.sh      # Start server
+./stop.sh       # Stop server
+./restart.sh    # Restart server
+./status.sh     # Check status
+```
+
+---
 
 ## 🐛 Troubleshooting
 
-### Server won't start
+### Services not running
+
 ```bash
-# Check if port 8888 is already in use
-lsof -i :8888
+# Check status
+voicemode service status
 
-# Kill any existing process
-lsof -ti :8888 | xargs kill -9
-
-# Restart the server
-./restart.sh
+# Restart services
+voicemode service restart kokoro
+voicemode service restart whisper
 ```
 
-### No voice output
-```bash
-# Check if ElevenLabs key is configured
-grep ELEVENLABS_API_KEY ~/.env
+### `claude converse` not working
 
-# Test with fallback (macOS say)
-curl -X POST http://localhost:8888/notify \
+```bash
+# Verify MCP registration
+claude mcp list
+
+# Re-register if needed
+claude mcp add --scope user voicemode -- voicemode
+
+# Check services are running
+voicemode service status
+```
+
+### VoiceServer falls back to macOS say
+
+```bash
+# Check Kokoro health
+curl http://127.0.0.1:8880/v1/models
+
+# Check VoiceServer sees Kokoro
+curl http://localhost:8888/health | jq '.providers.kokoro'
+
+# Restart Kokoro if needed
+voicemode service restart kokoro
+```
+
+### No audio output
+
+```bash
+# Test macOS audio
+say "Test"
+
+# Test Kokoro directly
+curl -X POST http://127.0.0.1:8880/v1/audio/speech \
   -H "Content-Type: application/json" \
-  -d '{"message": "Testing voice output"}'
-
-# Check server logs
-tail -f ~/Library/Logs/pai-voice-server.log
+  -d '{"input": "Hello", "voice": "af_sky"}' \
+  --output /tmp/test.mp3 && afplay /tmp/test.mp3
 ```
 
-### Service not auto-starting
-```bash
-# Check LaunchAgent status
-launchctl list | grep pai.voice
-
-# Reload LaunchAgent
-launchctl unload ~/Library/LaunchAgents/com.pai.voice-server.plist
-launchctl load ~/Library/LaunchAgents/com.pai.voice-server.plist
-
-# Check for errors
-tail -f ~/Library/Logs/pai-voice-server.log
-```
+---
 
 ## 📁 File Structure
+
 ```
-~/.claude/voice-server/
-├── server.ts              # Main server code
-├── install.sh             # Installation script
-├── start.sh              # Start server
-├── stop.sh               # Stop server
-├── restart.sh            # Restart server
-├── status.sh             # Check server status
-├── uninstall.sh          # Uninstall service
-├── README.md             # This file
-└── menubar/
-    ├── pai-voice.5s.sh   # Menu bar status script
-    └── install-menubar.sh # Menu bar installer
+~/.claude/VoiceServer/          # PAI notification server
+├── server.ts                   # Multi-provider TTS server
+├── voices.json                 # Agent voice mappings
+├── start.sh / stop.sh          # Service scripts
+└── README.md                   # This file
 
-~/Library/LaunchAgents/
-└── com.pai.voice-server.plist  # macOS service definition
+~/.voicemode/                   # VoiceMode data
+├── services/
+│   ├── kokoro/                 # Kokoro TTS service
+│   └── whisper/                # Whisper STT service
+└── config.yaml                 # VoiceMode configuration
 
-~/Library/Logs/
-└── pai-voice-server.log        # Server logs
+~/.claude.json                  # Claude Code config (MCP servers)
 ```
 
-## 🔐 Security Notes
+---
 
-- **No hardcoded API keys**: All sensitive data is read from `~/.env`
-- **Local only**: Server only listens on localhost (127.0.0.1)
-- **User-specific**: Each user maintains their own API keys
-- **Safe for public repos**: No sensitive data in the codebase
+## 📝 Changelog
 
-## 🤝 Integration with PAI System
+### v2.0.0 (2026-02-01)
+- Multi-provider TTS support (Kokoro, ElevenLabs, macOS say)
+- VoiceMode integration for `claude converse`
+- Provider abstraction layer
+- Per-provider circuit breakers
+- Kokoro voice personality mappings
+- ElevenLabs disabled by default (open source friendly)
 
-This voice server integrates with the PAI (Personal AI Infrastructure) system to provide voice notifications when:
-- Tasks are completed
-- Agents finish their work
-- Important events occur
-- User notifications are needed
-
-The PAI hooks automatically send notifications to this server when configured.
-
-## 📝 License
-
-Part of the PAI (Personal AI Infrastructure) system.
-
-## 🆘 Support
-
-For issues or questions:
-1. Check the troubleshooting section above
-2. Review logs at `~/Library/Logs/pai-voice-server.log`
-3. Ensure your ElevenLabs API key is valid
-4. Try the fallback mode (without API key) to isolate issues
+See [CHANGELOG.md](CHANGELOG.md) for full history.
