@@ -131,7 +131,6 @@ async function ensureServerRunning(): Promise<boolean> {
 
 async function notify(message: string, options: {
   title?: string
-  voiceId?: string
   voiceEnabled?: boolean
 } = {}): Promise<boolean> {
   const config = loadVoiceConfig()
@@ -149,8 +148,8 @@ async function notify(message: string, options: {
       body: JSON.stringify({
         message,
         title: options.title || config.aiName,
-        voice_id: options.voiceId || config.voiceId,
         voice_enabled: options.voiceEnabled !== false
+        // NO voice_id - VoiceServer uses identity from voices.json
       }),
       signal: AbortSignal.timeout(15000) // 15s timeout for speech
     })

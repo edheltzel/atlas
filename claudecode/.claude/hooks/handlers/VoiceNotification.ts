@@ -10,29 +10,31 @@
  */
 
 import { existsSync, readFileSync, appendFileSync, mkdirSync } from 'fs';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { homedir } from 'os';
 import { paiPath } from '../lib/paths';
-import { getIdentity, type VoicePersonality } from '../lib/identity';
 import { getISOTimestamp } from '../lib/time';
 import { isValidVoiceCompletion, getVoiceFallback } from '../lib/response-format';
 import type { ParsedTranscript } from '../../skills/CORE/Tools/TranscriptParser';
 
-const DA_IDENTITY = getIdentity();
+// Read AI name from settings for display only (voice selection handled by VoiceServer)
+function getAiName(): string {
+  try {
+    const settingsPath = join(homedir(), '.claude', 'settings.json');
+    const settings = JSON.parse(readFileSync(settingsPath, 'utf-8'));
+    return settings.daidentity?.name || 'Atlas';
+  } catch {
+    return 'Atlas';
+  }
+}
 
-// ElevenLabs voice notification payload
-interface ElevenLabsNotificationPayload {
+// Voice notification payload (voice selection handled by VoiceServer via voices.json)
+interface VoiceNotificationPayload {
   message: string;
   title?: string;
   voice_enabled?: boolean;
-  voice_id?: string;
-  voice_settings?: {
-    stability: number;
-    similarity_boost: number;
-    style: number;
-    speed: number;
-    use_speaker_boost: boolean;
-  };
-  volume?: number;
+  // NO voice_id - VoiceServer uses identity from voices.json
+  // NO voice_settings - VoiceServer uses identity from voices.json
 }
 
 interface VoiceEvent {
@@ -41,8 +43,7 @@ interface VoiceEvent {
   event_type: 'sent' | 'failed' | 'skipped';
   message: string;
   character_count: number;
-  voice_engine: 'elevenlabs';
-  voice_id: string;
+  voice_engine: 'voiceserver';
   status_code?: number;
   error?: string;
 }
@@ -88,20 +89,17 @@ function logVoiceEvent(event: VoiceEvent): void {
   }
 }
 
-async function sendNotification(payload: ElevenLabsNotificationPayload, sessionId: string): Promise<void> {
-  const voiceId = payload.voice_id || DA_IDENTITY.voiceId || 's3TPKV1kjDlVtZbl4Ksh';
-
+async function sendNotification(payload: VoiceNotificationPayload, sessionId: string): Promise<void> {
   const baseEvent: Omit<VoiceEvent, 'event_type' | 'status_code' | 'error'> = {
     timestamp: getISOTimestamp(),
     session_id: sessionId,
     message: payload.message,
     character_count: payload.message.length,
-    voice_engine: 'elevenlabs',
-    voice_id: voiceId,
+    voice_engine: 'voiceserver',
   };
 
   try {
-    // Use ElevenLabs voice server /notify endpoint
+    // Send to VoiceServer - it handles voice selection via voices.json
     const response = await fetch('http://localhost:8888/notify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -152,22 +150,14 @@ export async function handleVoice(parsed: ParsedTranscript, sessionId: string): 
     return;
   }
 
-  // Get voice settings from DA identity in settings.json
-  const voiceId = DA_IDENTITY.voiceId || 's3TPKV1kjDlVtZbl4Ksh';
-  const voiceSettings = DA_IDENTITY.voice;
-
-  const payload: ElevenLabsNotificationPayload = {
+  // Send to VoiceServer without voice_id - it uses voices.json for identity voice
+  const aiName = getAiName();
+  const payload: VoiceNotificationPayload = {
     message: voiceCompletion,
-    title: `${DA_IDENTITY.name} says`,
+    title: `${aiName} says`,
     voice_enabled: true,
-    voice_id: voiceId,
-    voice_settings: voiceSettings ? {
-      stability: voiceSettings.stability ?? 0.5,
-      similarity_boost: voiceSettings.similarity_boost ?? 0.75,
-      style: voiceSettings.style ?? 0.0,
-      speed: voiceSettings.speed ?? 1.0,
-      use_speaker_boost: voiceSettings.use_speaker_boost ?? true,
-    } : undefined,
+    // NO voice_id - VoiceServer uses identity from voices.json
+    // NO voice_settings - VoiceServer uses identity from voices.json
   };
 
   await sendNotification(payload, sessionId);

@@ -267,15 +267,9 @@ function setTabTitle(title: string, state: TabState = 'normal'): void {
 /**
  * Announce prompt receipt via voice server.
  * Summary is already a complete sentence from Haiku.
+ * Voice selection handled by VoiceServer via voices.json.
  */
 async function announceVoice(summary: string): Promise<void> {
-  const identity = await import('./lib/identity').then(m => m.getIdentity());
-
-  if (!identity.voiceId) {
-    console.error('[UpdateTabTitle] No voice ID configured, skipping voice');
-    return;
-  }
-
   // Summary is already a complete sentence from Haiku (e.g., "Fixing the bug now.")
   // Just ensure proper capitalization
   const message = summary.charAt(0).toUpperCase() + summary.slice(1);
@@ -285,11 +279,10 @@ async function announceVoice(summary: string): Promise<void> {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        title: identity.name,
+        title: 'Atlas',
         message: message,
         voice_enabled: true,
-        voice_id: identity.voiceId,
-        voice_settings: identity.voice,
+        // NO voice_id - VoiceServer uses identity from voices.json
       }),
     });
 
