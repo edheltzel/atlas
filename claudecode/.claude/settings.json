@@ -215,7 +215,8 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "${PAI_DIR}/statusline-command.sh"
+    "command": "${PAI_DIR}/statusline-helpers/pai-statusline.sh",
+    "padding": 0
   },
   "enabledPlugins": {
     "superpowers@superpowers": true
@@ -265,8 +266,8 @@
     "skills": 34,
     "workflows": 142,
     "hooks": 19,
-    "signals": 433,
+    "signals": 507,
     "files": 59,
-    "updatedAt": "2026-02-02T01:58:07.433Z"
+    "updatedAt": "2026-02-06T20:03:58.563Z"
   }
 }

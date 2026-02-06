@@ -1,0 +1,121 @@
+{
+  "$schema": "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json",
+  "version": 4,
+  "palettes": {
+    "list": {
+      "eldritch": {
+        "separator": "#475569",
+        "subtle": "#94A3B8",
+        "text": "#CBD5E1",
+        "pai_p": "#1E3A8A",
+        "pai_a": "#3B82F6",
+        "model_icon": "#94A3B8",
+        "dir_icon": "#F265B5",
+        "dir_name": "#04D1F9",
+        "branch": "#F265B5",
+        "git_added": "#37F499",
+        "git_modified": "#F1FC79",
+        "git_deleted": "#F16C75",
+        "git_untracked": "#04D1F9",
+        "git_staged": "#37F499",
+        "git_ahead": "#EBFAFA",
+        "stash": "#A48CF2",
+        "learn_label": "#15803D",
+        "quote_primary": "#FCD34D",
+        "quote_author": "#B48C3C"
+      }
+    },
+    "template": "eldritch"
+  },
+  "blocks": [
+    {
+      "type": "prompt",
+      "alignment": "left",
+      "segments": [
+        {
+          "type": "text",
+          "style": "plain",
+          "foreground": "p:separator",
+          "template": "──{{ if .Env.PAI_DA_NAME }} <p:pai_p>▲</> <p:pai_a>{{ .Env.PAI_DA_NAME }}</>{{ end }}{{ if .Env.PAI_VERSION }} <p:subtle>{{ .Env.PAI_VERSION }}</>{{ end }} ─────────────────────────────────────────────────────────"
+        }
+      ]
+    },
+    {
+      "type": "prompt",
+      "alignment": "left",
+      "newline": true,
+      "segments": [
+        {
+          "type": "claude",
+          "style": "plain",
+          "foreground": "p:pai_a",
+          "template": "<p:model_icon></> {{ .Model.DisplayName }}"
+        },
+        {
+          "type": "text",
+          "style": "plain",
+          "foreground": "p:separator",
+          "template": " │ "
+        },
+        {
+          "type": "path",
+          "style": "plain",
+          "foreground": "p:dir_name",
+          "options": {
+            "style": "folder"
+          },
+          "template": "<p:dir_icon>󰝰</> {{ .Path }}"
+        },
+        {
+          "type": "git",
+          "style": "plain",
+          "foreground": "p:branch",
+          "options": {
+            "branch_icon": " ",
+            "fetch_status": true,
+            "fetch_stash_count": true
+          },
+          "template": " <p:separator>│</> {{ .HEAD }}{{ if .Working.Changed }} {{ if gt .Working.Added 0 }}<p:git_added>+{{ .Working.Added }}</>{{ end }}{{ if gt .Working.Modified 0 }}<p:git_modified>~{{ .Working.Modified }}</>{{ end }}{{ if gt .Working.Deleted 0 }}<p:git_deleted>-{{ .Working.Deleted }}</>{{ end }}{{ if gt .Working.Untracked 0 }}<p:git_untracked>?{{ .Working.Untracked }}</>{{ end }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if .Staging.Changed }} <p:git_staged>⬤</>{{ if gt .Staging.Added 0 }}+{{ .Staging.Added }}{{ end }}{{ if gt .Staging.Modified 0 }}~{{ .Staging.Modified }}{{ end }}{{ end }}{{ if gt .StashCount 0 }} <p:stash> {{ .StashCount }}</>{{ end }}"
+        },
+        {
+          "type": "text",
+          "style": "plain",
+          "foreground": "p:text",
+          "template": "{{ if .Env.PAI_COUNTS }} <p:separator>│</> {{ .Env.PAI_COUNTS }}{{ end }}"
+        }
+      ]
+    },
+    {
+      "type": "prompt",
+      "alignment": "left",
+      "newline": true,
+      "segments": [
+        {
+          "type": "text",
+          "style": "plain",
+          "foreground": "p:learn_label",
+          "template": "{{ if .Env.PAI_RATINGS }}󰛨 {{ .Env.PAI_RATINGS }} <p:separator>│</>{{ end }}"
+        },
+        {
+          "type": "text",
+          "style": "plain",
+          "foreground": "p:text",
+          "template": "{{ if .Env.PAI_CONTEXT }} {{ .Env.PAI_CONTEXT }}{{ end }}"
+        }
+      ]
+    },
+    {
+      "type": "prompt",
+      "alignment": "left",
+      "newline": true,
+      "segments": [
+        {
+          "type": "text",
+          "style": "plain",
+          "foreground": "p:quote_primary",
+          "template": "{{ if .Env.PAI_QUOTE }}{{ .Env.PAI_QUOTE }}{{ end }}"
+        }
+      ]
+    }
+  ]
+}
