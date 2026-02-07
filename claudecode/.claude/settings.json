@@ -4,7 +4,8 @@
 		"PAI_DIR": "/Users/ed/.claude",
 		"PROJECTS_DIR": "",
 		"CLAUDE_CODE_MAX_OUTPUT_TOKENS": "80000",
-		"BASH_DEFAULT_TIMEOUT_MS": "600000"
+		"BASH_DEFAULT_TIMEOUT_MS": "600000",
+		"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
 	},
 	"attribution": {
 		"commit": "",
@@ -266,8 +267,8 @@
 		"skills": 34,
 		"workflows": 142,
 		"hooks": 19,
-		"signals": 509,
+		"signals": 512,
 		"files": 59,
-		"updatedAt": "2026-02-06T20:15:11.585Z"
+		"updatedAt": "2026-02-07T12:09:46.880Z"
 	}
 }
