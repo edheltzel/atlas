@@ -11,7 +11,7 @@ Atlas symlinks dotfiles/configs to their expected system locations:
 
 Supports three AI coding agents: **Claude Code**, **OpenCode**, and **Gemini CLI**.
 
-Based on [PAI (Personal AI Infrastructure)](https://github.com/danielmiessler/Personal_AI_Infrastructure) by Daniel Miessler.
+inspired by IndyDevDan, Dan Messier, and main other maintainers . 
 
 ## Integrated Frameworks
 
